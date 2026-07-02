@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "GaushalaDatabase": {
+      "title": "Gaushala Database",
+      "description": "The complete payroll, attendance, and settings database for Shri Krishna Balram Gaushala.",
+      "type": "object",
+      "properties": {
+        "employees": {
+          "type": "array",
+          "description": "List of active and inactive staff members."
+        },
+        "attendance": {
+          "type": "object",
+          "description": "Multi-punch attendance records indexed by employee ID and date."
+        },
+        "payments": {
+          "type": "array",
+          "description": "Financial ledger transactions including advance and salary payments."
+        },
+        "earnings": {
+          "type": "array",
+          "description": "Special earnings and allowances logs."
+        },
+        "deductions": {
+          "type": "array",
+          "description": "Salary deduction records."
+        },
+        "overtimeEntries": {
+          "type": "array",
+          "description": "Overtime logs including modifiers and multipliers."
+        },
+        "lateFineEntries": {
+          "type": "array",
+          "description": "Late fine configurations and logs."
+        },
+        "company": {
+          "type": "object",
+          "description": "Gaushala meta details like name, logo, and custom base settings."
+        }
+      }
+    }
+  },
+  "firestore": {
+    "gaushala_configs/main": {
+      "schema": "GaushalaDatabase",
+      "description": "Global state document synchronized in real-time across all authorized devices."
+    }
+  }
+}

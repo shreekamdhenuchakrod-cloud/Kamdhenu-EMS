@@ -1,0 +1,8 @@
+{
+  "name": "Shree Kamdhenu EMS",
+  "description": "Premium multi-lingual Employee Management System for Shree Kamdhenu Gaushala. Track attendance, punch sessions, overtime, payments, and generate monthly ledger sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
