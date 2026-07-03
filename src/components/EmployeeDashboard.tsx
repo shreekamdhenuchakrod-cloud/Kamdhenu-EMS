@@ -116,6 +116,7 @@ export default function EmployeeDashboard({
   const [distanceToFence, setDistanceToFence] = useState<number | null>(null);
   const [isPunching, setIsPunching] = useState(false);
   const [punchSelfie, setPunchSelfie] = useState<string | null>(null);
+  const [isPdfReady, setIsPdfReady] = useState(false);
 
   useEffect(() => {
     if (!employee || isDeviceBlocked) return;
@@ -275,7 +276,7 @@ export default function EmployeeDashboard({
     setIsPunching(false);
   };
 
-  const [isPdfReady, setIsPdfReady] = useState(false);
+
 
   // Formatting utility
   const formatCurrency = (amt: number) => {
