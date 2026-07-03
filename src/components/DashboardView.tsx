@@ -124,18 +124,57 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
           {/* Add New Staff Link */}
           <div 
             onClick={() => onNavigate('pv-add')}
-            className="col-span-2 md:col-span-1 bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-purple-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center justify-between shadow-2xs group"
+            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-purple-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
           >
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="bg-purple-50/70 text-purple-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-purple-100 transition-colors">
-                <Icon name="person_add" size={22} className="text-purple-650" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-semibold text-xs text-slate-900 truncate">{t('Add Staff', 'नया कर्मचारी')}</div>
-                <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Onboard employee', 'खाता जोड़ें')}</div>
-              </div>
+            <div className="bg-purple-50/70 text-purple-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-purple-100 transition-colors">
+              <Icon name="person_add" size={22} className="text-purple-655" />
             </div>
-            <Icon name="chevron_right" size={18} className="text-slate-300 shrink-0" />
+            <div className="min-w-0">
+              <div className="font-semibold text-xs text-slate-900 truncate">{t('Add Staff', 'नया कर्मचारी')}</div>
+              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Onboard employee', 'खाता जोड़ें')}</div>
+            </div>
+          </div>
+
+          {/* Approval Desk Link */}
+          <div 
+            onClick={() => onNavigate('approvals')}
+            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-amber-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
+          >
+            <div className="bg-amber-50/70 text-amber-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
+              <Icon name="verified_user" size={22} className="text-amber-655" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-semibold text-xs text-slate-900 truncate">{t('Approval Desk', 'अनुमोदन डेस्क')}</div>
+              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Review pending requests', 'रिक्वेस्ट अप्रूव करें')}</div>
+            </div>
+          </div>
+
+          {/* GeoFence Center Link */}
+          <div 
+            onClick={() => onNavigate('geofences')}
+            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-blue-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
+          >
+            <div className="bg-blue-50/70 text-blue-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
+              <Icon name="radar" size={22} className="text-blue-650" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-semibold text-xs text-slate-900 truncate">{t('GeoFence Center', 'जियोफेंस केंद्र')}</div>
+              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Manage work regions', 'लोकेशन परिधि प्रबन्ध')}</div>
+            </div>
+          </div>
+
+          {/* Live GPS Map Link */}
+          <div 
+            onClick={() => onNavigate('tracking')}
+            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-indigo-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
+          >
+            <div className="bg-indigo-50/70 text-indigo-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-100 transition-colors">
+              <Icon name="map" size={22} className="text-indigo-650" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-semibold text-xs text-slate-900 truncate">{t('Live GPS Map', 'लाइव जीपीएस ट्रैकिंग')}</div>
+              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Real-time staff routes', 'लाइव लोकेशन मैप')}</div>
+            </div>
           </div>
         </div>
       </div>

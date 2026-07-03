@@ -45,17 +45,21 @@ export default function EmployeeDashboard({
     }
     setDeviceId(dId);
 
-    // Auto-create Device Register request if currentDeviceId is empty
-    if (dId && !employee.currentDeviceId && (!db.approvalRequests || !db.approvalRequests.some(r => r.employeeId === employee.id && r.category === 'Device Register'))) {
+    const needsRequest = !employee.currentDeviceId || employee.currentDeviceId !== dId || !employee.deviceApproved;
+    const hasPendingReq = (db.approvalRequests || []).some(
+      r => r.employeeId === employee.id && r.category === 'Device Register' && r.newValue === dId && r.status === 'Pending'
+    );
+
+    if (needsRequest && !hasPendingReq) {
       const devReg: ApprovalRequest = {
         id: `_REQ_${Date.now()}`,
         employeeId: employee.id,
         employeeName: employee.name,
         category: 'Device Register',
         date: new Date().toISOString().split('T')[0],
-        oldValue: 'Unbound Account',
+        oldValue: employee.currentDeviceId || 'Unbound Account',
         newValue: dId,
-        reason: 'Auto registering initial device link',
+        reason: 'Device binding request (switching or initial authorization)',
         timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
         status: 'Pending',
         gpsAccuracy: 5,
@@ -82,7 +86,7 @@ export default function EmployeeDashboard({
         });
       }
     }
-  }, [employee?.id, employee?.currentDeviceId]);
+  }, [employee?.id, employee?.currentDeviceId, employee?.deviceApproved, db.approvalRequests]);
 
   const currentDevId = localStorage.getItem('skbg_device_uuid') || '';
   const isDeviceBlocked = employee ? (!employee.currentDeviceId || employee.currentDeviceId !== currentDevId || !employee.deviceApproved) : true;
