@@ -1,16 +1,22 @@
 import { getDistanceMeters } from '../db';
 import { SyncEngineService } from './SyncEngine';
-import { LiveLocation, GeoFence, AppDatabase } from '../types';
+import { LiveLocation, GeoFence } from '../types';
+import { PlatformLocation, PlatformBattery, PlatformNetwork } from './platform/PlatformAbstraction';
 
 export class LocationManager {
   private lastPosition: { lat: number; lng: number; timestamp: number } | null = null;
   private lastWritePosition: { lat: number; lng: number } | null = null;
   private lastWriteTime = 0;
-  private watchId: number | null = null;
-  private currentInterval = 45000; // start with 45s (moving default)
-  private intervalTimerId: any = null;
   private activeGeoFences: GeoFence[] = [];
   private lastInsideGeoFences = new Set<string>();
+  private intervalTimerId: any = null;
+  private currentInterval = 45000; // default interval
+
+  // Cached device parameters
+  private batteryLevel = 100;
+  private isOnline = true;
+  private lastResolvedAddress = '';
+  private lastGeocodedPosition: { lat: number; lng: number } | null = null;
 
   // Hardware/permission state flags
   public isGPSEnabled = false;
@@ -23,16 +29,20 @@ export class LocationManager {
 
   constructor() {
     this.checkPermissions();
+    this.initDeviceSubscribers();
+  }
+
+  private initDeviceSubscribers() {
+    PlatformBattery.subscribeBatteryLevel((level) => {
+      this.batteryLevel = level;
+    });
+    PlatformNetwork.subscribeConnection((online) => {
+      this.isOnline = online;
+    });
   }
 
   public checkPermissions() {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      this.hasPermission = false;
-      this.isGPSEnabled = false;
-      return;
-    }
-
-    // Default flags simulation
+    // Default simulated flag checkers
     this.isGPSEnabled = true;
     this.hasPermission = true;
     this.hasBackgroundPermission = true; 
@@ -50,19 +60,17 @@ export class LocationManager {
   public startTracking(employeeId: string, onTick?: (loc: LiveLocation) => void) {
     if (onTick) this.onLocationTickCallback = onTick;
 
-    if (this.watchId) navigator.geolocation.clearWatch(this.watchId);
     if (this.intervalTimerId) clearInterval(this.intervalTimerId);
 
-    // Watch position in high-accuracy mode
-    this.watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        this.handlePositionUpdate(pos, employeeId);
+    // Watch position using Platform Abstraction Layer
+    PlatformLocation.startWatchPosition(
+      (coords) => {
+        this.handlePlatformLocationUpdate(coords, employeeId);
       },
       (err) => {
         console.error('GPS Watch Position Error:', err);
         this.isGPSEnabled = false;
-      },
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+      }
     );
 
     // Start adaptive interval timer loop
@@ -72,49 +80,23 @@ export class LocationManager {
   }
 
   public stopTracking() {
-    if (this.watchId) {
-      navigator.geolocation.clearWatch(this.watchId);
-      this.watchId = null;
-    }
+    PlatformLocation.clearWatch();
     if (this.intervalTimerId) {
       clearInterval(this.intervalTimerId);
       this.intervalTimerId = null;
     }
   }
 
-  private handlePositionUpdate(position: GeolocationPosition, employeeId: string) {
-    const lat = position.coords.latitude;
-    const lng = position.coords.longitude;
-    const accuracy = position.coords.accuracy;
-    const timestamp = new Date(position.timestamp).toISOString();
-
-    const speed = position.coords.speed || 0;
-
-    // Simulated checks
-    this.isMockLocationDetected = (position as any).mocked === true;
-    this.isGPSEnabled = true;
-    this.hasPermission = true;
-
-    const loc: LiveLocation = {
-      employeeId,
-      lat,
-      lng,
-      battery: 100, // Fallback, will be updated by Dashboard state
-      speed,
-      accuracy,
-      timestamp,
-      isMock: this.isMockLocationDetected
-    };
-
-    if (this.onLocationTickCallback) {
-      this.onLocationTickCallback(loc);
-    }
-
-    // Process tracking parameters
+  private async handlePlatformLocationUpdate(coords: any, employeeId: string) {
+    const lat = coords.latitude;
+    const lng = coords.longitude;
+    const accuracy = coords.accuracy;
+    const timestamp = coords.timestamp;
+    const speed = coords.speed || 0;
     const now = Date.now();
-    const distanceMoved = this.lastPosition 
-      ? getDistanceMeters(this.lastPosition.lat, this.lastPosition.lng, lat, lng)
-      : 0;
+
+    // Determine if reverse geocoding is required based on event limits (Entry/Exit/100m movement)
+    let needsGeocode = false;
 
     // Detect GeoFence transitions
     let geofenceTransitionTriggered = false;
@@ -125,6 +107,7 @@ export class LocationManager {
 
       if (isInside !== wasInside) {
         geofenceTransitionTriggered = true;
+        needsGeocode = true;
         if (isInside) {
           this.lastInsideGeoFences.add(g.id);
         } else {
@@ -132,6 +115,42 @@ export class LocationManager {
         }
       }
     });
+
+    if (!this.lastGeocodedPosition) {
+      needsGeocode = true;
+    } else {
+      const distFromLastGeocode = getDistanceMeters(this.lastGeocodedPosition.lat, this.lastGeocodedPosition.lng, lat, lng);
+      if (distFromLastGeocode > 100) {
+        needsGeocode = true;
+      }
+    }
+
+    if (needsGeocode) {
+      try {
+        const { reverseGeocodeOSM } = await import('../utils/geocoding');
+        this.lastResolvedAddress = await reverseGeocodeOSM(lat, lng);
+        this.lastGeocodedPosition = { lat, lng };
+      } catch (err) {
+        console.error('Failed to import or call reverseGeocodeOSM:', err);
+      }
+    }
+
+    const loc: LiveLocation = {
+      employeeId,
+      lat,
+      lng,
+      battery: this.batteryLevel,
+      speed,
+      accuracy,
+      timestamp,
+      isMock: this.isMockLocationDetected,
+      network: this.isOnline ? 'online' : 'offline',
+      address: this.lastResolvedAddress || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`
+    };
+
+    if (this.onLocationTickCallback) {
+      this.onLocationTickCallback(loc);
+    }
 
     // Determine if we should commit write to database (Throttling Check)
     let shouldWrite = false;
@@ -169,11 +188,7 @@ export class LocationManager {
   private evaluateAdaptiveInterval(employeeId: string) {
     if (!this.lastPosition) return;
 
-    const speed = this.lastPosition ? 0 : 0; // fallback default
-    
-    // Adaptive Tracking Logic:
-    // Moving Employee: update tracking speed.
-    // Background vs Active Screen vs Stationary
+    const speed = 0; // default stationary
     let targetInterval = 45000; // 45s (Moving)
 
     const isMoving = speed > 1; // speed > 1 m/s (approx 3.6 km/h)
@@ -190,17 +205,28 @@ export class LocationManager {
     }
   }
 
-  public forceLocationUpdate(employeeId: string, lat: number, lng: number) {
-    // Manually push location on immediate actions like Punch request
+  public async forceLocationUpdate(employeeId: string, lat: number, lng: number) {
+    // Manually force geocode address on Punch In / Punch Out
+    try {
+      const { reverseGeocodeOSM } = await import('../utils/geocoding');
+      const address = await reverseGeocodeOSM(lat, lng);
+      this.lastResolvedAddress = address;
+      this.lastGeocodedPosition = { lat, lng };
+    } catch (err) {
+      console.error('Failed to import or call reverseGeocodeOSM:', err);
+    }
+
     const loc: LiveLocation = {
       employeeId,
       lat,
       lng,
-      battery: 100,
+      battery: this.batteryLevel,
       speed: 0,
       accuracy: 5,
       timestamp: new Date().toISOString(),
-      isMock: false
+      isMock: false,
+      network: this.isOnline ? 'online' : 'offline',
+      address: this.lastResolvedAddress || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`
     };
 
     this.commitLiveLocationToSync(loc);
@@ -215,7 +241,6 @@ export class LocationManager {
     const dateStr = new Date().toISOString().split('T')[0];
     const routeId = `${loc.employeeId}_${dateStr}`;
     
-    // We fetch current route from queue or create fresh
     const queue = SyncEngineService.getQueue();
     const existingSyncRoute = queue.find(q => q.action === 'route_history' && q.payload.id === routeId);
 

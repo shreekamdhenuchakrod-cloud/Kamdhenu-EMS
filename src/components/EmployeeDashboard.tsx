@@ -3,12 +3,13 @@ import {
   AppDatabase, Employee, Payment, Earning, Deduction, 
   OvertimeEntry, LateFineEntry, AttendanceRecord, PunchSession, PaymentMode, AuditLogEntry, ApprovalRequest, LiveLocation, GeoFence
 } from '../types';
-import { calcEmployeeFinancials, getDaysInMonth, timeToHrs, getDistanceMeters, validateSessions } from '../db';
+import { calcEmployeeFinancials, getDaysInMonth, timeToHrs, getDistanceMeters, validateSessions, validatePunchRequestRules } from '../db';
 import Icon from './Icon';
 import SalarySlipPDF, { downloadSalarySlipPDF } from './SalarySlipPDF';
 import ApprovalPanel from './ApprovalPanel';
 import NotificationDesk from './NotificationDesk';
 import { LocationManagerService } from '../services/LocationManager';
+import { PlatformDeviceInfo } from '../services/platform/PlatformAbstraction';
 import { optimizeImage } from '../utils/imageOptimizer';
 
 interface EmployeeDashboardProps {
@@ -117,6 +118,8 @@ export default function EmployeeDashboard({
   const [isPunching, setIsPunching] = useState(false);
   const [punchSelfie, setPunchSelfie] = useState<string | null>(null);
   const [isPdfReady, setIsPdfReady] = useState(false);
+  const [punchType, setPunchType] = useState<'Punch In' | 'Punch Out'>('Punch In');
+  const [showPunchModal, setShowPunchModal] = useState(false);
 
   useEffect(() => {
     if (!employee || isDeviceBlocked) return;
@@ -223,34 +226,60 @@ export default function EmployeeDashboard({
       return;
     }
 
+    const todayDateStr = new Date().toISOString().split('T')[0];
+    const check = validatePunchRequestRules(employee.id, punchType, todayDateStr, db);
+    if (!check.valid) {
+      alert(check.reason || 'Punch request invalid.');
+      return;
+    }
+
+    setShowPunchModal(true);
+  };
+
+  const submitPunchRequest = async () => {
+    if (!gpsLoc) return;
+
     if (db.company?.enableSelfie && !punchSelfie) {
       alert(t('Selfie verification is mandatory to submit punch request.', 'पंच अनुरोध के लिए सेल्फी सत्यापन अनिवार्य है।'));
       return;
     }
 
     setIsPunching(true);
-    const reqCategory = nextAction === 'in' ? 'Punch In' : 'Punch Out';
-    
+    const todayDateStr = new Date().toISOString().split('T')[0];
+
+    const check = validatePunchRequestRules(employee.id, punchType, todayDateStr, db);
+    if (!check.valid) {
+      alert(check.reason || 'Punch request invalid.');
+      setIsPunching(false);
+      return;
+    }
+
+    try {
+      await LocationManagerService.forceLocationUpdate(employee.id, gpsLoc.lat, gpsLoc.lng);
+    } catch (e) {
+      console.warn('Failed to force location update:', e);
+    }
+
     const newReq: ApprovalRequest = {
       id: `_REQ_${Date.now()}`,
       employeeId: employee.id,
       employeeName: employee.name,
       employeePic: punchSelfie || employee.pic || '',
-      category: reqCategory,
-      date: new Date().toISOString().split('T')[0],
+      category: punchType,
+      date: todayDateStr,
       oldValue: todayAtt?.sessions ? JSON.stringify(todayAtt.sessions) : 'None',
       newValue: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
       reason: t('GeoFence punch verified by GPS', 'जीपीएस द्वारा जियोफेंस पंच सत्यापित'),
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
       status: 'Pending',
       gpsAccuracy: gpsLoc.accuracy,
-      gpsProvider: 'Web Browser Fused',
+      gpsProvider: gpsLoc.network === 'online' ? 'Web Browser Fused' : 'Offline Fused Cached',
       gpsLat: gpsLoc.lat,
       gpsLng: gpsLoc.lng,
-      gpsAddress: `Lat: ${gpsLoc.lat.toFixed(5)}, Lng: ${gpsLoc.lng.toFixed(5)}`,
+      gpsAddress: gpsLoc.address || `Lat: ${gpsLoc.lat.toFixed(5)}, Lng: ${gpsLoc.lng.toFixed(5)}`,
       deviceId: currentDevId || '',
-      deviceModel: navigator.userAgent.split(' ')[0] || 'Browser',
-      osVersion: navigator.platform || 'Web'
+      deviceModel: PlatformDeviceInfo.getDeviceInfo().model,
+      osVersion: PlatformDeviceInfo.getDeviceInfo().os
     };
 
     const updatedDb: AppDatabase = {
@@ -262,7 +291,7 @@ export default function EmployeeDashboard({
       id: `_NTF_${Date.now()}`,
       userId: 'admin',
       title: t('New Punch Request', 'नया पंच अनुरोध'),
-      message: `${employee.name} requested ${reqCategory} with accuracy ${gpsLoc.accuracy.toFixed(0)}m.`,
+      message: `${employee.name} requested ${punchType} with accuracy ${gpsLoc.accuracy.toFixed(0)}m.`,
       timestamp: new Date().toISOString(),
       read: false
     };
@@ -272,6 +301,7 @@ export default function EmployeeDashboard({
       onUpdateDb(updatedDb);
       alert(t('✓ Punch request submitted for Admin Approval!', '✓ पंच अनुरोध एडमिन स्वीकृति के लिए भेजा गया!'));
       setPunchSelfie(null);
+      setShowPunchModal(false);
     }
     setIsPunching(false);
   };
@@ -597,58 +627,167 @@ export default function EmployeeDashboard({
                 )
               ) : null}
 
-              {/* Selfie Mandatory Capture Widget */}
-              {insideGeoFence && db.company?.enableSelfie && (
-                <div className="border border-slate-150 rounded-2xl p-4 bg-slate-50 flex flex-col items-center justify-center space-y-3">
-                  <div className="text-[10px] font-black text-slate-550 uppercase tracking-wider">🤳 {t('Camera Selfie Verification Required', 'सेल्फी सत्यापन आवश्यक')}</div>
-                  
-                  {punchSelfie ? (
-                    <div className="relative w-28 h-28 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-black flex-shrink-0">
-                      <img src={punchSelfie} alt="Selfie preview" className="w-full h-full object-cover" />
-                      <button
-                        onClick={() => setPunchSelfie(null)}
-                        className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs cursor-pointer shadow-md"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center">
-                      <label className="h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm shadow-blue-500/10 active:scale-95 transition-all">
-                        <Icon name="photo_camera" size={16} />
-                        <span>{t('Capture Selfie', 'सेल्फी फोटो लें')}</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          capture="user"
-                          onChange={handleCameraCapture}
-                          className="hidden"
-                        />
-                      </label>
-                      <span className="text-[9px] text-slate-400 font-semibold mt-1.5">{t('Webcam will open instantly', 'कैमरा तुरंत खुल जाएगा')}</span>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Punch Type Selector */}
+              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() => setPunchType('Punch In')}
+                  className={`py-2 text-xs font-black rounded-xl cursor-pointer transition-all ${
+                    punchType === 'Punch In'
+                      ? 'bg-white text-slate-800 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {t('Punch In', 'पंच इन')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPunchType('Punch Out')}
+                  className={`py-2 text-xs font-black rounded-xl cursor-pointer transition-all ${
+                    punchType === 'Punch Out'
+                      ? 'bg-white text-slate-800 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {t('Punch Out', 'पंच आउट')}
+                </button>
+              </div>
 
-              {/* Punch Button Trigger */}
+              {/* Submit Punch Request Button (Opens Form Modal) */}
               <button
                 onClick={handlePunchClick}
-                disabled={isPunching || !gpsLoc || !insideGeoFence || (db.company?.enableSelfie && !punchSelfie)}
-                className={`w-full h-12 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] ${
-                  nextAction === 'in'
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/10 disabled:opacity-40'
-                    : 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-500/10 disabled:opacity-40'
-                }`}
+                disabled={!gpsLoc || !insideGeoFence}
+                className="w-full h-12 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/10 disabled:opacity-40"
               >
-                <Icon name={nextAction === 'in' ? 'login' : 'logout'} size={18} />
-                <span>
-                  {isPunching 
-                    ? t('Submitting...', 'भेजा जा रहा है...')
-                    : (nextAction === 'in' ? t('Punch In Request', 'पंच इन अनुरोध भेजें') : t('Punch Out Request', 'पंच आउट अनुरोध भेजें'))
-                  }
-                </span>
+                <Icon name="assignment_turned_in" size={18} />
+                <span>{t('Open Attendance Request Form', 'उपस्थिति अनुरोध प्रपत्र खोलें')}</span>
               </button>
+
+              {/* PUNCH REQUEST DETAIL FORM MODAL */}
+              {showPunchModal && (
+                <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+                  <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                      <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">{t('Submit Punch Request', 'पंच अनुरोध प्रपत्र')}</h3>
+                      <button 
+                        onClick={() => { setShowPunchModal(false); setPunchSelfie(null); }}
+                        className="text-slate-400 hover:text-slate-650 cursor-pointer"
+                      >
+                        <Icon name="close" size={20} />
+                      </button>
+                    </div>
+
+                    <div className="space-y-3.5 text-xs">
+                      {/* Request Type Summary */}
+                      <div className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-150 p-3 rounded-2xl">
+                        <div>
+                          <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Request Type', 'अनुरोध प्रकार')}</span>
+                          <span className={`font-black uppercase text-[11px] ${punchType === 'Punch In' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {punchType === 'Punch In' ? t('Punch In', 'पंच इन') : t('Punch Out', 'पंच आउट')}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Date & Time', 'दिनांक और समय')}</span>
+                          <span className="font-semibold text-slate-700">
+                            {new Date().toISOString().split('T')[0]} @ {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Location Information block */}
+                      <div className="space-y-2 border border-slate-150 p-3 rounded-2xl">
+                        <div className="text-[9px] uppercase tracking-wider text-slate-450 font-black">📍 {t('Proximity & GPS Details', 'स्थान एवं जीपीएस विवरण')}</div>
+                        <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-[10px] font-semibold text-slate-600">
+                          <div>
+                            <span className="text-[8px] text-slate-400 block">{t('GeoFence Target', 'जियोफेंस लक्ष्य')}</span>
+                            <span className="font-black text-slate-700">{closestFence ? closestFence.name : '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-[8px] text-slate-400 block">{t('Distance to Center', 'केन्द्र से दूरी')}</span>
+                            <span className="font-black text-slate-700">{distanceToFence !== null ? `${Math.round(distanceToFence)}m` : '—'}</span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-[8px] text-slate-400 block">{t('Coordinates', 'निर्देशांक')}</span>
+                            <span className="font-mono text-slate-700 font-bold">{gpsLoc?.lat.toFixed(6)}, {gpsLoc?.lng.toFixed(6)}</span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-[8px] text-slate-400 block">{t('Address', 'पता')}</span>
+                            <span className="text-slate-700 leading-normal block font-sans">{gpsLoc?.address || t('Resolving location address...', 'लोकेशन पता खोजा जा रहा है...')}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Hardware / Diagnostics summary */}
+                      <div className="grid grid-cols-3 gap-2 border border-slate-150 p-2.5 rounded-2xl text-[9px] text-slate-500 font-bold text-center">
+                        <div className="bg-slate-50 p-1.5 rounded-xl">
+                          <div className="text-slate-400 text-[8px] uppercase">{t('GPS Accuracy', 'सटीकता')}</div>
+                          <div className="font-black text-slate-700 mt-0.5">{gpsLoc ? `${gpsLoc.accuracy.toFixed(0)}m` : '—'}</div>
+                        </div>
+                        <div className="bg-slate-50 p-1.5 rounded-xl">
+                          <div className="text-slate-400 text-[8px] uppercase">{t('Battery', 'बैटरी')}</div>
+                          <div className="font-black text-slate-700 mt-0.5">{gpsLoc ? `${gpsLoc.battery}%` : '—'}</div>
+                        </div>
+                        <div className="bg-slate-50 p-1.5 rounded-xl">
+                          <div className="text-slate-400 text-[8px] uppercase">{t('Network', 'नेटवर्क')}</div>
+                          <div className={`font-black mt-0.5 ${gpsLoc?.network === 'online' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                            {gpsLoc ? (gpsLoc.network === 'online' ? t('Online', 'ऑनलाइन') : t('Offline', 'ऑफलाइन')) : '—'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Camera Selfie Verification Block */}
+                      <div className="border border-slate-150 rounded-2xl p-3 bg-slate-50 flex flex-col items-center justify-center space-y-2">
+                        <div className="text-[9px] font-black text-slate-550 uppercase tracking-wider">
+                          🤳 {t('Camera Selfie Verification', 'सेल्फी सत्यापन')} {db.company?.enableSelfie && <span className="text-rose-600 font-black">({t('Mandatory', 'अनिवार्य')})</span>}
+                        </div>
+                        
+                        {punchSelfie ? (
+                          <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-black flex-shrink-0">
+                            <img src={punchSelfie} alt="Selfie preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setPunchSelfie(null)}
+                              className="absolute top-1 right-1 bg-black/65 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] cursor-pointer"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center">
+                            <label className="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95">
+                              <Icon name="photo_camera" size={14} />
+                              <span>{t('Capture Selfie', 'सेल्फी फोटो लें')}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                capture="user"
+                                onChange={handleCameraCapture}
+                                className="hidden"
+                              />
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={submitPunchRequest}
+                        disabled={isPunching || !gpsLoc || (db.company?.enableSelfie && !punchSelfie)}
+                        className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md disabled:opacity-40 transition-all flex items-center justify-center"
+                      >
+                        {isPunching ? t('Submitting...', 'जमा किया जा रहा है...') : t('Submit Request', 'अनुरोध भेजें')}
+                      </button>
+                      <button
+                        onClick={() => { setShowPunchModal(false); setPunchSelfie(null); }}
+                        className="w-24 h-11 border border-slate-250 text-slate-650 bg-white rounded-xl text-xs font-bold hover:bg-slate-100 transition-all cursor-pointer"
+                      >
+                        {t('Cancel', 'रद्द करें')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Metric Cards Grid */}

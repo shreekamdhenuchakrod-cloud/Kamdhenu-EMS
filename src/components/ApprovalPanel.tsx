@@ -4,7 +4,7 @@ import {
 } from '../types';
 import Icon from './Icon';
 import TimeWheelPicker from './TimeWheelPicker';
-import { runPayrollTransaction } from '../db';
+import { runPayrollTransaction, getDistanceMeters } from '../db';
 
 interface ApprovalPanelProps {
   employeeId?: string; // defined if employee portal
@@ -89,6 +89,7 @@ export default function ApprovalPanel({
   // Admin rejection reason input
   const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string>('');
+  const [selectedRequestDetails, setSelectedRequestDetails] = useState<ApprovalRequest | null>(null);
 
   const formatTimeForDisplay = (time24?: string) => {
     if (!time24) return '—';
@@ -358,8 +359,17 @@ export default function ApprovalPanel({
             });
           } else {
             if (req.category === 'Punch In' || req.category === 'Late Entry') {
-              if (sessions.length > 0) sessions[0].in = req.newValue;
-              else sessions.push({ in: req.newValue, out: '' });
+              if (sessions.length > 0 && !sessions[sessions.length - 1].out) {
+                sessions[sessions.length - 1].in = req.newValue;
+              } else {
+                sessions.push({ in: req.newValue, out: '' });
+              }
+            } else if (req.category === 'Punch Out' || req.category === 'Early Exit') {
+              if (sessions.length > 0 && !sessions[sessions.length - 1].out) {
+                sessions[sessions.length - 1].out = req.newValue;
+              } else {
+                sessions.push({ in: '', out: req.newValue });
+              }
             } else {
               if (sessions.length > 0) sessions[0].out = req.newValue;
               else sessions.push({ in: '', out: req.newValue });
@@ -419,7 +429,10 @@ export default function ApprovalPanel({
         draft.notifications = [newNotification, ...(draft.notifications || [])];
       });
 
-      if (onUpdateDb) onUpdateDb(updatedDb);
+      if (onUpdateDb) {
+        onUpdateDb(updatedDb);
+      }
+      setSelectedRequestDetails(null);
     } catch (err: any) {
       alert(t('Transaction rolled back: ' + err.message, 'सौदा वापस ले लिया गया: ' + err.message));
     }
@@ -446,23 +459,98 @@ export default function ApprovalPanel({
       return r;
     });
 
-    const updatedDb: AppDatabase = { ...db, approvalRequests: updatedRequests };
+    try {
+      const updatedDb = runPayrollTransaction(db, (draft) => {
+        draft.approvalRequests = updatedRequests;
 
-    // Notification for employee
-    const newNotification = {
-      id: `_NTF_${Date.now()}`,
-      userId: targetReq.employeeId,
-      title: t('Request Rejected', 'अनुरोध अस्वीकृत'),
-      message: `${t('Your request for', 'आपका')} ${targetReq.category} ${t('on', 'पर')} ${targetReq.date} ${t('was rejected.', 'अस्वीकृत कर दिया गया है।')} ${t('Reason', 'कारण')}: ${rejectionReason}`,
-      timestamp: new Date().toISOString(),
-      read: false
-    };
-    updatedDb.notifications = [newNotification, ...(db.notifications || [])];
+        const newAudit: AuditLogEntry = {
+          id: `_AUD_${Date.now()}`,
+          adminName: draft.company?.name || 'Admin',
+          action: `${targetReq.category} Rejected`,
+          targetId: targetReq.employeeId,
+          targetName: targetReq.employeeName,
+          oldValue: targetReq.oldValue,
+          newValue: targetReq.newValue,
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          device: navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop Panel'
+        };
+        draft.auditLogs = [newAudit, ...(draft.auditLogs || [])];
 
-    if (onUpdateDb) onUpdateDb(updatedDb);
+        const newNotification = {
+          id: `_NTF_${Date.now()}`,
+          userId: targetReq.employeeId,
+          title: t('Request Rejected', 'अनुरोध अस्वीकृत'),
+          message: `${t('Your request for', 'का')} ${targetReq.category} ${t('on', 'पर')} ${targetReq.date} ${t('was rejected.', 'अस्वीकृत कर दिया गया है।')}`,
+          timestamp: new Date().toISOString(),
+          read: false
+        };
+        draft.notifications = [newNotification, ...(draft.notifications || [])];
+      });
 
-    setRejectingRequestId(null);
-    setRejectionReason('');
+      if (onUpdateDb) onUpdateDb(updatedDb);
+      setSelectedRequestDetails(null);
+      setRejectingRequestId(null);
+      setRejectionReason('');
+    } catch (err: any) {
+      alert(t('Rejection transaction failed: ' + err.message, 'अस्वीकृति विफलता: ' + err.message));
+    }
+  };
+
+  const handleReturnForCorrection = (reqId: string) => {
+    if (!rejectionReason.trim()) {
+      alert(t('Please provide a correction instruction remark!', 'कृपया सुधार निर्देश की टिप्पणी लिखें!'));
+      return;
+    }
+
+    const targetReq = requestsList.find(r => r.id === reqId);
+    if (!targetReq) return;
+
+    const updatedRequests = requestsList.map(r => {
+      if (r.id === reqId) {
+        return { 
+          ...r, 
+          status: 'Rejected' as const, 
+          rejectionReason: `${t('Returned for Correction:', 'सुधार के लिए लौटाया गया:')} ${rejectionReason.trim()}`
+        };
+      }
+      return r;
+    });
+
+    try {
+      const updatedDb = runPayrollTransaction(db, (draft) => {
+        draft.approvalRequests = updatedRequests;
+
+        const newAudit: AuditLogEntry = {
+          id: `_AUD_${Date.now()}`,
+          adminName: draft.company?.name || 'Admin',
+          action: `Returned for Correction`,
+          targetId: targetReq.employeeId,
+          targetName: targetReq.employeeName,
+          oldValue: targetReq.oldValue,
+          newValue: targetReq.newValue,
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          device: navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop Panel'
+        };
+        draft.auditLogs = [newAudit, ...(draft.auditLogs || [])];
+
+        const newNotification = {
+          id: `_NTF_${Date.now()}`,
+          userId: targetReq.employeeId,
+          title: t('Request Returned for Correction', 'अनुरोध सुधार के लिए लौटाया गया'),
+          message: `${t('Your request for', 'का')} ${targetReq.category} ${t('on', 'पर')} ${targetReq.date} ${t('was returned for correction.', 'को सुधार के लिए वापस भेजा गया है।')}`,
+          timestamp: new Date().toISOString(),
+          read: false
+        };
+        draft.notifications = [newNotification, ...(draft.notifications || [])];
+      });
+
+      if (onUpdateDb) onUpdateDb(updatedDb);
+      setSelectedRequestDetails(null);
+      setRejectingRequestId(null);
+      setRejectionReason('');
+    } catch (err: any) {
+      alert(t('Correction transaction failed: ' + err.message, 'सुधार विफलता: ' + err.message));
+    }
   };
 
   // Delete Request
@@ -1288,6 +1376,12 @@ export default function ApprovalPanel({
                     {isAdmin && req.status === 'Pending' && (
                       <>
                         <button
+                          onClick={() => setSelectedRequestDetails(req)}
+                          className="h-8 px-3 border border-blue-200 text-blue-650 hover:bg-blue-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97]"
+                        >
+                          {t('Review Details', 'विवरण देखें')}
+                        </button>
+                        <button
                           onClick={() => handleApprove(req)}
                           className="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97]"
                         >
@@ -1369,6 +1463,210 @@ export default function ApprovalPanel({
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {/* UNIFIED ADMIN APPROVAL REVIEW MODAL OVERLAY */}
+      {selectedRequestDetails && (
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-4 overflow-y-auto max-h-[90vh] animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">{t('Detailed Request Review', 'विस्तृत अनुरोध समीक्षा')}</h3>
+              <button 
+                onClick={() => { setSelectedRequestDetails(null); setRejectionReason(''); }}
+                className="text-slate-400 hover:text-slate-655 cursor-pointer"
+              >
+                <Icon name="close" size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="space-y-4 text-xs">
+              {/* Employee Bio */}
+              <div className="flex items-center gap-3 bg-slate-50 border border-slate-150 p-3 rounded-2xl">
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                  {selectedRequestDetails.employeePic ? (
+                    <img src={selectedRequestDetails.employeePic} alt={selectedRequestDetails.employeeName} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-500 text-sm">
+                      {selectedRequestDetails.employeeName.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="font-black text-slate-800 text-sm">{selectedRequestDetails.employeeName}</div>
+                  <div className="text-[10px] text-slate-450 font-bold uppercase">{selectedRequestDetails.employeeId} · {db.employees.find(e => e.id === selectedRequestDetails.employeeId)?.type || 'Daily'}</div>
+                </div>
+              </div>
+
+              {/* Request Parameters */}
+              <div className="grid grid-cols-2 gap-4 border border-slate-150 p-3 rounded-2xl bg-white">
+                <div>
+                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Category / Type', 'श्रेणी / प्रकार')}</span>
+                  <span className="font-extrabold text-slate-800 text-[11px]">{selectedRequestDetails.category}</span>
+                </div>
+                <div>
+                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Request Date', 'दिनांक')}</span>
+                  <span className="font-bold text-slate-700">{selectedRequestDetails.date}</span>
+                </div>
+                <div>
+                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Current Value', 'वर्तमान मान')}</span>
+                  <span className="font-semibold text-slate-550 line-through">{selectedRequestDetails.oldValue || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Requested Value', 'वांचित मान')}</span>
+                  <span className="font-black text-blue-650">{selectedRequestDetails.newValue}</span>
+                </div>
+              </div>
+
+              {/* GPS & Location Diagnostics */}
+              {selectedRequestDetails.gpsLat !== undefined && (
+                <div className="border border-slate-150 p-3 rounded-2xl bg-white space-y-2">
+                  <div className="text-[9px] uppercase tracking-wider text-slate-450 font-black">📍 {t('Proximity & GeoFence Match', 'समीपता एवं जियोफेंस मिलान')}</div>
+                  
+                  {/* Distance details */}
+                  {(() => {
+                    const assignedFence = db.geofences?.find(g => g.assignedStaff?.includes(selectedRequestDetails.employeeId));
+                    let distance = null;
+                    let isInside = false;
+                    if (assignedFence && selectedRequestDetails.gpsLat && selectedRequestDetails.gpsLng) {
+                      distance = getDistanceMeters(assignedFence.lat, assignedFence.lng, selectedRequestDetails.gpsLat, selectedRequestDetails.gpsLng);
+                      isInside = distance <= assignedFence.radius;
+                    }
+
+                    return (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-3 text-[10px] font-semibold text-slate-650">
+                          <div>
+                            <span className="text-[8px] text-slate-400 block">{t('Assigned GeoFence', 'असाइन किया गया जियोफेंस')}</span>
+                            <span className="font-black text-slate-700">{assignedFence ? assignedFence.name : '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-[8px] text-slate-400 block">{t('Distance to Center', 'केन्द्र से दूरी')}</span>
+                            <span className="font-black text-slate-700">{distance !== null ? `${Math.round(distance)} meters` : '—'}</span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-[8px] text-slate-400 block">{t('Coordinates', 'स्थान निर्देशांक')}</span>
+                            <span className="font-mono text-slate-700 font-bold">{selectedRequestDetails.gpsLat?.toFixed(6)}, {selectedRequestDetails.gpsLng?.toFixed(6)}</span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-[8px] text-slate-400 block">{t('Resolved GPS Address', 'जीपीएस द्वारा पता')}</span>
+                            <span className="text-slate-700 leading-normal block font-sans">{selectedRequestDetails.gpsAddress}</span>
+                          </div>
+                        </div>
+
+                        {assignedFence && (
+                          <div className={`p-2.5 rounded-xl border font-bold text-[10px] flex items-center gap-2 ${
+                            isInside 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                              : 'bg-rose-50 text-rose-700 border-rose-100 animate-pulse'
+                          }`}>
+                            <Icon name={isInside ? 'check_circle' : 'warning'} size={15} />
+                            <span>
+                              {isInside 
+                                ? t('Inside assigned GeoFence radius boundary.', 'जियोफेंस परिधि के अंदर (सत्यापित)') 
+                                : t('Outside assigned GeoFence boundary. Potential location spoof or mismatch!', 'जियोफेंस परिधि से बाहर (स्थान बेमेल)')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Hardware Diagnostics */}
+              <div className="border border-slate-150 p-3 rounded-2xl bg-white space-y-2">
+                <div className="text-[9px] uppercase tracking-wider text-slate-450 font-black">⚙️ {t('Device Info & Diagnostics', 'डिवाइस विवरण एवं डायग्नोस्टिक्स')}</div>
+                <div className="grid grid-cols-2 gap-3 text-[10px] font-semibold text-slate-655">
+                  <div>
+                    <span className="text-[8px] text-slate-400 block">{t('Device Model / OS', 'डिवाइस मॉडल / ओएस')}</span>
+                    <span className="text-slate-700">{selectedRequestDetails.deviceModel || '—'} ({selectedRequestDetails.osVersion || '—'})</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] text-slate-400 block">{t('Device UUID Locked', 'लॉक्ड डिवाइस UUID')}</span>
+                    <span className="font-mono text-slate-700 truncate block max-w-[180px]" title={selectedRequestDetails.deviceId}>{selectedRequestDetails.deviceId || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] text-slate-400 block">{t('GPS Accuracy & Provider', 'जीपीएस सटीकता')}</span>
+                    <span className={`font-bold ${selectedRequestDetails.gpsAccuracy && selectedRequestDetails.gpsAccuracy <= 30 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {selectedRequestDetails.gpsAccuracy ? `${selectedRequestDetails.gpsAccuracy.toFixed(0)}m` : '—'} ({selectedRequestDetails.gpsProvider || '—'})
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] text-slate-400 block">{t('Diagnostic Context', 'अतिरिक्त संदर्भ')}</span>
+                    <span className="text-slate-700">
+                      {t('Timestamp:', 'समय:')} {selectedRequestDetails.timestamp}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Previous Status Info */}
+              {(() => {
+                const todayStr = selectedRequestDetails.date;
+                const d = new Date(todayStr);
+                d.setDate(d.getDate() - 1);
+                const yesterdayStr = d.toISOString().split('T')[0];
+                const yesterdayAtt = db.attendance[`${selectedRequestDetails.employeeId}_${yesterdayStr}`];
+                const yesterdayStatus = yesterdayAtt ? yesterdayAtt.status : 'No Record';
+
+                return (
+                  <div className="bg-slate-50 border border-slate-150 p-3 rounded-2xl grid grid-cols-2 gap-2 text-[10px] font-bold">
+                    <div>
+                      <span className="text-[8px] text-slate-400 block uppercase">{t('Yesterday Attendance', 'कल की उपस्थिति')}</span>
+                      <span className="text-slate-700">{yesterdayStatus}</span>
+                    </div>
+                    <div>
+                      <span className="text-[8px] text-slate-400 block uppercase">{t('Reason for Submission', 'आवेदन का कारण')}</span>
+                      <span className="text-slate-700">{selectedRequestDetails.reason}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Remarks/Correction inputs */}
+              <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                <label className="text-[10px] font-black text-slate-550 uppercase block">{t('Admin Correction Remarks', 'अस्वीकृति या सुधार निर्देश टिप्पणी')}</label>
+                <input
+                  type="text"
+                  value={rejectionReason}
+                  onChange={e => setRejectionReason(e.target.value)}
+                  placeholder={t('Enter instruction notes or rejection reasons', 'टिप्पणी दर्ज करें (अस्वीकार या सुधार के लिए आवश्यक)')}
+                  className="w-full h-10 border border-slate-200 rounded-xl px-3 outline-none bg-slate-50 focus:border-blue-500 text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-2 border-t border-slate-100 pt-4 flex-wrap">
+              <button
+                onClick={() => handleApprove(selectedRequestDetails)}
+                className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md shadow-emerald-500/10 active:scale-95 transition-all"
+              >
+                {t('Approve', 'स्वीकारें')}
+              </button>
+              <button
+                onClick={() => handleReturnForCorrection(selectedRequestDetails.id)}
+                className="flex-1 h-11 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black cursor-pointer shadow-md shadow-amber-500/10 active:scale-95 transition-all"
+              >
+                {t('Return for Correction', 'सुधार के लिए लौटायें')}
+              </button>
+              <button
+                onClick={() => handleReject(selectedRequestDetails.id)}
+                className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md shadow-rose-500/10 active:scale-95 transition-all"
+              >
+                {t('Reject', 'अस्वीकारें')}
+              </button>
+              <button
+                onClick={() => { setSelectedRequestDetails(null); setRejectionReason(''); }}
+                className="w-24 h-11 border border-slate-255 bg-white text-slate-655 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all cursor-pointer"
+              >
+                {t('Close', 'बंद करें')}
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
 

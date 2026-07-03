@@ -184,6 +184,8 @@ export interface LiveLocation {
   accuracy: number;
   timestamp: string;
   isMock: boolean;
+  network?: string;
+  address?: string;
 }
 
 export interface RouteStop {

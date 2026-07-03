@@ -551,3 +551,86 @@ export function runPayrollTransaction(
     throw error;
   }
 }
+
+export function validatePunchRequestRules(
+  employeeId: string,
+  requestType: 'Punch In' | 'Punch Out',
+  dateStr: string,
+  db: AppDatabase
+): { valid: boolean; reason?: string } {
+  // 1. Get approved attendance sessions
+  const attRecord = db.attendance[`${employeeId}_${dateStr}`];
+  const approvedSessions: PunchSession[] = attRecord?.sessions || [];
+
+  // 2. Get pending and approved approval requests for this employee and date
+  const relatedReqs = (db.approvalRequests || [])
+    .filter(r => r.employeeId === employeeId && r.date === dateStr && (r.status === 'Pending' || r.status === 'Approved'))
+    .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+  const pendingReqs = relatedReqs.filter(r => r.status === 'Pending');
+
+  const timeline: { type: 'in' | 'out'; status: 'Approved' | 'Pending' }[] = [];
+
+  // Add approved events
+  approvedSessions.forEach(s => {
+    timeline.push({ type: 'in', status: 'Approved' });
+    if (s.out) {
+      timeline.push({ type: 'out', status: 'Approved' });
+    }
+  });
+
+  // Add pending events from pending approval requests
+  pendingReqs.forEach(r => {
+    if (r.category === 'Punch In') {
+      timeline.push({ type: 'in', status: 'Pending' });
+    } else if (r.category === 'Punch Out') {
+      timeline.push({ type: 'out', status: 'Pending' });
+    }
+  });
+
+  // Now, append the new proposed request
+  const newType = requestType === 'Punch In' ? 'in' : 'out';
+  timeline.push({ type: newType, status: 'Pending' });
+
+  // Validate timeline
+  let openSession = false;
+  let punchInCount = 0;
+  let punchOutCount = 0;
+
+  for (let i = 0; i < timeline.length; i++) {
+    const event = timeline[i];
+    if (event.type === 'in') {
+      punchInCount++;
+      if (openSession) {
+        return { 
+          valid: false, 
+          reason: 'Cannot Punch In: You already have an open session waiting for approval or active.' 
+        };
+      }
+      if (punchInCount > 2) {
+        return { 
+          valid: false, 
+          reason: 'Maximum limit of 2 working sessions per day reached (max 2 Punch Ins/day).' 
+        };
+      }
+      openSession = true;
+    } else { // out
+      punchOutCount++;
+      if (!openSession) {
+        return { 
+          valid: false, 
+          reason: 'Cannot Punch Out: No matching active/pending Punch In session found.' 
+        };
+      }
+      if (punchOutCount > 2) {
+        return { 
+          valid: false, 
+          reason: 'Maximum limit of 2 working sessions per day reached (max 2 Punch Outs/day).' 
+        };
+      }
+      openSession = false;
+    }
+  }
+
+  return { valid: true };
+}

@@ -666,44 +666,19 @@ export async function downloadSalarySlipPDF(employeeName: string, periodStr: str
     return false;
   }
 
-
-
-  const opts = {
-    scale: 2.0, // 2.0x resolution
-    useCORS: true,
-    allowTaint: false,
-    backgroundColor: '#ffffff',
-    logging: true, // Enable html2canvas logging
-    scrollX: 0,
-    scrollY: 0
-  };
-
   try {
-    const canvas1 = await html2canvas(page1, opts);
-    const imgData1 = canvas1.toDataURL('image/jpeg', 0.95);
-    
-    // A4 dimensions: 210mm x 297mm
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    
-    // Scale and center Page 1
-    const aspect1 = canvas1.height / canvas1.width;
-    const destHeight1 = Math.min(297, 210 * aspect1);
-    const yOffset1 = Math.max(0, (297 - destHeight1) / 2);
-    pdf.addImage(imgData1, 'JPEG', 0, yOffset1, 210, destHeight1);
-
-    pdf.addPage();
-    const canvas2 = await html2canvas(page2, opts);
-    const imgData2 = canvas2.toDataURL('image/jpeg', 0.95);
-    
-    // Scale and center Page 2
-    const aspect2 = canvas2.height / canvas2.width;
-    const destHeight2 = Math.min(297, 210 * aspect2);
-    const yOffset2 = Math.max(0, (297 - destHeight2) / 2);
-    pdf.addImage(imgData2, 'JPEG', 0, yOffset2, 210, destHeight2);
-
+    const { generateA4PDF } = await import('../utils/pdfGenerator');
     const filename = `SalarySlip_${employeeName.replace(/\s+/g, '_')}_${periodStr.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-    pdf.save(filename);
-    return true;
+
+    return await generateA4PDF(
+      [page1, page2],
+      filename,
+      {
+        employeeName,
+        generatedBy: 'Kamdhenu EMS System',
+        title: `Official Salary Slip - Period: ${periodStr}`
+      }
+    );
   } catch (error: any) {
     console.error('Error generating PDF', error);
     alert('Error generating PDF: ' + (error?.message || error));
