@@ -44,7 +44,7 @@ export class LocationManager {
    * Sets up active geofences for boundary crossing detection
    */
   public updateActiveGeoFences(geofences: GeoFence[], employeeId: string) {
-    this.activeGeoFences = geofences.filter(g => g.assignedStaff.includes(employeeId));
+    this.activeGeoFences = geofences.filter(g => g.assignedStaff && g.assignedStaff.includes(employeeId));
   }
 
   public startTracking(employeeId: string, onTick?: (loc: LiveLocation) => void) {

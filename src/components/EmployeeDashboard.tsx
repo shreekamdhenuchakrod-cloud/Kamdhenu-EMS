@@ -124,7 +124,7 @@ export default function EmployeeDashboard({
       setGpsLoc(loc);
 
       const fences = db.geofences || [];
-      const myFences = fences.filter(f => f.assignedStaff.includes(employee.id));
+      const myFences = fences.filter(f => f.assignedStaff && f.assignedStaff.includes(employee.id));
       LocationManagerService.updateActiveGeoFences(fences, employee.id);
 
       if (myFences.length > 0) {
