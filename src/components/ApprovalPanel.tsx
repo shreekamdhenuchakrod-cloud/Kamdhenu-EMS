@@ -90,6 +90,7 @@ export default function ApprovalPanel({
   const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string>('');
   const [selectedRequestDetails, setSelectedRequestDetails] = useState<ApprovalRequest | null>(null);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const formatTimeForDisplay = (time24?: string) => {
     if (!time24) return '—';
@@ -1482,20 +1483,39 @@ export default function ApprovalPanel({
 
             {/* Modal Body */}
             <div className="space-y-4 text-xs">
-              {/* Employee Bio */}
-              <div className="flex items-center gap-3 bg-slate-50 border border-slate-150 p-3 rounded-2xl">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+              {/* Employee Bio with large selfie */}
+              <div className="flex items-center gap-4 bg-slate-50 border border-slate-150 p-3 rounded-2xl">
+                {/* Selfie – tap to expand */}
+                <div
+                  className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100 shrink-0 cursor-pointer shadow-md hover:shadow-lg hover:scale-105 transition-all relative"
+                  onClick={() => selectedRequestDetails.employeePic && setLightboxSrc(selectedRequestDetails.employeePic)}
+                  title={selectedRequestDetails.employeePic ? 'Click to enlarge selfie' : ''}
+                >
                   {selectedRequestDetails.employeePic ? (
-                    <img src={selectedRequestDetails.employeePic} alt={selectedRequestDetails.employeeName} className="w-full h-full object-cover" />
+                    <>
+                      <img src={selectedRequestDetails.employeePic} alt={selectedRequestDetails.employeeName} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-all">
+                        <Icon name="zoom_in" size={20} className="text-white opacity-0 hover:opacity-100 drop-shadow" />
+                      </div>
+                    </>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-500 text-sm">
+                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-400 text-2xl">
                       {selectedRequestDetails.employeeName.charAt(0)}
                     </div>
                   )}
                 </div>
-                <div>
-                  <div className="font-black text-slate-800 text-sm">{selectedRequestDetails.employeeName}</div>
-                  <div className="text-[10px] text-slate-450 font-bold uppercase">{selectedRequestDetails.employeeId} · {db.employees.find(e => e.id === selectedRequestDetails.employeeId)?.type || 'Daily'}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-black text-slate-800 text-sm truncate">{selectedRequestDetails.employeeName}</div>
+                  <div className="text-[10px] text-slate-450 font-bold uppercase">{selectedRequestDetails.employeeId}</div>
+                  <div className="text-[10px] text-slate-500 font-bold">{db.employees.find(e => e.id === selectedRequestDetails.employeeId)?.type || 'Daily'}</div>
+                  {selectedRequestDetails.employeePic && (
+                    <button
+                      onClick={() => setLightboxSrc(selectedRequestDetails.employeePic!)}
+                      className="mt-1 text-[9px] font-bold text-blue-600 hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <Icon name="zoom_in" size={11} /> {t('View Selfie Full Size', 'सेल्फी बड़ी करें')}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1678,6 +1698,32 @@ export default function ApprovalPanel({
         initialValue={pickerMeta ? pickerMeta.initialVal : ''}
         onSave={handleSaveTimePicker}
       />
+
+      {/* SELFIE LIGHTBOX OVERLAY */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-4"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <div className="relative max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxSrc(null)}
+              className="absolute -top-10 right-0 text-white text-xs font-bold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full cursor-pointer"
+            >
+              ✕ {lang === 'en' ? 'Close' : 'बंद करें'}
+            </button>
+            <img
+              src={lightboxSrc}
+              alt="Employee Selfie"
+              className="w-full rounded-2xl shadow-2xl border-2 border-white/10"
+              style={{ maxHeight: '80vh', objectFit: 'contain' }}
+            />
+            <div className="text-center mt-3 text-white/60 text-[10px] font-semibold">
+              {lang === 'en' ? 'Tap outside to close' : 'बंद करने के लिए बाहर टैप करें'}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

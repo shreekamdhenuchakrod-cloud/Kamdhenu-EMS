@@ -405,3 +405,90 @@ html, body, #root {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* ==========================================
+   MOBILE RESPONSIVENESS GLOBAL UTILITIES
+   ========================================== */
+
+/* Prevent text overflow on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Words should not overflow cards on small screens */
+.break-words, p, span, div {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Mobile bottom nav safe padding */
+.mobile-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
+/* Leaflet Map - fix height on mobile */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 300px;
+}
+
+/* Fix for Leaflet controls on mobile */
+.leaflet-control-zoom {
+  margin: 8px !important;
+}
+
+/* Touch-friendly inputs */
+input, select, textarea, button {
+  touch-action: manipulation;
+}
+
+/* Avoid iOS zoom on input focus */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="email"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Fix card overflow on very small screens */
+@media screen and (max-width: 380px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .grid-cols-3 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* Safe-area aware bottom nav */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .fixed.bottom-4 {
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Scrollable modal on mobile */
+.modal-scroll {
+  max-height: min(90vh, 600px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Truncate long words in approval panel */
+.approval-card * {
+  max-width: 100%;
+}

@@ -2,11 +2,13 @@
   "name": "Kamdhenu Employee Management System",
   "short_name": "Kamdhenu EMS",
   "description": "Premium Payroll, Attendance & Staff Database for Shri Krishna Balram Gaushala.",
-  "start_url": "/",
+  "start_url": "/Kamdhenu-EMS/",
+  "scope": "/Kamdhenu-EMS/",
   "display": "standalone",
   "background_color": "#F8FAFC",
   "theme_color": "#2563EB",
   "orientation": "portrait-primary",
+  "lang": "hi-IN",
   "icons": [
     {
       "src": "icons/icon-192.png",

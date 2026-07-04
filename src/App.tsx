@@ -541,7 +541,7 @@ export default function App() {
   const pendingApprovalsCount = (db.approvalRequests || []).filter(r => r.status === 'Pending').length;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans select-none text-slate-800 pb-28 md:pb-0">
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       
       {/* Premium Desktop Sidebar Navigation */}
       <aside className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200/50 shrink-0 h-screen sticky top-0 p-6 justify-between shadow-2xs">
@@ -824,7 +824,7 @@ export default function App() {
       )}
 
       {/* Main Container Wrapper */}
-      <main className="flex-1 w-full max-w-md md:max-w-3xl lg:max-w-4xl mx-auto px-4 py-5 md:py-8 overflow-x-hidden md:h-screen md:overflow-y-auto">
+      <main className="flex-1 w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto px-3 md:px-6 pt-4 pb-24 md:pb-8 md:py-8 overflow-x-hidden md:h-screen md:overflow-y-auto">
         
         {/* Firebase Error Warning Banner */}
         {syncStatus === 'error' && (

@@ -2,21 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Kamdhenu EMS - Shree Krishna Balram Gaushala</title>
     
     <!-- Material Symbols Rounded & Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     
     <!-- PWA & Mobile Optimization Meta Tags -->
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
-    <link rel="apple-touch-icon" href="/icons/icon.svg" />
+    <link rel="manifest" href="/Kamdhenu-EMS/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/Kamdhenu-EMS/icons/icon.svg" />
+    <link rel="apple-touch-icon" href="/Kamdhenu-EMS/icons/icon.svg" />
     <meta name="theme-color" content="#2563EB" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kamdhenu EMS" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <!-- PDF Generation Libraries managed by NPM -->
+    <meta name="application-name" content="Kamdhenu EMS" />
+    <meta name="description" content="Shree Krishna Balram Gaushala - Employee Management System" />
+    
+    <!-- Prevent iOS bounce scrolling on body -->
+    <style>
+      html { height: 100%; overflow: hidden; }
+      body { height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; }
+      #root { min-height: 100%; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
@@ -26,7 +36,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('/Kamdhenu-EMS/sw.js')
             .then((reg) => console.log('✓ Service Worker registered:', reg.scope))
             .catch((err) => console.error('✗ Service Worker registration failed:', err));
         });
@@ -34,4 +44,3 @@
     </script>
   </body>
 </html>
-

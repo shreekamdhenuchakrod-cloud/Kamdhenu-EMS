@@ -25,9 +25,7 @@ export function detectRouteStops(path: { lat: number; lng: number; timestamp: st
   for (let i = 1; i < path.length; i++) {
     const startNode = path[startNodeIdx];
     const currentNode = path[i];
-    
     const distance = getDistanceMeters(startNode.lat, startNode.lng, currentNode.lat, currentNode.lng);
-    
     if (distance > 15) {
       const durationMs = new Date(path[i-1].timestamp).getTime() - new Date(startNode.timestamp).getTime();
       const durationMin = durationMs / (1000 * 60);
@@ -69,27 +67,33 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
   const [replayDate, setReplayDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [activeReplay, setActiveReplay] = useState<RouteHistory | null>(null);
   const [sliderIndex, setSliderIndex] = useState<number>(0);
+  const [showSidebar, setShowSidebar] = useState<boolean>(true);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const routeLineRef = useRef<L.Polyline | null>(null);
   const routeMarkersRef = useRef<L.Marker[]>([]);
   const sliderMarkerRef = useRef<L.Marker | null>(null);
 
-  // Calculate past 5 days
   const pastDates = Array.from({ length: 5 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - i);
     return d.toISOString().split('T')[0];
   });
 
+  // Initialize map
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) {
-      mapRef.current = L.map(mapContainerRef.current).setView([26.9124, 75.7873], 13); // Default Jaipur
+      mapRef.current = L.map(mapContainerRef.current, {
+        zoomControl: true,
+        attributionControl: true,
+      }).setView([26.9124, 75.7873], 13);
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
       }).addTo(mapRef.current);
     }
 
@@ -101,6 +105,13 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
     };
   }, []);
 
+  // Invalidate map size when sidebar toggles or fullscreen changes (critical for Leaflet!)
+  useEffect(() => {
+    setTimeout(() => {
+      mapRef.current?.invalidateSize();
+    }, 350);
+  }, [showSidebar, isFullscreen]);
+
   // Sync Live Location markers
   useEffect(() => {
     if (!mapRef.current) return;
@@ -108,7 +119,6 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
     const liveLocs = db.liveLocations || {};
     const employees = db.employees || [];
 
-    // Clear removed markers
     markersRef.current.forEach((marker, empId) => {
       if (!liveLocs[empId]) {
         marker.remove();
@@ -116,16 +126,14 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
       }
     });
 
-    // Draw/Update markers
     Object.keys(liveLocs).forEach(empId => {
       const loc = liveLocs[empId];
       const emp = employees.find(e => e.id === empId);
       if (!emp) return;
 
-      const markerColor = (Date.now() - new Date(loc.timestamp).getTime() < 300000) ? '#22c55e' : '#64748b';
+      const isRecent = Date.now() - new Date(loc.timestamp).getTime() < 300000;
       const lastSeenStr = new Date(loc.timestamp).toLocaleTimeString();
 
-      // Today hours & last punch calculation
       const todayDateStr = new Date().toISOString().split('T')[0];
       const attRecord = db.attendance[`${emp.id}_${todayDateStr}`];
       let todayHours = 0;
@@ -138,57 +146,67 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
           if (diffMs > 0) todayHours += diffMs / (1000 * 60 * 60);
         });
         const lastSession = attRecord.sessions[attRecord.sessions.length - 1];
-        lastPunchStr = lastSession.out 
-          ? `${t('Punched Out', 'बाहर निकले')} @ ${lastSession.out}`
-          : `${t('Punched In', 'अंदर आये')} @ ${lastSession.in}`;
+        lastPunchStr = lastSession.out
+          ? `${t('Out', 'बाहर')} @ ${lastSession.out}`
+          : `${t('In', 'अंदर')} @ ${lastSession.in}`;
       }
 
-      // GeoFence Distance Calculation
       const assignedFence = db.geofences?.find(g => g.assignedStaff && g.assignedStaff.includes(emp.id));
-      let fenceDistStr = t('No assigned GeoFence', 'कोई असाइन किया हुआ जियोफेंस नहीं');
+      let fenceDistStr = t('No GeoFence', 'कोई जियोफेंस नहीं');
       if (assignedFence) {
         const distance = getDistanceMeters(assignedFence.lat, assignedFence.lng, loc.lat, loc.lng);
-        fenceDistStr = `${Math.round(distance)}m from ${assignedFence.name}`;
+        const inside = distance <= assignedFence.radius;
+        fenceDistStr = `${Math.round(distance)}m ${inside ? '✅' : '⚠️'}`;
       }
 
       const isWorking = attRecord && attRecord.sessions?.some(s => !s.out);
 
       const popupHtml = `
-        <div class="font-sans text-xs space-y-1.5 p-1 w-56">
-          <div class="flex items-center gap-2 border-b pb-1.5 border-slate-100">
-            ${emp.pic ? `<img src="${emp.pic}" class="w-8 h-8 rounded-full object-cover" />` : `<div class="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">${emp.name.charAt(0)}</div>`}
+        <div style="font-family:system-ui,sans-serif;font-size:12px;min-width:200px;max-width:240px">
+          <div style="display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid #e2e8f0">
+            ${emp.pic ? `<img src="${emp.pic}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" />` : `<div style="width:36px;height:36px;background:#eff6ff;color:#3b82f6;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px">${emp.name.charAt(0)}</div>`}
             <div>
-              <div class="font-black text-slate-800 text-[12px] leading-tight">${emp.name}</div>
-              <div class="text-[9px] text-slate-400 font-bold uppercase">${emp.id} · ${emp.baseHours} ${t('hrs Shift', 'घंटे पाली')}</div>
+              <div style="font-weight:800;color:#1e293b;font-size:13px">${emp.name}</div>
+              <div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase">${emp.id}</div>
             </div>
           </div>
-          <div class="space-y-1 text-slate-650">
-            <div class="flex items-center justify-between">
-              <span><strong>${t('Status', 'स्थिति')}:</strong></span>
-              <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${isWorking ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-50 text-slate-600 border border-slate-200'}">
-                ${isWorking ? t('Working', 'कार्यरत') : t('Offline', 'ऑफलाइन')}
-              </span>
-            </div>
-            <div><strong>${t('Last Punch', 'अंतिम पंच')}:</strong> ${lastPunchStr}</div>
-            <div><strong>${t('Hours Today', 'आज के घंटे')}:</strong> ${todayHours.toFixed(2)} ${t('hrs', 'घंटे')}</div>
-            <div><strong>${t('Battery', 'बैटरी')}:</strong> ${loc.battery}% (${loc.network === 'online' ? 'Online' : 'Offline'})</div>
-            <div><strong>${t('Accuracy', 'सटीकता')}:</strong> ${loc.accuracy.toFixed(1)}m · ${loc.speed > 0 ? (loc.speed * 3.6).toFixed(1) + ' km/h' : t('Stationary', 'स्थिर')}</div>
-            <div><strong>${t('Fence Distance', 'जियोफेंस दूरी')}:</strong> ${fenceDistStr}</div>
-            <div class="text-[9.5px] border-t pt-1 border-slate-100 mt-1 leading-normal">
-              <strong>${t('Address', 'पता')}:</strong> <span class="font-sans text-slate-500">${loc.address || t('No address cache', 'कोई पता नहीं')}</span>
-            </div>
-            <div class="text-[8.5px] text-slate-400 text-right mt-1">${t('Last Seen', 'अंतिम देखा गया')}: ${lastSeenStr}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10px;color:#475569">
+            <div><strong style="color:#334155">${t('Status','स्थिति')}:</strong><br/><span style="background:${isWorking?'#f0fdf4':'#f8fafc'};color:${isWorking?'#16a34a':'#64748b'};padding:1px 6px;border-radius:4px;font-weight:700">${isWorking ? t('Working','कार्यरत') : t('Offline','ऑफलाइन')}</span></div>
+            <div><strong style="color:#334155">${t('Battery','बैटरी')}:</strong><br/>${loc.battery ?? '—'}%</div>
+            <div><strong style="color:#334155">${t('Hours','घंटे')}:</strong><br/>${todayHours.toFixed(1)} hrs</div>
+            <div><strong style="color:#334155">${t('Accuracy','सटीकता')}:</strong><br/>${loc.accuracy?.toFixed(0)}m</div>
+            <div style="grid-column:span 2"><strong style="color:#334155">${t('Last Punch','अंतिम पंच')}:</strong> ${lastPunchStr}</div>
+            <div style="grid-column:span 2"><strong style="color:#334155">${t('Fence','जियोफेंस')}:</strong> ${fenceDistStr}</div>
+            <div style="grid-column:span 2;font-size:9px;color:#94a3b8;border-top:1px solid #f1f5f9;padding-top:4px;margin-top:2px">${loc.address || '—'} · ${lastSeenStr}</div>
           </div>
         </div>
       `;
 
+      const iconHtml = `
+        <div style="position:relative">
+          <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${isRecent ? '#22c55e' : '#64748b'};overflow:hidden;background:#e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.2)">
+            ${emp.pic ? `<img src="${emp.pic}" style="width:100%;height:100%;object-fit:cover"/>` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#475569;font-size:14px">${emp.name.charAt(0)}</div>`}
+          </div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:12px;height:12px;border-radius:50%;background:${isRecent ? '#22c55e' : '#64748b'};border:2px solid white"></div>
+        </div>
+      `;
+
+      const customIcon = L.divIcon({
+        html: iconHtml,
+        className: '',
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -20],
+      });
+
       const marker = markersRef.current.get(empId);
       if (marker) {
         marker.setLatLng([loc.lat, loc.lng]);
+        marker.setIcon(customIcon);
         marker.setPopupContent(popupHtml);
       } else {
-        const newMarker = L.marker([loc.lat, loc.lng]).addTo(mapRef.current!);
-        newMarker.bindPopup(popupHtml);
+        const newMarker = L.marker([loc.lat, loc.lng], { icon: customIcon }).addTo(mapRef.current!);
+        newMarker.bindPopup(popupHtml, { maxWidth: 260, minWidth: 200 });
         markersRef.current.set(empId, newMarker);
       }
     });
@@ -198,242 +216,217 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Clear old route components
-    if (routeLineRef.current) {
-      routeLineRef.current.remove();
-      routeLineRef.current = null;
-    }
+    if (routeLineRef.current) { routeLineRef.current.remove(); routeLineRef.current = null; }
     routeMarkersRef.current.forEach(m => m.remove());
     routeMarkersRef.current = [];
-    if (sliderMarkerRef.current) {
-      sliderMarkerRef.current.remove();
-      sliderMarkerRef.current = null;
-    }
-
+    if (sliderMarkerRef.current) { sliderMarkerRef.current.remove(); sliderMarkerRef.current = null; }
     setSliderIndex(0);
 
-    if (!selectedEmpId || !replayDate) {
-      setActiveReplay(null);
-      return;
-    }
+    if (!selectedEmpId || !replayDate) { setActiveReplay(null); return; }
 
-    const histories = db.routeHistories || [];
-    const route = histories.find(r => r.employeeId === selectedEmpId && r.date === replayDate);
-
-    if (!route || !route.path || route.path.length === 0) {
-      setActiveReplay(null);
-      return;
-    }
+    const route = (db.routeHistories || []).find(r => r.employeeId === selectedEmpId && r.date === replayDate);
+    if (!route || !route.path || route.path.length === 0) { setActiveReplay(null); return; }
 
     setActiveReplay(route);
 
-    // Draw route path polyline
     const coords: [number, number][] = route.path.map(p => [p.lat, p.lng]);
-    routeLineRef.current = L.polyline(coords, {
-      color: '#4f46e5',
-      weight: 5,
-      opacity: 0.8
-    }).addTo(mapRef.current);
+    routeLineRef.current = L.polyline(coords, { color: '#4f46e5', weight: 5, opacity: 0.8 }).addTo(mapRef.current);
+    mapRef.current.fitBounds(L.latLngBounds(coords), { padding: [40, 40] });
 
-    // Focus map on bounds
-    const bounds = L.latLngBounds(coords);
-    mapRef.current.fitBounds(bounds, { padding: [40, 40] });
-
-    // Draw start marker
-    const startPoint = route.path[0];
-    const startMarker = L.circleMarker([startPoint.lat, startPoint.lng], {
-      radius: 8,
-      fillColor: '#10b981',
-      color: '#ffffff',
-      weight: 2,
-      fillOpacity: 0.9
-    }).addTo(mapRef.current);
-    startMarker.bindPopup(`<strong>Start Replay:</strong> ${new Date(startPoint.timestamp).toLocaleTimeString()}`);
+    const startMarker = L.circleMarker([route.path[0].lat, route.path[0].lng], { radius: 8, fillColor: '#10b981', color: '#fff', weight: 2, fillOpacity: 0.9 }).addTo(mapRef.current);
+    startMarker.bindPopup(`<strong>Start:</strong> ${new Date(route.path[0].timestamp).toLocaleTimeString()}`);
     routeMarkersRef.current.push(startMarker);
 
-    // Draw end marker
     if (coords.length > 1) {
       const endPoint = route.path[route.path.length - 1];
-      const endMarker = L.circleMarker([endPoint.lat, endPoint.lng], {
-        radius: 8,
-        fillColor: '#ef4444',
-        color: '#ffffff',
-        weight: 2,
-        fillOpacity: 0.9
-      }).addTo(mapRef.current);
-      endMarker.bindPopup(`<strong>Last Track Node:</strong> ${new Date(endPoint.timestamp).toLocaleTimeString()}`);
+      const endMarker = L.circleMarker([endPoint.lat, endPoint.lng], { radius: 8, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 0.9 }).addTo(mapRef.current);
+      endMarker.bindPopup(`<strong>End:</strong> ${new Date(endPoint.timestamp).toLocaleTimeString()}`);
       routeMarkersRef.current.push(endMarker);
     }
 
-    // Detect and draw route stops
-    const stopsList = detectRouteStops(route.path);
-    stopsList.forEach(stop => {
-      const stopMarker = L.circleMarker([stop.lat, stop.lng], {
-        radius: 7,
-        fillColor: '#f59e0b', // Amber
-        color: '#ffffff',
-        weight: 1.5,
-        fillOpacity: 0.9
-      }).addTo(mapRef.current!);
-      stopMarker.bindPopup(`<strong>Stop duration:</strong> ${stop.durationMin} mins<br/><strong>Arrival:</strong> ${new Date(stop.startTime).toLocaleTimeString()}<br/><strong>Departure:</strong> ${new Date(stop.endTime).toLocaleTimeString()}`);
+    detectRouteStops(route.path).forEach(stop => {
+      const stopMarker = L.circleMarker([stop.lat, stop.lng], { radius: 7, fillColor: '#f59e0b', color: '#fff', weight: 1.5, fillOpacity: 0.9 }).addTo(mapRef.current!);
+      stopMarker.bindPopup(`<strong>Stop:</strong> ${stop.durationMin} min<br/>${new Date(stop.startTime).toLocaleTimeString()} – ${new Date(stop.endTime).toLocaleTimeString()}`);
       routeMarkersRef.current.push(stopMarker);
     });
-
   }, [selectedEmpId, replayDate, db.routeHistories]);
 
-  // Handle slider marker movement
+  // Slider marker
   useEffect(() => {
-    if (!mapRef.current || !activeReplay || !activeReplay.path || activeReplay.path.length === 0) return;
-
+    if (!mapRef.current || !activeReplay?.path?.length) return;
     const idx = Math.min(sliderIndex, activeReplay.path.length - 1);
     const node = activeReplay.path[idx];
-
     if (sliderMarkerRef.current) {
       sliderMarkerRef.current.setLatLng([node.lat, node.lng]);
     } else {
       sliderMarkerRef.current = L.marker([node.lat, node.lng]).addTo(mapRef.current);
     }
-    sliderMarkerRef.current.bindPopup(`<strong>Replay Node Index:</strong> ${idx + 1}<br/><strong>Time:</strong> ${new Date(node.timestamp).toLocaleTimeString()}`).openPopup();
+    sliderMarkerRef.current.bindPopup(`<strong>${idx + 1}/${activeReplay.path.length}</strong><br/>${new Date(node.timestamp).toLocaleTimeString()}`).openPopup();
   }, [sliderIndex, activeReplay]);
 
-  // Calculations for total statistics
+  // Stats
   let totalDistanceKm = '0.00';
   let totalTravelHrs = '0.00';
   let stopsCount = 0;
-
-  if (activeReplay && activeReplay.path && activeReplay.path.length > 0) {
+  if (activeReplay?.path?.length) {
     let dist = 0;
     for (let i = 1; i < activeReplay.path.length; i++) {
       dist += getDistanceMeters(activeReplay.path[i-1].lat, activeReplay.path[i-1].lng, activeReplay.path[i].lat, activeReplay.path[i].lng);
     }
     totalDistanceKm = (dist / 1000).toFixed(2);
-
     const st = new Date(activeReplay.path[0].timestamp).getTime();
     const et = new Date(activeReplay.path[activeReplay.path.length - 1].timestamp).getTime();
     totalTravelHrs = ((et - st) / (1000 * 60 * 60)).toFixed(2);
-
     stopsCount = detectRouteStops(activeReplay.path).length;
   }
 
   const activeEmployee = db.employees.find(e => e.id === selectedEmpId);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[78vh]">
-      {/* Sidebar - Staff List & Replays Controls */}
-      <div className="lg:col-span-1 bg-white border border-slate-150 p-4 rounded-2xl shadow-2xs flex flex-col space-y-4 overflow-y-auto">
-        <div>
-          <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">{t('Live Staff Directory', 'लाइव कर्मचारी सूची')}</h3>
-          <p className="text-[9px] font-semibold text-slate-400 mt-1">{t('Select an employee to view tracking and route replays.', 'ट्रैकिंग और रूट रिप्ले देखने के लिए कर्मचारी चुनें।')}</p>
-        </div>
+    <div className={`flex flex-col h-[calc(100vh-120px)] md:h-[78vh] gap-3 ${isFullscreen ? 'fixed inset-0 z-50 bg-white p-2 h-screen' : ''}`}>
+      
+      {/* Mobile toolbar */}
+      <div className="flex items-center justify-between gap-2 md:hidden">
+        <button
+          onClick={() => setShowSidebar(!showSidebar)}
+          className="flex items-center gap-1.5 px-3 h-9 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 cursor-pointer shadow-xs"
+        >
+          <Icon name={showSidebar ? 'close' : 'people'} size={16} />
+          {showSidebar ? t('Hide List', 'सूची बंद') : t('Staff List', 'कर्मचारी')}
+        </button>
+        <span className="text-xs font-bold text-slate-500">
+          {Object.keys(db.liveLocations || {}).length} {t('online', 'ऑनलाइन')}
+        </span>
+        <button
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          className="flex items-center gap-1.5 px-3 h-9 bg-blue-600 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+        >
+          <Icon name={isFullscreen ? 'fullscreen_exit' : 'fullscreen'} size={16} />
+          {isFullscreen ? t('Exit', 'बाहर') : t('Full Map', 'पूरा मानचित्र')}
+        </button>
+      </div>
 
-        {/* Staff Directory Selector */}
-        <div className="space-y-2 flex-1">
-          {db.employees.map(emp => {
-            const loc = db.liveLocations?.[emp.id];
-            const isOnline = loc ? (Date.now() - new Date(loc.timestamp).getTime() < 300000) : false;
-            const isSelected = selectedEmpId === emp.id;
-
-            return (
-              <div
-                key={emp.id}
-                onClick={() => setSelectedEmpId(isSelected ? null : emp.id)}
-                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all hover:bg-slate-50 ${
-                  isSelected ? 'border-blue-500 bg-blue-50/20' : 'border-slate-100 bg-white'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="relative">
-                    {emp.pic ? (
-                      <img src={emp.pic} alt={emp.name} className="w-8 h-8 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-655 flex items-center justify-center font-bold text-xs">
-                        {emp.name.charAt(0)}
-                      </div>
-                    )}
-                    <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
-                      isOnline ? 'bg-emerald-500' : 'bg-slate-400'
-                    }`} />
-                  </div>
-                  <div>
-                    <div className="text-xs font-black text-slate-800">{emp.name}</div>
-                    <div className="text-[9px] text-slate-450 font-bold uppercase">{emp.type} · {emp.id}</div>
-                  </div>
-                </div>
-                <Icon name={isSelected ? 'radio_button_checked' : 'chevron_right'} size={16} className="text-slate-400" />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Replay controller */}
-        {selectedEmpId && activeEmployee && (
-          <div className="border-t border-slate-100 pt-3 space-y-3 animate-in fade-in duration-200">
-            <div className="text-[10px] font-black text-slate-500 uppercase tracking-wider">⏱ {t('Route Replay Settings', 'रूट रिप्ले सेटिंग्स')}</div>
-            <div className="fld">
-              <label>{t('Select Date (Past 5 Days)', 'तारीख चुनें')}</label>
-              <select
-                value={replayDate}
-                onChange={e => setReplayDate(e.target.value)}
-                className="fi text-xs h-9 px-2"
-              >
-                {pastDates.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+      <div className="flex flex-1 gap-3 overflow-hidden">
+        {/* Sidebar */}
+        {(showSidebar || window.innerWidth >= 768) && (
+          <div className="w-full md:w-72 lg:w-64 bg-white border border-slate-150 p-3 rounded-2xl shadow-xs flex flex-col gap-3 overflow-y-auto shrink-0 md:block">
+            <div>
+              <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">{t('Live Staff', 'लाइव कर्मचारी')}</h3>
+              <p className="text-[9px] font-semibold text-slate-400 mt-0.5">{t('Tap to view replay', 'रिप्ले के लिए टैप करें')}</p>
             </div>
 
-            {activeReplay ? (
-              <div className="space-y-3">
-                <div className="text-[10px] text-slate-600 bg-blue-50/50 border border-blue-100 p-2.5 rounded-xl space-y-1.5">
-                  <div className="font-bold border-b pb-1 border-blue-200 uppercase tracking-wider text-[8.5px]">{t('Replay Statistics', 'रिप्ले आंकड़े')}</div>
-                  <div>🚶‍♂️ {t('Track Nodes', 'ट्रैक नोड्स')}: {activeReplay.path.length}</div>
-                  <div>📏 {t('Distance', 'दूरी')}: {totalDistanceKm} km</div>
-                  <div>⏳ {t('Travel Time', 'यात्रा समय')}: {totalTravelHrs} hrs</div>
-                  <div>🛑 {t('Stops Detected', 'स्टॉप मिले')}: {stopsCount}</div>
-                </div>
+            <div className="space-y-1.5 flex-1">
+              {db.employees.map(emp => {
+                const loc = db.liveLocations?.[emp.id];
+                const isOnline = loc ? (Date.now() - new Date(loc.timestamp).getTime() < 300000) : false;
+                const isSelected = selectedEmpId === emp.id;
+                return (
+                  <div
+                    key={emp.id}
+                    onClick={() => {
+                      setSelectedEmpId(isSelected ? null : emp.id);
+                      if (window.innerWidth < 768) setShowSidebar(false);
+                    }}
+                    className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                      isSelected ? 'border-blue-500 bg-blue-50' : 'border-slate-100 bg-white hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="relative shrink-0">
+                        {emp.pic ? (
+                          <img src={emp.pic} alt={emp.name} className="w-8 h-8 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs">
+                            {emp.name.charAt(0)}
+                          </div>
+                        )}
+                        <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${isOnline ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-black text-slate-800 truncate">{emp.name}</div>
+                        <div className="text-[9px] text-slate-400 font-bold">{emp.type}</div>
+                      </div>
+                    </div>
+                    <Icon name={isSelected ? 'radio_button_checked' : 'chevron_right'} size={14} className="text-slate-400 shrink-0" />
+                  </div>
+                );
+              })}
+            </div>
 
-                {/* Timeline slider control */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-[9px] font-black text-slate-450 uppercase">
-                    <span>{t('Timeline Slider', 'टाइमलाइन स्लाइडर')}</span>
-                    <span>{sliderIndex + 1} / {activeReplay.path.length}</span>
+            {/* Replay controller */}
+            {selectedEmpId && activeEmployee && (
+              <div className="border-t border-slate-100 pt-3 space-y-2">
+                <div className="text-[9px] font-black text-slate-500 uppercase tracking-wider">⏱ {t('Route Replay', 'रूट रिप्ले')}</div>
+                <select
+                  value={replayDate}
+                  onChange={e => setReplayDate(e.target.value)}
+                  className="w-full h-8 border border-slate-200 rounded-lg px-2 text-[10px] font-semibold bg-white outline-none"
+                >
+                  {pastDates.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+
+                {activeReplay ? (
+                  <div className="space-y-2">
+                    <div className="text-[9px] text-slate-600 bg-blue-50 border border-blue-100 p-2 rounded-xl space-y-1">
+                      <div className="font-bold border-b pb-1 border-blue-200 uppercase text-[8px]">{t('Stats', 'आंकड़े')}</div>
+                      <div>📏 {totalDistanceKm} km · ⏳ {totalTravelHrs} hrs</div>
+                      <div>🛑 {stopsCount} {t('stops', 'स्टॉप')} · 🗺 {activeReplay.path.length} {t('nodes', 'नोड्स')}</div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                        <span>{t('Timeline', 'टाइमलाइन')}</span>
+                        <span>{sliderIndex + 1}/{activeReplay.path.length}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max={activeReplay.path.length - 1}
+                        value={sliderIndex}
+                        onChange={e => setSliderIndex(parseInt(e.target.value))}
+                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        style={{ touchAction: 'none' }}
+                      />
+                      <div className="text-[8px] text-slate-400 font-bold text-center">
+                        {new Date(activeReplay.path[sliderIndex]?.timestamp || '').toLocaleTimeString()}
+                      </div>
+                    </div>
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max={activeReplay.path.length - 1}
-                    value={sliderIndex}
-                    onChange={e => setSliderIndex(parseInt(e.target.value))}
-                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-                  <div className="text-[8px] text-slate-400 font-bold text-center">
-                    {new Date(activeReplay.path[sliderIndex]?.timestamp || '').toLocaleTimeString()}
-                  </div>
-                </div>
+                ) : (
+                  <div className="text-[9px] text-slate-400 italic">{t('No history for this date.', 'इस तारीख के लिए कोई इतिहास नहीं।')}</div>
+                )}
               </div>
-            ) : (
-              <div className="text-[10px] text-slate-450 italic">{t('No route history found for this date.', 'इस तारीख के लिए कोई रूट इतिहास नहीं मिला।')}</div>
             )}
           </div>
         )}
-      </div>
 
-      {/* Map Container */}
-      <div className="lg:col-span-3 bg-white border border-slate-150 p-4 rounded-2xl shadow-2xs relative flex flex-col">
-        {selectedEmpId && activeEmployee && (
-          <div className="absolute top-6 left-6 z-20 bg-white/95 backdrop-blur-xs border border-slate-200 p-3 rounded-xl shadow-md flex items-center gap-3">
-            <div className="text-xs font-semibold">
-              <span className="font-black text-slate-800">{t('Viewing Replay', 'रिप्ले देखें')}</span>: {activeEmployee.name} ({replayDate})
+        {/* Map Container */}
+        <div className="flex-1 bg-white border border-slate-150 rounded-2xl shadow-xs relative overflow-hidden min-h-0">
+          {selectedEmpId && activeEmployee && (
+            <div className="absolute top-3 left-3 z-20 bg-white/95 backdrop-blur-xs border border-slate-200 px-3 py-2 rounded-xl shadow-md flex items-center gap-2 max-w-[90%]">
+              <div className="text-[10px] font-semibold text-slate-700 truncate">
+                <span className="font-black text-slate-800">{activeEmployee.name}</span> · {replayDate}
+              </div>
+              <button
+                onClick={() => setSelectedEmpId(null)}
+                className="text-[9px] font-black text-rose-600 cursor-pointer shrink-0"
+              >
+                ✕
+              </button>
             </div>
-            <button
-              onClick={() => setSelectedEmpId(null)}
-              className="text-[10px] font-black text-rose-600 hover:underline cursor-pointer flex items-center gap-0.5 uppercase"
-            >
-              ✕ {t('Exit Replay', 'बाहर निकलें')}
-            </button>
-          </div>
-        )}
-        <div ref={mapContainerRef} className="w-full flex-1 rounded-xl overflow-hidden border border-slate-100 z-10" />
+          )}
+          
+          {/* Desktop fullscreen button */}
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="hidden md:flex absolute top-3 right-3 z-20 w-8 h-8 bg-white border border-slate-200 rounded-lg items-center justify-center cursor-pointer shadow-xs hover:bg-slate-50"
+            title="Toggle fullscreen"
+          >
+            <Icon name={isFullscreen ? 'fullscreen_exit' : 'fullscreen'} size={16} className="text-slate-600" />
+          </button>
+
+          <div ref={mapContainerRef} className="w-full h-full" />
+        </div>
       </div>
     </div>
   );

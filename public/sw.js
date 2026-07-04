@@ -1,11 +1,12 @@
-const CACHE_NAME = 'kamdhenu-ems-v2';
+const BASE = '/Kamdhenu-EMS';
+const CACHE_NAME = 'kamdhenu-ems-v3';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/fonts/material-symbols-rounded.ttf',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/fonts/material-symbols-rounded.ttf',
+  BASE + '/icons/icon-192.png',
+  BASE + '/icons/icon-512.png',
 ];
 
 // Install Service Worker and Pre-cache Core Shell
@@ -13,7 +14,14 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Pre-caching offline shell');
-      return cache.addAll(ASSETS_TO_CACHE);
+      // addAll can fail if any resource 404s, use individual puts
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map(url =>
+          fetch(url).then(res => {
+            if (res.ok) cache.put(url, res);
+          }).catch(() => {})
+        )
+      );
     }).then(() => self.skipWaiting())
   );
 });
@@ -40,30 +48,37 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // Skip Firebase Firestore, auth, APIs, and non-GET requests
-  if (request.method !== 'GET' || url.hostname.includes('firestore.googleapis.com') || url.hostname.includes('firebase')) {
+  if (
+    request.method !== 'GET' ||
+    url.hostname.includes('firestore.googleapis.com') ||
+    url.hostname.includes('firebase') ||
+    url.hostname.includes('googleapis.com')
+  ) {
     return;
   }
 
-  // Handle SPA Navigation requests - serve index.html if offline
+  // Handle SPA Navigation requests - always serve index.html
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).catch(() => {
-        return caches.match('/index.html') || caches.match('/');
+        return caches.match(BASE + '/index.html') ||
+               caches.match(BASE + '/') ||
+               fetch(BASE + '/index.html');
       })
     );
     return;
   }
 
-  // Cache-First with Network-Update for Static Assets (Vite hashes are immutable)
+  // Cache-First with Network-Update for Static Assets
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch new version in background to update cache for next time
+        // Update cache in background
         fetch(request).then((networkResponse) => {
-          if (networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
           }
-        }).catch(() => {/* Ignore network errors offline */});
+        }).catch(() => {});
         return cachedResponse;
       }
 
@@ -72,17 +87,15 @@ self.addEventListener('fetch', (event) => {
         if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
           return networkResponse;
         }
-        // Cache newly fetched asset
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(request, responseToCache);
         });
         return networkResponse;
       }).catch((err) => {
-        console.error('[Service Worker] Fetch failed:', err);
-        // Fallback for image requests if network fails
+        console.warn('[Service Worker] Fetch failed:', err);
         if (request.headers.get('accept')?.includes('image')) {
-          return caches.match('/icons/icon-192.png');
+          return caches.match(BASE + '/icons/icon-192.png');
         }
       });
     })
