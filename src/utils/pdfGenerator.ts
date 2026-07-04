@@ -32,6 +32,12 @@ export async function generateA4PDF(
 
       if (i > 0) pdf.addPage();
 
+      // Temporarily force A4 width in pixels (794px @ 96DPI) to prevent mobile responsive squishing
+      const originalWidth = pageElement.style.width;
+      const originalMaxWidth = pageElement.style.maxWidth;
+      pageElement.style.width = '794px';
+      pageElement.style.maxWidth = '794px';
+
       // ---- Capture page as high-res canvas ----
       const canvas = await html2canvas(pageElement, {
         scale: 3,            // 3x = crisp on retina
@@ -41,9 +47,12 @@ export async function generateA4PDF(
         logging: false,
         scrollX: 0,
         scrollY: -window.scrollY,
-        windowWidth: pageElement.scrollWidth,
-        windowHeight: pageElement.scrollHeight,
+        windowWidth: 794,
       });
+
+      // Restore original styles
+      pageElement.style.width = originalWidth;
+      pageElement.style.maxWidth = originalMaxWidth;
 
       const imgData = canvas.toDataURL('image/png');   // PNG – lossless, no JPEG blur
 

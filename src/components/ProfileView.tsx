@@ -24,6 +24,8 @@ import TimeWheelPicker from "./TimeWheelPicker";
 import InlineDurationPicker from "./InlineDurationPicker";
 import SalarySlipPDF, { downloadSalarySlipPDF } from "./SalarySlipPDF";
 import LocalSalaryDisplay from "./LocalSalaryDisplay";
+import { dbService } from "../services/db";
+import { optimizeImage } from "../utils/imageOptimizer";
 
 const formatHrsMins = (h: number): string => {
   const hh = Math.floor(h);
@@ -1047,14 +1049,15 @@ export default function ProfileView({
                   accept="image/*"
                   id="profile-pic-uploader-el"
                   className="hidden"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const rdr = new FileReader();
-                      rdr.onload = () => {
-                        setEditForm({ ...editForm, pic: rdr.result as string });
-                      };
-                      rdr.readAsDataURL(file);
+                      try {
+                        const optimizedBase64 = await optimizeImage(file);
+                        setEditForm({ ...editForm, pic: optimizedBase64 });
+                      } catch (err: any) {
+                        alert("Image optimization failed: " + err.message);
+                      }
                     }
                   }}
                 />

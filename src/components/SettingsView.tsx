@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Icon from './Icon';
 import { AppDatabase, CompanySettings, PaymentMode } from '../types';
 import { calcEmployeeFinancials } from '../db';
+import { optimizeImage } from '../utils/imageOptimizer';
 
 interface SettingsViewProps {
   db: AppDatabase;
@@ -123,22 +124,22 @@ export default function SettingsView({
   };
 
   // Upload/Remove logo
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const rdr = new FileReader();
-    rdr.onload = () => {
-      const base64Str = rdr.result as string;
+    try {
+      const optimizedBase64 = await optimizeImage(file);
       const updatedCompany: CompanySettings = {
         ...company,
-        logo: base64Str
+        logo: optimizedBase64
       };
       onUpdateDb({ ...db, company: updatedCompany });
       setSaveStatus(t('✓ Logo uploaded successfully!', '✓ लोगो अपलोड हो गया है!'));
       setTimeout(() => setSaveStatus(''), 4000);
-    };
-    rdr.readAsDataURL(file);
+    } catch (err: any) {
+      alert("Image optimization failed: " + err.message);
+    }
   };
 
   const handleRemoveLogo = () => {

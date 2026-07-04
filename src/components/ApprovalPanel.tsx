@@ -736,15 +736,17 @@ export default function ApprovalPanel({
 
       {/* FILTER BAR */}
       {(isAdmin || (!isAdmin && empView === 'list')) && (
-        <div className="bg-white border border-slate-200/50 p-4 rounded-2xl shadow-3xs flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="text-[10px] text-slate-450 font-bold uppercase tracking-wider">{t('Filter:', 'फ़िल्टर:')}</div>
-            
+        <div className="bg-white border border-slate-200/50 p-4 rounded-2xl shadow-3xs flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="text-[10px] text-slate-450 font-bold uppercase tracking-wider shrink-0">
+            {t('Filter:', 'फ़िल्टर:')}
+          </div>
+          
+          <div className="flex gap-2 w-full sm:flex-1">
             {/* Category Filter */}
             <select
               value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
-              className="h-8 px-2.5 rounded-lg border border-slate-200 bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer"
+              className="h-9 px-2.5 rounded-lg border border-slate-200 bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer flex-1 min-w-0 truncate"
             >
               <option value="All">{t('All Categories', 'सभी श्रेणियां')}</option>
               {categories.map((c, idx) => (
@@ -756,12 +758,12 @@ export default function ApprovalPanel({
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value as any)}
-              className="h-8 px-2.5 rounded-lg border border-slate-200 bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer"
+              className="h-9 px-2.5 rounded-lg border border-slate-200 bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer flex-1 min-w-0 truncate"
             >
               <option value="Pending">{t('Pending Requests', 'लंबित अनुरोध')}</option>
-              <option value="Approved">{t('Approved History', 'स्वीकृत इतिहास')}</option>
-              <option value="Rejected">{t('Rejected History', 'अस्वीकृत इतिहास')}</option>
-              <option value="All">{t('All History', 'संपूर्ण इतिहास')}</option>
+              <option value="Approved">{t('Approved', 'स्वीकृत')}</option>
+              <option value="Rejected">{t('Rejected', 'अस्वीकृत')}</option>
+              <option value="All">{t('All', 'सभी')}</option>
             </select>
           </div>
         </div>
@@ -1367,30 +1369,30 @@ export default function ApprovalPanel({
                 )}
 
                 {/* Action panel */}
-                <div className="flex justify-between items-center border-t border-slate-50 pt-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t border-slate-50 pt-3">
                   <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
                     {t('Submitted:', 'भेजा गया:')} {req.timestamp}
                   </span>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 w-full sm:w-auto">
                     {/* Admin actions */}
                     {isAdmin && req.status === 'Pending' && (
                       <>
                         <button
                           onClick={() => setSelectedRequestDetails(req)}
-                          className="h-8 px-3 border border-blue-200 text-blue-650 hover:bg-blue-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97]"
+                          className="flex-1 sm:flex-none h-8 px-2 border border-blue-200 text-blue-650 hover:bg-blue-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97] whitespace-nowrap"
                         >
-                          {t('Review Details', 'विवरण देखें')}
+                          {t('Review', 'विवरण देखें')}
                         </button>
                         <button
                           onClick={() => handleApprove(req)}
-                          className="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97]"
+                          className="flex-1 sm:flex-none h-8 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97] whitespace-nowrap"
                         >
                           {t('Approve', 'स्वीकारें')}
                         </button>
                         <button
                           onClick={() => setRejectingRequestId(req.id)}
-                          className="h-8 px-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97]"
+                          className="flex-1 sm:flex-none h-8 px-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97] whitespace-nowrap"
                         >
                           {t('Reject', 'अस्वीकारें')}
                         </button>
@@ -1413,13 +1415,13 @@ export default function ApprovalPanel({
                       <>
                         <button
                           onClick={() => loadEditRequest(req)}
-                          className="h-8 px-3 border border-slate-200 text-slate-655 hover:bg-slate-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors"
+                          className="flex-1 sm:flex-none h-8 px-3 border border-slate-200 text-slate-655 hover:bg-slate-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors whitespace-nowrap"
                         >
                           {t('Edit', 'संपादित करें')}
                         </button>
                         <button
                           onClick={() => handleCancelRequest(req.id)}
-                          className="h-8 px-3 border border-rose-100 text-rose-600 hover:bg-rose-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors"
+                          className="flex-1 sm:flex-none h-8 px-3 border border-rose-100 text-rose-600 hover:bg-rose-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors whitespace-nowrap"
                         >
                           {t('Cancel', 'रद्द करें')}
                         </button>

@@ -111,12 +111,18 @@ export default function AttendanceView({
   };
 
   const handleDayShift = (days: number) => {
-    const dt = new Date(attDate + 'T00:00:00');
+    const [y, m, d] = attDate.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
     dt.setDate(dt.getDate() + days);
     
-    // Lock forward dating past Today
-    const todayStr = new Date().toISOString().split('T')[0];
-    const newDs = dt.toISOString().split('T')[0];
+    const yy = dt.getFullYear();
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    const dd = String(dt.getDate()).padStart(2, '0');
+    const newDs = `${yy}-${mm}-${dd}`;
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
     if (newDs <= todayStr) {
       setAttDate(newDs);
       setExpandedId(null); // Close active row on date shift to prevent mismatch
@@ -376,11 +382,18 @@ export default function AttendanceView({
           type="date"
           value={attDate}
           max={new Date().toISOString().split('T')[0]}
+          onClick={(e) => {
+            try {
+              if ('showPicker' in e.currentTarget) {
+                (e.currentTarget as any).showPicker();
+              }
+            } catch (err) {}
+          }}
           onChange={(e) => {
             setAttDate(e.target.value);
             setExpandedId(null);
           }}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 block"
         />
 
         <div className="flex items-center gap-3">
@@ -396,7 +409,7 @@ export default function AttendanceView({
         </div>
 
         {/* Prevent click bubbling for navigation buttons */}
-        <div className="flex items-center gap-1.5 z-20">
+        <div className="flex items-center gap-1.5 relative z-20">
           <button
             onClick={(e) => {
               e.stopPropagation();

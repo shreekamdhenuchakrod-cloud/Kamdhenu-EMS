@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { EmployeeType, EmployeeStatus } from '../types';
 import Icon from './Icon';
+import { optimizeImage } from '../utils/imageOptimizer';
 
 interface AddStaffViewProps {
   onSave: (data: {
@@ -32,15 +33,16 @@ export default function AddStaffView({ onSave, onGoBack, lang }: AddStaffViewPro
 
   const t = (en: string, hi: string) => (lang === 'en' ? en : hi);
 
-  const handlePicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPicBase64(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const optimizedBase64 = await optimizeImage(file);
+      setPicBase64(optimizedBase64);
+    } catch (err: any) {
+      alert("Image optimization failed: " + err.message);
+    }
   };
 
   const handleNextStep = () => {
