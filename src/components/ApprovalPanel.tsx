@@ -55,7 +55,8 @@ export default function ApprovalPanel({
   const [reason, setReason] = useState<string>('');
   
   // Daily/Monthly Status Form State
-  const [statusVal, setStatusVal] = useState<'Present' | 'Absent' | 'Half Day'>('Present');
+  const [statusVal, setStatusVal] = useState<'Present' | 'Absent' | 'Half Day' | 'Overtime'>('Present');
+  const [overtimeDuration, setOvertimeDuration] = useState<string>('02:00');
 
   // Hourly Punch Sessions Form State
   const getCurrentTimeHHmm = () => {
@@ -81,7 +82,7 @@ export default function ApprovalPanel({
 
   // Time Picker states
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerMeta, setPickerMeta] = useState<{ sessionIdx: number; field: 'in' | 'out'; initialVal: string } | null>(null);
+  const [pickerMeta, setPickerMeta] = useState<{ sessionIdx: number; field: 'in' | 'out' | 'overtime'; initialVal: string } | null>(null);
 
   // Edit Request State
   const [editingRequest, setEditingRequest] = useState<ApprovalRequest | null>(null);
@@ -143,8 +144,13 @@ export default function ApprovalPanel({
           out: s.outEnabled ? s.outTime : ''
         })));
       } else {
-        category = 'Attendance Correction';
-        newVal = statusVal;
+        if (statusVal === 'Overtime') {
+          category = 'Overtime';
+          newVal = JSON.stringify({ hours: overtimeDuration });
+        } else {
+          category = 'Attendance Correction';
+          newVal = statusVal;
+        }
       }
     } else {
       // Payment Correction Request
@@ -341,9 +347,7 @@ export default function ApprovalPanel({
         } else if (
           req.category === 'Punch In' || 
           req.category === 'Punch Out' || 
-          req.category === 'Late Entry' || 
-          req.category === 'Early Exit' ||
-          req.category === 'Overtime'
+          req.category === 'Early Exit'
         ) {
           const key = `${req.employeeId}_${req.date}`;
           const existingRec = draft.attendance[key] || {};
@@ -382,6 +386,28 @@ export default function ApprovalPanel({
             status: 'Present',
             sessions
           };
+        } else if (req.category === 'Overtime') {
+          let otHours = 0;
+          try {
+            if (req.newValue.includes('{')) {
+              otHours = parseFloat(JSON.parse(req.newValue).hours);
+            } else {
+              otHours = parseFloat(req.newValue);
+            }
+          } catch(e) {}
+          
+          if (otHours > 0) {
+            draft.overtimeEntries = draft.overtimeEntries || [];
+            draft.overtimeEntries.push({
+              id: `_OT_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+              employeeId: req.employeeId,
+              date: req.date,
+              hours: otHours,
+              calcType: 'HourlyRate',
+              amount: 0,
+              description: 'Overtime Request Approved'
+            });
+          }
         } else if (req.category === 'Payment') {
           const parsed = JSON.parse(req.newValue);
           draft.payments = draft.payments.map(p => 
@@ -577,7 +603,7 @@ export default function ApprovalPanel({
     }
 
     return true;
-  });
+  }).sort((a, b) => new Date(b.timestamp.replace(' ', 'T')).getTime() - new Date(a.timestamp.replace(' ', 'T')).getTime());
 
   // Load request for editing
   const loadEditRequest = (req: ApprovalRequest) => {
@@ -692,6 +718,11 @@ export default function ApprovalPanel({
   const handleSaveTimePicker = (finalTime24: string) => {
     if (!pickerMeta) return;
     const { sessionIdx, field } = pickerMeta;
+    if (field === 'overtime') {
+      setOvertimeDuration(finalTime24);
+      setPickerOpen(false);
+      return;
+    }
     setPunchSessions(punchSessions.map((s, idx) => {
       if (idx === sessionIdx) {
         return {
@@ -705,6 +736,19 @@ export default function ApprovalPanel({
   };
 
   const myPayments = db.payments.filter(p => p.employeeId === (employeeId || ''));
+
+  const getCategoryHi = (cat: string) => {
+    switch(cat) {
+      case 'GeoFence Attendance': return 'जियोफेंस से हाजिरी';
+      case 'Attendance Correction': return 'मैनुअल हाजिरी सुधार';
+      case 'Punch In': return 'पंच इन (सुधार)';
+      case 'Punch Out': return 'पंच आउट (सुधार)';
+      case 'Payment': return 'भुगतान सुधार';
+      case 'Overtime': return 'ओवरटाइम (अतिरिक्त समय)';
+      case 'Leave': return 'छुट्टी';
+      default: return cat;
+    }
+  };
 
   return (
     <div className="w-full space-y-5 animate-in fade-in duration-200">
@@ -720,19 +764,30 @@ export default function ApprovalPanel({
           </span>
         </div>
 
-        {!isAdmin && empView === 'list' && (
+        </div>
+
+        <div className="flex gap-2 items-center">
           <button
-            onClick={() => {
-              setRequestType('attendance');
-              setEmpView('new_request');
-            }}
-            className="h-9 px-4 bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-blue-500/10"
+            onClick={() => window.location.reload()}
+            className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-100 active:scale-[0.97] transition cursor-pointer shrink-0"
+            title={t('Refresh', 'रीफ्रेश')}
           >
-            <Icon name="add" size={16} />
-            <span>{t('New Request', 'नया अनुरोध')}</span>
+            <Icon name="refresh" size={18} />
           </button>
-        )}
-      </div>
+
+          {!isAdmin && empView === 'list' && (
+            <button
+              onClick={() => {
+                setRequestType('attendance');
+                setEmpView('new_request');
+              }}
+              className="h-9 px-4 bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-blue-500/10 shrink-0 whitespace-nowrap"
+            >
+              <Icon name="add" size={16} />
+              <span>{t('New Request', 'नया अनुरोध')}</span>
+            </button>
+          )}
+        </div>
 
       {/* FILTER BAR */}
       {(isAdmin || (!isAdmin && empView === 'list')) && (
@@ -915,9 +970,28 @@ export default function ApprovalPanel({
                       <option value="Present">{t('Present (उपस्थित)', 'Present')}</option>
                       <option value="Absent">{t('Absent (अनुपस्थित)', 'Absent')}</option>
                       <option value="Half Day">{t('Half Day (आधा दिन)', 'Half Day')}</option>
+                      <option value="Overtime">{t('Overtime (अतिरिक्त समय)', 'Overtime')}</option>
                     </select>
                   </div>
                 )}
+                
+                {employeeType !== 'Hourly' && statusVal === 'Overtime' && (
+                  <div className="fld animate-in slide-in-from-top-2 duration-200">
+                    <label>{t('Overtime Duration (HH:MM)', 'ओवरटाइम अवधि')}</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPickerMeta({ sessionIdx: 0, field: 'overtime', initialVal: overtimeDuration });
+                        setPickerOpen(true);
+                      }}
+                      className="h-9 border border-slate-250 rounded-lg px-3 text-sm font-bold w-full bg-white flex items-center justify-between cursor-pointer"
+                    >
+                      <span>{overtimeDuration}</span>
+                      <Icon name="schedule" size={16} className="text-slate-400" />
+                    </button>
+                  </div>
+                )}
+
               </>
             )}
 
@@ -1176,7 +1250,25 @@ export default function ApprovalPanel({
                       <option value="Present">{t('Present (उपस्थित)', 'Present')}</option>
                       <option value="Absent">{t('Absent (अनुपस्थित)', 'Absent')}</option>
                       <option value="Half Day">{t('Half Day (आधा दिन)', 'Half Day')}</option>
+                      <option value="Overtime">{t('Overtime (अतिरिक्त समय)', 'Overtime')}</option>
                     </select>
+                  </div>
+                )}
+                
+                {employeeType !== 'Hourly' && statusVal === 'Overtime' && (
+                  <div className="fld animate-in slide-in-from-top-2 duration-200">
+                    <label>{t('Overtime Duration (HH:MM)', 'ओवरटाइम अवधि')}</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPickerMeta({ sessionIdx: 0, field: 'overtime', initialVal: overtimeDuration });
+                        setPickerOpen(true);
+                      }}
+                      className="h-9 border border-slate-250 rounded-lg px-3 text-sm font-bold w-full bg-white flex items-center justify-between cursor-pointer"
+                    >
+                      <span>{overtimeDuration}</span>
+                      <Icon name="schedule" size={16} className="text-slate-400" />
+                    </button>
                   </div>
                 )}
               </>
@@ -1303,7 +1395,7 @@ export default function ApprovalPanel({
                     <div>
                       {isAdmin && <div className="text-xs font-extrabold text-slate-900">{req.employeeName}</div>}
                       <div className="text-[10px] text-slate-450 font-bold uppercase tracking-wider flex items-center gap-1.5 flex-wrap">
-                        <span>{t(req.category, req.category)} · {req.date}</span>
+                        <span>{t(req.category, getCategoryHi(req.category))} · {req.date}</span>
                         {req.gpsAccuracy !== undefined && (
                           req.gpsAccuracy <= 30 ? (
                             <span className="inline-flex items-center gap-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[8px] font-black px-1.5 py-0.2 rounded-md">

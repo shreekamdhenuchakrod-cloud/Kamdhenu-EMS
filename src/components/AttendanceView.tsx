@@ -248,7 +248,7 @@ export default function AttendanceView({
         hours: numHours,
         calcType,
         amount: calcType === 'HourlyRate' ? 0 : numAmount,
-        description: description || 'Overtime'
+        description: description || ''
       };
 
       if (idx !== -1) {
@@ -284,7 +284,7 @@ export default function AttendanceView({
         hours: numHours,
         calcType,
         amount: calcType === 'HourlyRate' ? 0 : numAmount,
-        description: description || 'Fine'
+        description: description || ''
       };
 
       if (idx !== -1) {

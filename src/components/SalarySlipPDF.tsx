@@ -469,7 +469,7 @@ export default function SalarySlipPDF({
                   <tr key={`payment-${idx}`} className="font-medium text-slate-650">
                     <td className="px-4 py-1.5">{row.date}</td>
                     <td className="px-4 py-1.5"><span className="bg-slate-100 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase">{row.mode}</span></td>
-                    <td className="px-4 py-1.5 truncate max-w-[150px]">{row.desc || t('Salary Disbursed', 'वेतन भुगतान')}</td>
+                    <td className="px-4 py-1.5 truncate max-w-[150px]">{row.desc}</td>
                     <td className="px-4 py-1.5 text-right font-bold text-slate-850">{renderValue(row.amount)}</td>
                   </tr>
                 ))

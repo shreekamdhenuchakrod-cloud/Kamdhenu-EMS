@@ -210,7 +210,26 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
         markersRef.current.set(empId, newMarker);
       }
     });
-  }, [db.liveLocations, db.employees, lang]);
+
+    if (Object.keys(liveLocs).length > 0 && !activeReplay) {
+      let boundsToFit: L.LatLngBounds;
+      
+      if (selectedEmpId && liveLocs[selectedEmpId]) {
+        // If an employee is selected, focus on them
+        const loc = liveLocs[selectedEmpId];
+        boundsToFit = L.latLngBounds([[loc.lat, loc.lng]]);
+      } else {
+        // Otherwise fit all live locations
+        boundsToFit = L.latLngBounds(
+          Object.values(liveLocs).map(loc => [loc.lat, loc.lng])
+        );
+      }
+      
+      if (boundsToFit.isValid()) {
+        mapRef.current.fitBounds(boundsToFit, { padding: [50, 50], maxZoom: 16 });
+      }
+    }
+  }, [db.liveLocations, db.employees, lang, selectedEmpId, activeReplay]);
 
   // Handle Route Replay Drawing
   useEffect(() => {

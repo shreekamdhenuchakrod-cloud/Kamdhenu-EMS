@@ -474,7 +474,7 @@ export default function ProfileView({
     const { id, amount, date, description, time } = earningForm;
     const numAmt = parseFloat(amount);
 
-    if (isNaN(numAmt) || numAmt <= 0 || !date || !description.trim()) {
+    if (isNaN(numAmt) || numAmt <= 0 || !date) {
       alert(
         t("Fill all required earning fields", "कृपया सभी आवश्यक फ़ील्ड भरें"),
       );
@@ -520,7 +520,7 @@ export default function ProfileView({
     const { id, amount, date, description, time } = deductionForm;
     const numAmt = parseFloat(amount);
 
-    if (isNaN(numAmt) || numAmt <= 0 || !date || !description.trim()) {
+    if (isNaN(numAmt) || numAmt <= 0 || !date) {
       alert(
         t("Fill all required deduction fields", "कृपया सभी आवश्यक फ़ील्ड भरें"),
       );
@@ -3134,7 +3134,7 @@ export default function ProfileView({
               </div>
               <div className="fld">
                 <label className="text-xs font-bold block mb-1">
-                  {t("Description (Bonus, Extra Work, Cow Dung Work, Incentive) *", "विवरण (बोनस, अतिरिक्त कार्य, गोबर कार्य, आदि) *")}
+                  {t("Description (Bonus, Extra Work, Cow Dung Work, Incentive)", "विवरण (बोनस, अतिरिक्त कार्य, गोबर कार्य, आदि)")}
                 </label>
                 <input
                   type="text"
@@ -3233,7 +3233,7 @@ export default function ProfileView({
               </div>
               <div className="fld">
                 <label className="text-xs font-bold block mb-1">
-                  {t("Description (Damage, Penalty, Advance Recovery) *", "विवरण (नुकसान, जुर्माना, अग्रिम वसूली) *")}
+                  {t("Description (Damage, Penalty, Advance Recovery)", "विवरण (नुकसान, जुर्माना, अग्रिम वसूली)")}
                 </label>
                 <input
                   type="text"

@@ -62,13 +62,14 @@ function WheelColumn<T>({
     isDraggingRef.current = false;
     
     const targetOffset = -slots * ITEM_HEIGHT;
-    const duration = 150; // Super responsive and satisfying 150ms animation
+    const duration = 120; // Faster and more magnetic
     const startTime = performance.now();
     
     const animate = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const ease = progress * (2 - progress); // Ease out quad
+      // Ease out cubic for a snappier, magnetic settle
+      const ease = 1 - Math.pow(1 - progress, 3);
       const currentOffset = startFromOffset + (targetOffset - startFromOffset) * ease;
       
       setDragOffset(currentOffset);
