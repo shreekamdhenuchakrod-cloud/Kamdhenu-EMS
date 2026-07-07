@@ -120,6 +120,29 @@ export default function EmployeeDashboard({
   const [isPdfReady, setIsPdfReady] = useState(false);
   const [punchType, setPunchType] = useState<'Punch In' | 'Punch Out'>('Punch In');
   const [showPunchModal, setShowPunchModal] = useState(false);
+  const [locationBlocked, setLocationBlocked] = useState(false);
+  const [locationChecked, setLocationChecked] = useState(false);
+
+  // Check GPS permission on mount
+  useEffect(() => {
+    if (!employee || isDeviceBlocked) return;
+    if (!navigator.geolocation) {
+      setLocationBlocked(true);
+      setLocationChecked(true);
+      return;
+    }
+    navigator.permissions?.query({ name: 'geolocation' }).then(result => {
+      if (result.state === 'denied') {
+        setLocationBlocked(true);
+      }
+      setLocationChecked(true);
+      result.addEventListener('change', () => {
+        setLocationBlocked(result.state === 'denied');
+      });
+    }).catch(() => {
+      setLocationChecked(true);
+    });
+  }, [employee?.id, isDeviceBlocked]);
 
   useEffect(() => {
     if (!employee || isDeviceBlocked) return;
@@ -173,17 +196,48 @@ export default function EmployeeDashboard({
             <Icon name="phonelink_lock" size={32} />
           </div>
           <div className="space-y-2">
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">{t('Device Authorization Required', 'डिवाइस प्रमाणीकरण आवश्यक')}</h2>
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">{t('Device Approval Pending', 'डिवाइस अप्रूवल बाकी है')}</h2>
             <p className="text-xs text-slate-500 font-semibold leading-relaxed">
-              {t('Your employee account is currently bound to another device. A registration request for this device has been sent to the administrator. Please contact your manager to approve this request.', 'आपका कर्मचारी खाता वर्तमान में किसी अन्य डिवाइस से जुड़ा हुआ है। इस डिवाइस के लिए पंजीकरण अनुरोध व्यवस्थापक को भेजा गया है। कृपया अपने प्रबंधक से संपर्क करें।')}
+              {t('This device needs admin approval. Request sent. Please contact your manager.', 'यह डिवाइस admin मंजूरी के लिए भेजा गया है। अपने मैनेजर से संपर्क करें।')}
             </p>
           </div>
-          <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-[10px] text-slate-450 font-bold text-left space-y-1">
-            <div>📲 Device ID: <span className="font-mono text-slate-700">{currentDevId}</span></div>
-            <div>📌 Account Status: <span className="text-amber-600">Pending Admin Approval</span></div>
+          <button onClick={onLogout} className="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black cursor-pointer transition-all">
+            {t('Logout', 'लॉगआउट')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // GPS Location Mandatory Blocker
+  if (locationChecked && locationBlocked) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center select-none">
+        <div className="max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mx-auto">
+            <Icon name="location_off" size={32} />
           </div>
-          <button onClick={onLogout} className="w-full h-11 bg-slate-100 hover:bg-slate-250 text-slate-700 rounded-xl text-xs font-black cursor-pointer transition-all">
-            {t('Log Out of Portal', 'पोर्टल से लॉगआउट')}
+          <div className="space-y-2">
+            <h2 className="text-sm font-black text-slate-900">{t('Location Required', 'लोकेशन ON करें')}</h2>
+            <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+              {t('Please enable location/GPS to use this app. Go to browser settings → Site Permissions → Location → Allow.', 'इस एप का उपयोग करने के लिए Location ON करें। ब्राउज़र सेटिंग जाएँ → Site Permissions → Location → Allow')}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setLocationBlocked(false);
+              setLocationChecked(false);
+              navigator.geolocation?.getCurrentPosition(
+                () => { setLocationChecked(true); },
+                () => { setLocationBlocked(true); setLocationChecked(true); }
+              );
+            }}
+            className="w-full h-11 bg-blue-600 text-white rounded-xl text-xs font-black cursor-pointer"
+          >
+            {t('Try Again', 'दोबारा कोशिश करें')}
+          </button>
+          <button onClick={onLogout} className="w-full h-9 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold cursor-pointer">
+            {t('Logout', 'लॉगआउट')}
           </button>
         </div>
       </div>
@@ -217,7 +271,12 @@ export default function EmployeeDashboard({
 
   const handlePunchClick = () => {
     if (!gpsLoc) {
-      alert(t('GPS coordinates not loaded yet. Please wait...', 'जीपीएस निर्देशांक लोड नहीं हुए। कृपया प्रतीक्षा करें...'));
+      alert(t('GPS not loaded yet. Please wait...', 'GPS लोड नहीं हुआ। कृपया इंतजार करें...'));
+      return;
+    }
+
+    if (gpsLoc.isMock) {
+      alert(t('⚠️ Fake GPS Detected! Spoofed/mock GPS apps are not allowed. Please disable fake GPS and try again.', '⚠️ नकली GPS पकड़ा गया! Fake GPS ऐप बंद करें और दोबारा कोशिश करें।'));
       return;
     }
 
@@ -681,7 +740,7 @@ export default function EmployeeDashboard({
                       {/* Request Type Summary */}
                       <div className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-150 p-3 rounded-2xl">
                         <div>
-                          <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Request Type', 'अनुरोध प्रकार')}</span>
+                          <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Request', 'अनुरोध')}</span>
                           <span className={`font-black uppercase text-[11px] ${punchType === 'Punch In' ? 'text-emerald-600' : 'text-rose-600'}`}>
                             {punchType === 'Punch In' ? t('Punch In', 'पंच इन') : t('Punch Out', 'पंच आउट')}
                           </span>
@@ -694,51 +753,10 @@ export default function EmployeeDashboard({
                         </div>
                       </div>
 
-                      {/* Location Information block */}
-                      <div className="space-y-2 border border-slate-150 p-3 rounded-2xl">
-                        <div className="text-[9px] uppercase tracking-wider text-slate-450 font-black">📍 {t('Proximity & GPS Details', 'स्थान एवं जीपीएस विवरण')}</div>
-                        <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-[10px] font-semibold text-slate-600">
-                          <div>
-                            <span className="text-[8px] text-slate-400 block">{t('GeoFence Target', 'जियोफेंस लक्ष्य')}</span>
-                            <span className="font-black text-slate-700">{closestFence ? closestFence.name : '—'}</span>
-                          </div>
-                          <div>
-                            <span className="text-[8px] text-slate-400 block">{t('Distance to Center', 'केन्द्र से दूरी')}</span>
-                            <span className="font-black text-slate-700">{distanceToFence !== null ? `${Math.round(distanceToFence)}m` : '—'}</span>
-                          </div>
-                          <div className="col-span-2">
-                            <span className="text-[8px] text-slate-400 block">{t('Coordinates', 'निर्देशांक')}</span>
-                            <span className="font-mono text-slate-700 font-bold">{gpsLoc?.lat.toFixed(6)}, {gpsLoc?.lng.toFixed(6)}</span>
-                          </div>
-                          <div className="col-span-2">
-                            <span className="text-[8px] text-slate-400 block">{t('Address', 'पता')}</span>
-                            <span className="text-slate-700 leading-normal block font-sans">{gpsLoc?.address || t('Resolving location address...', 'लोकेशन पता खोजा जा रहा है...')}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Hardware / Diagnostics summary */}
-                      <div className="grid grid-cols-3 gap-2 border border-slate-150 p-2.5 rounded-2xl text-[9px] text-slate-500 font-bold text-center">
-                        <div className="bg-slate-50 p-1.5 rounded-xl">
-                          <div className="text-slate-400 text-[8px] uppercase">{t('GPS Accuracy', 'सटीकता')}</div>
-                          <div className="font-black text-slate-700 mt-0.5">{gpsLoc ? `${gpsLoc.accuracy.toFixed(0)}m` : '—'}</div>
-                        </div>
-                        <div className="bg-slate-50 p-1.5 rounded-xl">
-                          <div className="text-slate-400 text-[8px] uppercase">{t('Battery', 'बैटरी')}</div>
-                          <div className="font-black text-slate-700 mt-0.5">{gpsLoc ? `${gpsLoc.battery}%` : '—'}</div>
-                        </div>
-                        <div className="bg-slate-50 p-1.5 rounded-xl">
-                          <div className="text-slate-400 text-[8px] uppercase">{t('Network', 'नेटवर्क')}</div>
-                          <div className={`font-black mt-0.5 ${gpsLoc?.network === 'online' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                            {gpsLoc ? (gpsLoc.network === 'online' ? t('Online', 'ऑनलाइन') : t('Offline', 'ऑफलाइन')) : '—'}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Camera Selfie Verification Block */}
-                      <div className="border border-slate-150 rounded-2xl p-3 bg-slate-50 flex flex-col items-center justify-center space-y-2">
-                        <div className="text-[9px] font-black text-slate-550 uppercase tracking-wider">
-                          🤳 {t('Camera Selfie Verification', 'सेल्फी सत्यापन')} {db.company?.enableSelfie && <span className="text-rose-600 font-black">({t('Mandatory', 'अनिवार्य')})</span>}
+                      {/* Camera Selfie Verification Block — ALWAYS MANDATORY */}
+                      <div className="border border-rose-150 rounded-2xl p-3 bg-rose-50/30 flex flex-col items-center justify-center space-y-2">
+                        <div className="text-[9px] font-black text-rose-600 uppercase tracking-wider">
+                          🤳 {t('Live Selfie Required', 'सेल्फी अनिवार्य है')} — <span className="text-rose-500">{t('Camera Only, No Gallery', 'सिर्फ कैमरे से')}</span>
                         </div>
                         
                         {punchSelfie ? (
@@ -753,10 +771,10 @@ export default function EmployeeDashboard({
                             </button>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center">
-                            <label className="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95">
-                              <Icon name="photo_camera" size={14} />
-                              <span>{t('Capture Selfie', 'सेल्फी फोटो लें')}</span>
+                          <div className="flex flex-col items-center justify-center gap-2">
+                            <label className="h-10 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] flex items-center gap-1.5 cursor-pointer transition-all active:scale-95">
+                              <Icon name="photo_camera" size={16} />
+                              <span>{t('Take Selfie Now', 'अभी सेल्फी लें')}</span>
                               <input
                                 type="file"
                                 accept="image/*"
@@ -765,6 +783,7 @@ export default function EmployeeDashboard({
                                 className="hidden"
                               />
                             </label>
+                            <p className="text-[9px] text-rose-500 font-semibold">{t('Gallery photos not accepted', 'गैलरी फोटो मान्य नहीं')}</p>
                           </div>
                         )}
                       </div>
@@ -773,10 +792,10 @@ export default function EmployeeDashboard({
                     <div className="flex gap-3 pt-2">
                       <button
                         onClick={submitPunchRequest}
-                        disabled={isPunching || !gpsLoc || (db.company?.enableSelfie && !punchSelfie)}
+                        disabled={isPunching || !gpsLoc || !punchSelfie}
                         className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md disabled:opacity-40 transition-all flex items-center justify-center"
                       >
-                        {isPunching ? t('Submitting...', 'जमा किया जा रहा है...') : t('Submit Request', 'अनुरोध भेजें')}
+                        {isPunching ? t('Sending...', 'भेजा जा रहा है...') : t('Submit Request', 'अनुरोध भेजें')}
                       </button>
                       <button
                         onClick={() => { setShowPunchModal(false); setPunchSelfie(null); }}
@@ -785,6 +804,9 @@ export default function EmployeeDashboard({
                         {t('Cancel', 'रद्द करें')}
                       </button>
                     </div>
+                    {!punchSelfie && (
+                      <p className="text-center text-[9px] text-rose-500 font-bold">{t('Selfie is mandatory to submit punch', 'पंच भेजने के लिए सेल्फी जरूरी है')}</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -887,7 +909,7 @@ export default function EmployeeDashboard({
                 className="flex-1 min-w-[140px] h-11 btn bbl text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Icon name="download" size={16} />
-                <span>{t('Download A4 Salary Slip', 'सैलरी स्लिप डाउनलोड करें')}</span>
+                <span>{t('Download Salary Slip', 'सैलरी स्लिप')}</span>
               </button>
 
               <button
@@ -895,7 +917,15 @@ export default function EmployeeDashboard({
                 className="flex-1 min-w-[140px] h-11 border border-blue-200 text-blue-600 rounded-xl font-bold text-xs bg-blue-50/30 hover:bg-blue-50 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all"
               >
                 <Icon name="add_task" size={16} />
-                <span>{t('Request Punch Correction', 'उपस्थिति सुधार का अनुरोध')}</span>
+                <span>{t('Fix Attendance', 'हाज़िरी सुधारें')}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('requests')}
+                className="flex-1 min-w-[140px] h-11 border border-violet-200 text-violet-600 rounded-xl font-bold text-xs bg-violet-50/30 hover:bg-violet-50 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all"
+              >
+                <Icon name="beach_access" size={16} />
+                <span>{t('Request Leave', 'छुट्टी लें')}</span>
               </button>
             </div>
           </div>
@@ -944,15 +974,24 @@ export default function EmployeeDashboard({
                         )}
                       </div>
 
-                      <div className="text-right space-y-1">
+                      <div className="text-right space-y-1 flex-shrink-0">
                         <span className={`text-[10px] inline-block ${getStatusBadgeClass(record?.status)}`}>
                           {record?.status ? translateStatus(record.status) : (totalHrs > 0 ? t('Present', 'उपस्थित') : t('Not Marked', 'अचिह्नित'))}
                         </span>
                         {totalHrs > 0 && (
-                          <div className="text-[10px] text-slate-500 font-bold">
-                            {totalHrs.toFixed(2)} {t('Hrs worked', 'घंटे काम किया')}
+                          <div className="text-[10px] text-blue-600 font-bold">
+                            ⏱ {totalHrs.toFixed(1)} {t('hrs', 'घंटे')}
                           </div>
                         )}
+                        {(() => {
+                          const dateOT = db.overtimeEntries?.filter(o => o.employeeId === employee.id && o.date === dateStr) || [];
+                          const totalOT = dateOT.reduce((acc, o) => acc + o.hours, 0);
+                          return totalOT > 0 ? (
+                            <div className="text-[9px] text-amber-600 font-bold bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded-full">
+                              OT: {totalOT.toFixed(1)}h
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                   );
