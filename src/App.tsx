@@ -251,6 +251,11 @@ export default function App() {
     }
   }, [db, syncStatus]);
 
+  // Register SyncEngine active context whenever database changes
+  useEffect(() => {
+    SyncEngineService.setDbContext(db, setDb);
+  }, [db]);
+
   // Periodic background SyncEngine queue flush to Firebase every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {

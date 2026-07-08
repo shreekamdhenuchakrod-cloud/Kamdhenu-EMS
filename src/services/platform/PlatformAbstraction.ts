@@ -182,9 +182,11 @@ class WebDeviceInfoService implements IDeviceInfoService {
 // (These route calls to native JavascriptInterface bindings exposed by Android app)
 // ----------------------------------------------------
 
-class AndroidLocationService implements ILocationService {
+class UnifiedLocationService implements ILocationService {
+  private webLoc = new WebLocationService();
+
   startWatchPosition(onSuccess: (coords: LocationCoords) => void, onError: (err: any) => void): void {
-    if ((window as any).AndroidLocation) {
+    if (typeof window !== 'undefined' && (window as any).AndroidLocation) {
       (window as any).onAndroidLocationUpdate = (lat: number, lng: number, accuracy: number, speed: number, timestamp: string) => {
         onSuccess({ latitude: lat, longitude: lng, accuracy, speed, timestamp });
       };
@@ -193,14 +195,15 @@ class AndroidLocationService implements ILocationService {
       };
       (window as any).AndroidLocation.startWatch();
     } else {
-      // Fallback
-      new WebLocationService().startWatchPosition(onSuccess, onError);
+      this.webLoc.startWatchPosition(onSuccess, onError);
     }
   }
 
   clearWatch(): void {
-    if ((window as any).AndroidLocation) {
+    if (typeof window !== 'undefined' && (window as any).AndroidLocation) {
       (window as any).AndroidLocation.stopWatch();
+    } else {
+      this.webLoc.clearWatch();
     }
   }
 }
@@ -209,15 +212,7 @@ class AndroidLocationService implements ILocationService {
 // Platform Abstracted Exports
 // ----------------------------------------------------
 
-const isAndroidNative = (): boolean => {
-  return typeof window !== 'undefined' && (
-    !!(window as any).AndroidLocation ||
-    !!(window as any).AndroidBattery ||
-    !!(window as any).AndroidNetwork
-  );
-};
-
-export const PlatformLocation = isAndroidNative() ? new AndroidLocationService() : new WebLocationService();
+export const PlatformLocation = new UnifiedLocationService();
 export const PlatformBattery = new WebBatteryService();
 export const PlatformNetwork = new WebNetworkService();
 export const PlatformNotification = new WebNotificationService();

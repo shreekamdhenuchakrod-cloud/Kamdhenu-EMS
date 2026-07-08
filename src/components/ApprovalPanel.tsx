@@ -746,12 +746,13 @@ export default function ApprovalPanel({
 
   // Helper to render readable sessions/payment newValue
   const renderNewValueText = (val: string) => {
+    if (!val) return '—';
     if (val.startsWith('[')) {
       try {
         const parsed = JSON.parse(val) as Array<{ in: string; out: string }>;
         return parsed.map((s, i) => {
-          const inTxt = s.in ? `In: ${s.in}` : '';
-          const outTxt = s.out ? `Out: ${s.out}` : '';
+          const inTxt = s.in ? `In: ${formatTimeForDisplay(s.in)}` : '';
+          const outTxt = s.out ? `Out: ${formatTimeForDisplay(s.out)}` : '';
           return `Session ${i + 1} (${[inTxt, outTxt].filter(Boolean).join(' | ')})`;
         }).join(', ');
       } catch (e) {
@@ -760,11 +761,20 @@ export default function ApprovalPanel({
     }
     if (val.startsWith('{')) {
       try {
-        const parsed = JSON.parse(val) as { date: string; amount: number; mode: string; description: string };
-        return `${parsed.date} | ₹${parsed.amount} | ${parsed.mode} ${parsed.description ? `(${parsed.description})` : ''}`;
+        const parsed = JSON.parse(val) as { date?: string; amount?: number; mode?: string; description?: string; hours?: string; days?: number; startDate?: string };
+        if (parsed.hours) {
+          return `${t('Overtime:', 'ओवरटाइम:')} ${parsed.hours}`;
+        }
+        if (parsed.days && parsed.startDate) {
+          return `${t('Leave Request:', 'छुट्टी अनुरोध:')} ${parsed.startDate} (${parsed.days} ${parsed.days === 1 ? t('Day', 'दिन') : t('Days', 'दिन')}) ${parsed.description ? `[${parsed.description}]` : ''}`;
+        }
+        return `${parsed.date || ''} | ₹${parsed.amount || 0} | ${parsed.mode || ''} ${parsed.description ? `(${parsed.description})` : ''}`;
       } catch (e) {
         return val;
       }
+    }
+    if (/^\d{2}:\d{2}$/.test(val)) {
+      return formatTimeForDisplay(val);
     }
     return val;
   };
@@ -1547,7 +1557,13 @@ export default function ApprovalPanel({
                 <div className="flex items-center justify-between gap-4 pt-1">
                   <div className="flex items-center gap-2.5">
                     {isAdmin && (
-                      <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
+                      <div 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (req.employeePic) setLightboxSrc(req.employeePic);
+                        }}
+                        className={`w-8 h-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 shadow-inner transition-all cursor-zoom-in hover:border-blue-400 hover:scale-105 active:scale-95`}
+                      >
                         {req.employeePic ? (
                           <img src={req.employeePic} alt={req.employeeName} className="w-full h-full object-cover" />
                         ) : (
@@ -1602,7 +1618,7 @@ export default function ApprovalPanel({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-0.5">
                       <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Current Value', 'वर्तमान मान')}</span>
-                      <span className="font-semibold text-slate-550 line-through">{req.oldValue || '-'}</span>
+                      <span className="font-semibold text-slate-550 line-through">{renderNewValueText(req.oldValue || '-')}</span>
                     </div>
                     <div className="space-y-0.5 border-l border-slate-150 pl-4">
                       <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Requested Value', 'वांचित मान')}</span>
@@ -1788,11 +1804,11 @@ export default function ApprovalPanel({
                 </div>
                 <div>
                   <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Current Value', 'वर्तमान मान')}</span>
-                  <span className="font-semibold text-slate-550 line-through">{selectedRequestDetails.oldValue || '—'}</span>
+                  <span className="font-semibold text-slate-550 line-through">{renderNewValueText(selectedRequestDetails.oldValue || '—')}</span>
                 </div>
                 <div>
                   <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Requested Value', 'वांचित मान')}</span>
-                  <span className="font-black text-blue-650">{selectedRequestDetails.newValue}</span>
+                  <span className="font-black text-blue-650">{renderNewValueText(selectedRequestDetails.newValue)}</span>
                 </div>
               </div>
 

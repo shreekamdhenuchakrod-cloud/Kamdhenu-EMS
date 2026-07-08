@@ -207,9 +207,6 @@ export default function EmployeeDashboard({
           >
             {t('Try Again', 'पुनः प्रयास करें')}
           </button>
-          <button onClick={onLogout} className="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black cursor-pointer transition-all">
-            {t('Logout', 'लॉगआउट')}
-          </button>
         </div>
       </div>
     );

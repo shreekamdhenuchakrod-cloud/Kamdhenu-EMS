@@ -6,6 +6,9 @@ export class SyncEngine {
   private onQueueChangeCallback: (() => void) | null = null;
   private isProcessing = false;
   private maxRetries = 5;
+  
+  private activeDb: AppDatabase | null = null;
+  private onUpdateDbCallback: ((newDb: AppDatabase) => void) | null = null;
 
   constructor() {
     this.loadQueue();
@@ -13,6 +16,11 @@ export class SyncEngine {
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => this.processQueue());
     }
+  }
+
+  public setDbContext(db: AppDatabase, onUpdate: (newDb: AppDatabase) => void) {
+    this.activeDb = db;
+    this.onUpdateDbCallback = onUpdate;
   }
 
   private loadQueue() {
@@ -82,6 +90,14 @@ export class SyncEngine {
   public async processQueue(dbInstance?: AppDatabase, onUpdateDb?: (newDb: AppDatabase) => void) {
     if (this.isProcessing || !navigator.onLine || this.queue.length === 0) return;
 
+    const dbToUse = dbInstance || this.activeDb;
+    const updateCbToUse = onUpdateDb || this.onUpdateDbCallback;
+
+    if (!dbToUse || !updateCbToUse) {
+      console.warn('Database instance not loaded during sync execution');
+      return;
+    }
+
     this.isProcessing = true;
     console.log(`Processing sync queue containing ${this.queue.length} items...`);
 
@@ -92,17 +108,11 @@ export class SyncEngine {
       if (item.status === 'Synced') continue;
 
       try {
-        if (dbInstance && onUpdateDb) {
-          // If we have a local state database running, apply the action to the DB object first
-          const updatedDb = this.applyActionToDb(dbInstance, item);
-          
-          // Sync changes immediately to Firebase
-          await saveDatabaseToFirebase(updatedDb);
-          onUpdateDb(updatedDb);
-        } else {
-          // Simple raw firebase trigger or skip
-          console.warn('Database instance not loaded during sync execution');
-        }
+        const updatedDb = this.applyActionToDb(dbToUse, item);
+        
+        // Sync changes immediately to Firebase
+        await saveDatabaseToFirebase(updatedDb);
+        updateCbToUse(updatedDb);
 
         item.status = 'Synced';
       } catch (error: any) {
