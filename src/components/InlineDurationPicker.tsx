@@ -95,16 +95,28 @@ function WheelColumn<T>({
     animateToTarget(closestSlot);
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const divisor = 60;
-    const delta = Math.round(e.deltaY / divisor);
-    if (delta !== 0) {
-      const slots = delta > 0 ? 1 : -1;
-      const targetVal = -slots * ITEM_HEIGHT;
-      animateToTarget(targetVal);
-    }
-  };
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const divisor = 60;
+      const delta = Math.round(e.deltaY / divisor);
+      if (delta !== 0) {
+        const slots = delta > 0 ? 1 : -1;
+        const targetVal = -slots * ITEM_HEIGHT;
+        animateToTarget(targetVal);
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+    };
+  }, [value, onChange]);
 
   useEffect(() => {
     const handleGlobalTouchMove = (e: TouchEvent) => {
@@ -157,7 +169,7 @@ function WheelColumn<T>({
 
   return (
     <div 
-      onWheel={handleWheel}
+      ref={containerRef}
       onMouseDown={(e) => handleStart(e.clientY)}
       onTouchStart={(e) => handleStart(e.touches[0].clientY)}
       className="relative w-[70px] h-[74px] overflow-hidden cursor-ns-resize select-none flex flex-col justify-center items-center"

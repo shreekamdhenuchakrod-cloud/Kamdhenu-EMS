@@ -18,6 +18,7 @@ import {
   DEFAULT_DATABASE,
   toMin,
   timeToHrs,
+  getDailyAttendanceMetrics,
 } from "../db";
 import Icon from "./Icon";
 import TimeWheelPicker from "./TimeWheelPicker";
@@ -94,6 +95,7 @@ export default function ProfileView({
     description: string;
     paymentType?: string;
     time?: string;
+    paidBy?: string;
   } | null>(null);
 
   const [earningForm, setEarningForm] = useState<{
@@ -331,7 +333,20 @@ export default function ProfileView({
     const attKey = `${employeeId}_${ds}`;
     const newAttendance = { ...db.attendance };
     delete newAttendance[attKey];
-    onUpdateDb({ ...db, attendance: newAttendance });
+
+    const newOt = (db.overtimeEntries || []).filter(
+      (o) => !(o.employeeId === employeeId && o.date === ds)
+    );
+    const newLf = (db.lateFineEntries || []).filter(
+      (f) => !(f.employeeId === employeeId && f.date === ds)
+    );
+
+    onUpdateDb({
+      ...db,
+      attendance: newAttendance,
+      overtimeEntries: newOt,
+      lateFineEntries: newLf
+    });
   };
 
   const handlePunchInHistoryClick = (ds: string) => {
@@ -412,7 +427,7 @@ export default function ProfileView({
   // --- Transactions Save & Mutation Helpers ---
   const savePayment = () => {
     if (!paymentForm) return;
-    const { id, amount, date, mode, description, paymentType, time } =
+    const { id, amount, date, mode, description, paymentType, time, paidBy } =
       paymentForm;
     const numAmt = parseFloat(amount);
 
@@ -443,6 +458,7 @@ export default function ProfileView({
           description,
           paymentType: paymentType || "Salary Payment",
           time: time || "09:00 AM",
+          paidBy: paidBy || "",
         };
       }
     } else {
@@ -456,6 +472,7 @@ export default function ProfileView({
         description,
         paymentType: paymentType || "Salary Payment",
         time: time || "09:00 AM",
+        paidBy: paidBy || "",
       });
     }
 
@@ -1660,26 +1677,62 @@ export default function ProfileView({
                       key={day}
                       className="bg-white border border-slate-100 rounded-2xl p-3.5 shadow-xs space-y-3 hover:border-slate-300 transition-all"
                     >
-                      <div className="flex justify-between items-center">
-                        <div className="text-xs font-black text-slate-800 leading-tight">
-                          {day} {monthName} {navYear}
-                        </div>
-                        <div className="text-right text-[11px] font-black text-slate-500 font-mono">
-                          {(() => {
-                            const otHrs = db.overtimeEntries.filter(o => o.employeeId === emp.id && o.date === dateStr).reduce((sum, o) => sum + o.hours, 0);
-                            const fineHrs = db.lateFineEntries.filter(f => f.employeeId === emp.id && f.date === dateStr).reduce((sum, f) => sum + f.hours, 0);
-                            
-                            const baseHrsStr = formatHrsMins(totalHrs);
-                            const otStr = otHrs > 0 ? ` [+ ${formatHrsMins(otHrs)}]` : '';
-                            const fineStr = fineHrs > 0 ? ` [- ${formatHrsMins(fineHrs)}]` : '';
-                            
-                            if (totalHrs > 0 || otHrs > 0 || fineHrs > 0) {
-                              return `${baseHrsStr}${otStr}${fineStr} Hrs`;
-                            }
-                            return '—';
-                          })()}
-                        </div>
+                      <div className="text-xs font-black text-slate-800 leading-tight">
+                        {day} {monthName} {navYear}
                       </div>
+
+                      {/* Detailed Calculations Grid */}
+                      {(() => {
+                        const m = getDailyAttendanceMetrics(emp, dateStr, rec, db);
+                        const statusColorClass = 
+                          m.status.includes('Absent') ? 'bg-red-50 text-red-700 border-red-150' :
+                          m.status.includes('Leave') ? 'bg-blue-50 text-blue-700 border-blue-150 font-semibold' :
+                          m.status.includes('OT') ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                          m.status.includes('Late Fine') ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                          m.status.includes('Present') ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                          'bg-slate-50 text-slate-600 border-slate-150';
+
+                        return (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-[10px] space-y-2.5">
+                            {/* Row 1: Times & Status */}
+                            <div className="flex items-center justify-between border-b border-slate-200/50 pb-2">
+                              <div className="flex gap-4">
+                                <div>
+                                  <span className="text-slate-400 font-bold block uppercase tracking-wider text-[8px]">{t("In", "इन")}</span>
+                                  <span className="font-extrabold text-slate-800 font-mono">{m.punchIn !== '--:--' ? formatTimeForDisplay(m.punchIn) : '--:--'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-slate-400 font-bold block uppercase tracking-wider text-[8px]">{t("Out", "आउट")}</span>
+                                  <span className="font-extrabold text-slate-800 font-mono">{m.punchOut !== '--:--' ? formatTimeForDisplay(m.punchOut) : '--:--'}</span>
+                                </div>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-wider ${statusColorClass}`}>
+                                {m.status}
+                              </span>
+                            </div>
+
+                            {/* Row 2: Worked, Standard, OT, Late Fine hours */}
+                            <div className="grid grid-cols-4 gap-2 text-center select-none font-mono">
+                              <div>
+                                <div className="text-slate-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">{t("Worked", "कार्य")}</div>
+                                <div className="font-extrabold text-blue-600">⏱ {m.workedHrsStr}</div>
+                              </div>
+                              <div>
+                                <div className="text-slate-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">{t("Standard", "मानक")}</div>
+                                <div className="font-extrabold text-slate-600">📋 {m.standardHrsStr}</div>
+                              </div>
+                              <div>
+                                <div className="text-slate-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">{t("Overtime", "अतिरिक्त")}</div>
+                                <div className="font-extrabold text-amber-600">+{m.otHrsStr}</div>
+                              </div>
+                              <div>
+                                <div className="text-slate-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">{t("Late Fine", "जुर्माना")}</div>
+                                <div className="font-extrabold text-rose-600">-{m.fineHrsStr}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Operational Punch Actions inline */}
                       <div className="flex gap-2 items-center">
@@ -1911,26 +1964,62 @@ export default function ProfileView({
                       key={day}
                       className="bg-white border border-slate-100 rounded-2xl p-3.5 shadow-xs space-y-3 hover:border-slate-300 transition-all"
                     >
-                      <div className="flex justify-between items-center">
-                        <div className="text-xs font-black text-slate-800 leading-tight">
-                          {day} {monthName} {navYear}
-                        </div>
-                        <div className="text-right font-mono">
-                          {(() => {
-                            const otHrs = db.overtimeEntries.filter(o => o.employeeId === emp.id && o.date === dateStr).reduce((sum, o) => sum + o.hours, 0);
-                            const fineHrs = db.lateFineEntries.filter(f => f.employeeId === emp.id && f.date === dateStr).reduce((sum, f) => sum + f.hours, 0);
-                            
-                            const otStr = otHrs > 0 ? ` [+ ${formatHrsMins(otHrs)}]` : '';
-                            const fineStr = fineHrs > 0 ? ` [- ${formatHrsMins(fineHrs)}]` : '';
-                            
-                            return (
-                              <div className={`text-[11px] font-black leading-tight ${statusClass}`}>
-                                {displayStatus}{otStr}{fineStr} {(otHrs > 0 || fineHrs > 0) ? 'Hrs' : ''}
-                              </div>
-                            );
-                          })()}
-                        </div>
+                      <div className="text-xs font-black text-slate-800 leading-tight">
+                        {day} {monthName} {navYear}
                       </div>
+
+                      {/* Detailed Calculations Grid */}
+                      {(() => {
+                        const m = getDailyAttendanceMetrics(emp, dateStr, rec, db);
+                        const statusColorClass = 
+                          m.status.includes('Absent') ? 'bg-red-50 text-red-700 border-red-150' :
+                          m.status.includes('Leave') ? 'bg-blue-50 text-blue-700 border-blue-150 font-semibold' :
+                          m.status.includes('OT') ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                          m.status.includes('Late Fine') ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                          m.status.includes('Present') ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                          'bg-slate-50 text-slate-600 border-slate-150';
+
+                        return (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-[10px] space-y-2.5">
+                            {/* Row 1: Times & Status */}
+                            <div className="flex items-center justify-between border-b border-slate-200/50 pb-2">
+                              <div className="flex gap-4">
+                                <div>
+                                  <span className="text-slate-400 font-bold block uppercase tracking-wider text-[8px]">{t("In", "इन")}</span>
+                                  <span className="font-extrabold text-slate-800 font-mono">{m.punchIn !== '--:--' ? formatTimeForDisplay(m.punchIn) : '--:--'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-slate-400 font-bold block uppercase tracking-wider text-[8px]">{t("Out", "आउट")}</span>
+                                  <span className="font-extrabold text-slate-800 font-mono">{m.punchOut !== '--:--' ? formatTimeForDisplay(m.punchOut) : '--:--'}</span>
+                                </div>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-wider ${statusColorClass}`}>
+                                {m.status}
+                              </span>
+                            </div>
+
+                            {/* Row 2: Worked, Standard, OT, Late Fine hours */}
+                            <div className="grid grid-cols-4 gap-2 text-center select-none font-mono">
+                              <div>
+                                <div className="text-slate-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">{t("Worked", "कार्य")}</div>
+                                <div className="font-extrabold text-blue-600">⏱ {m.workedHrsStr}</div>
+                              </div>
+                              <div>
+                                <div className="text-slate-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">{t("Standard", "मानक")}</div>
+                                <div className="font-extrabold text-slate-600">📋 {m.standardHrsStr}</div>
+                              </div>
+                              <div>
+                                <div className="text-slate-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">{t("Overtime", "अतिरिक्त")}</div>
+                                <div className="font-extrabold text-amber-600">+{m.otHrsStr}</div>
+                              </div>
+                              <div>
+                                <div className="text-slate-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">{t("Late Fine", "जुर्माना")}</div>
+                                <div className="font-extrabold text-rose-600">-{m.fineHrsStr}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Operational Status Actions */}
                       <div className="flex gap-2 items-center">
@@ -2132,7 +2221,8 @@ export default function ProfileView({
                 <div className="flex overflow-x-auto gap-3 pb-3 pt-0.5 justify-start snap-x scrollbar-none sm:grid sm:grid-cols-5">
                   {/* 1. Record Payment */}
                   <div
-                    onClick={() =>
+                    onClick={() => {
+                      const pNames = db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale'];
                       setPaymentForm({
                         isOpen: true,
                         amount: "",
@@ -2141,8 +2231,9 @@ export default function ProfileView({
                         description: "",
                         paymentType: "Salary Payment",
                         time: getCurrentTimeFormatted(),
-                      })
-                    }
+                        paidBy: pNames[0] || "",
+                      });
+                    }}
                     className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-slate-200 hover:shadow-2xs active:scale-[0.97] transition-all"
                   >
                     <div className="w-8.5 h-8.5 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -2622,6 +2713,7 @@ export default function ProfileView({
                         type="button"
                         onClick={() => {
                           if (activeSubTab === "Payments") {
+                            const pNames = db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale'];
                             setPaymentForm({
                               isOpen: true,
                               amount: "",
@@ -2630,6 +2722,7 @@ export default function ProfileView({
                               description: "",
                               paymentType: "Salary Payment",
                               time: getCurrentTimeFormatted(),
+                              paidBy: pNames[0] || "",
                             });
                           } else if (activeSubTab === "Earnings") {
                             setEarningForm({
@@ -3025,6 +3118,26 @@ export default function ProfileView({
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Paid By Selection */}
+              <div className="fld">
+                <label className="text-xs font-bold text-slate-600 block mb-1">
+                  {t("Paid By", "भुगतानकर्ता (Paid By)")} <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={paymentForm.paidBy || ""}
+                  onChange={(e) =>
+                    setPaymentForm({ ...paymentForm, paidBy: e.target.value })
+                  }
+                  className="fi bg-white"
+                >
+                  {(db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Notes - blank initially */}
@@ -4080,6 +4193,7 @@ export default function ProfileView({
                           description: item.description,
                           paymentType: item.paymentType || "Salary Payment",
                           time: item.time || getCurrentTimeFormatted(),
+                          paidBy: item.paidBy || "",
                         });
                       } else if (type === "Earnings") {
                         setEarningForm({

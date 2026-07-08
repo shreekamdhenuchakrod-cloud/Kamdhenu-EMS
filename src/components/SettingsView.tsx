@@ -39,6 +39,7 @@ export default function SettingsView({
 
   const [compName, setCompName] = useState(company.name);
   const [saveStatus, setSaveStatus] = useState('');
+  const [newPaidBy, setNewPaidBy] = useState('');
 
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState<{
@@ -582,6 +583,72 @@ export default function SettingsView({
             <Icon name="vpn_key" size={14} className="mr-1.5" />
             <span>{t('Update Password', 'पासवर्ड अपडेट करें')}</span>
           </button>
+        </div>
+      </div>
+      
+      {/* SECTION: PAID BY MANAGEMENT */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs">
+        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 flex items-center gap-2">
+          <Icon name="account_balance_wallet" size={18} className="text-blue-600" />
+          <span>{t('Manage Paid By Options', 'भुगतानकर्ता (Paid By) सूची')}</span>
+        </h3>
+
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="fi flex-1"
+              value={newPaidBy}
+              onChange={(e) => setNewPaidBy(e.target.value)}
+              placeholder={t('Add new Paid By option (e.g. by Pankaj)', 'नया नाम जोड़ें (उदा. by Pankaj)')}
+            />
+            <button
+              onClick={() => {
+                if (!newPaidBy.trim()) return;
+                const paidByList = company.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale'];
+                const updatedNames = [...paidByList, newPaidBy.trim()];
+                onUpdateDb({
+                  ...db,
+                  company: {
+                    ...company,
+                    paidByNames: updatedNames
+                  }
+                });
+                setNewPaidBy('');
+                setSaveStatus(t('✓ Paid By option added!', '✓ नया भुगतानकर्ता जोड़ा गया!'));
+                setTimeout(() => setSaveStatus(''), 4000);
+              }}
+              className="btn bbl px-4 font-bold text-xs shrink-0 flex items-center justify-center cursor-pointer"
+            >
+              <Icon name="add" size={16} />
+            </button>
+          </div>
+
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {(company.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name, idx) => (
+              <div key={idx} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl p-3">
+                <span className="text-xs font-bold text-slate-800">{name}</span>
+                <button
+                  onClick={() => {
+                    const paidByList = company.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale'];
+                    const updatedNames = paidByList.filter((_, i) => i !== idx);
+                    onUpdateDb({
+                      ...db,
+                      company: {
+                        ...company,
+                        paidByNames: updatedNames
+                      }
+                    });
+                    setSaveStatus(t('✓ Paid By option removed!', '✓ भुगतानकर्ता हटा दिया गया!'));
+                    setTimeout(() => setSaveStatus(''), 4000);
+                  }}
+                  className="w-6 h-6 rounded-full hover:bg-rose-50 text-rose-500 flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  <Icon name="delete" size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

@@ -222,7 +222,20 @@ export default function AttendanceView({
   const handleClearRecord = (empId: string) => {
     const newAttendance = { ...db.attendance };
     delete newAttendance[`${empId}_${attDate}`];
-    onUpdateAttendance(newAttendance);
+
+    const newOt = (db.overtimeEntries || []).filter(
+      (o) => !(o.employeeId === empId && o.date === attDate)
+    );
+    const newLf = (db.lateFineEntries || []).filter(
+      (f) => !(f.employeeId === empId && f.date === attDate)
+    );
+
+    onUpdateDb({
+      ...db,
+      attendance: newAttendance,
+      overtimeEntries: newOt,
+      lateFineEntries: newLf
+    });
   };
 
   // Modern modal submit handlers

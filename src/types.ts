@@ -48,6 +48,7 @@ export interface Payment {
   description: string;
   paymentType?: string; // e.g. Salary Payment, Advance Payment, Bonus Payment
   time?: string; // e.g. 09:00 AM
+  paidBy?: string;
 }
 
 export interface Earning {
@@ -233,6 +234,7 @@ export interface CompanySettings {
   allowOvertime?: boolean;
   theme?: string; // 'Light' | 'Dark' | 'System'
   adminPin?: string; // Sync admin PIN to Firestore
+  paidByNames?: string[];
 }
 
 export interface AppDatabase {

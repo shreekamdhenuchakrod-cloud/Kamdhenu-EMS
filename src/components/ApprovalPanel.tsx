@@ -89,6 +89,7 @@ export default function ApprovalPanel({
   const [newPaymentAmount, setNewPaymentAmount] = useState<string>('');
   const [newPaymentMode, setNewPaymentMode] = useState<string>('Cash');
   const [newPaymentDesc, setNewPaymentDesc] = useState<string>('');
+  const [newPaymentPaidBy, setNewPaymentPaidBy] = useState<string>('');
 
   // Time Picker states
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -178,7 +179,8 @@ export default function ApprovalPanel({
           date: newPaymentDate,
           amount: parseFloat(newPaymentAmount) || 0,
           mode: newPaymentMode,
-          description: newPaymentDesc
+          description: newPaymentDesc,
+          paidBy: newPaymentPaidBy
         });
       }
     } else if (requestType === 'leave') {
@@ -196,7 +198,8 @@ export default function ApprovalPanel({
         date: payRequestDate,
         amount: parseFloat(payRequestAmount) || 0,
         mode: payRequestMode,
-        description: reason.trim()
+        description: reason.trim(),
+        paidBy: newPaymentPaidBy
       });
     }
 
@@ -312,6 +315,7 @@ export default function ApprovalPanel({
     setSelPaymentId('');
     setNewPaymentAmount('');
     setNewPaymentDesc('');
+    setNewPaymentPaidBy('');
     setPayRequestAmount('');
     setLeaveDays(1);
     setEmpView('list');
@@ -377,6 +381,7 @@ export default function ApprovalPanel({
     setSelPaymentId('');
     setNewPaymentAmount('');
     setNewPaymentDesc('');
+    setNewPaymentPaidBy('');
     setEmpView('list');
   };
 
@@ -488,9 +493,21 @@ export default function ApprovalPanel({
           const parsed = JSON.parse(req.newValue);
           draft.payments = draft.payments.map(p => 
             p.id === parsed.paymentId 
-              ? { ...p, date: parsed.date, amount: parsed.amount, mode: parsed.mode, description: parsed.description } 
+              ? { ...p, date: parsed.date, amount: parsed.amount, mode: parsed.mode, description: parsed.description, paidBy: parsed.paidBy } 
               : p
           );
+        } else if (req.category === 'New Payment') {
+          const parsed = JSON.parse(req.newValue);
+          draft.payments = draft.payments || [];
+          draft.payments.push({
+            id: `_PAY_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            employeeId: req.employeeId,
+            date: parsed.date,
+            amount: parsed.amount,
+            mode: parsed.mode,
+            description: parsed.description || 'New Payment Request Approved',
+            paidBy: parsed.paidBy || ''
+          });
         } else if (req.category === 'Device Register') {
           draft.employees = draft.employees.map(emp => 
             emp.id === req.employeeId 
@@ -697,9 +714,23 @@ export default function ApprovalPanel({
           setNewPaymentAmount(String(parsed.amount));
           setNewPaymentMode(parsed.mode);
           setNewPaymentDesc(parsed.description);
+          setNewPaymentPaidBy(parsed.paidBy || '');
         }
       } catch (e) {
         console.error('Failed to parse editing request payment:', e);
+      }
+    } else if (req.category === 'New Payment') {
+      setRequestType('new_payment');
+      try {
+        if (req.newValue.startsWith('{')) {
+          const parsed = JSON.parse(req.newValue);
+          setPayRequestDate(parsed.date);
+          setPayRequestAmount(String(parsed.amount));
+          setPayRequestMode(parsed.mode);
+          setNewPaymentPaidBy(parsed.paidBy || '');
+        }
+      } catch (e) {
+        console.error('Failed to parse editing request new payment:', e);
       }
     } else {
       setRequestType('attendance');
@@ -1221,6 +1252,20 @@ export default function ApprovalPanel({
                         className="fi bg-white"
                       />
                     </div>
+
+                    <div className="fld">
+                      <label>{t('Correct Paid By', 'सही भुगतानकर्ता (Paid By)')}</label>
+                      <select
+                        value={newPaymentPaidBy}
+                        onChange={e => setNewPaymentPaidBy(e.target.value)}
+                        className="fi bg-white"
+                      >
+                        <option value="">{t('-- Select Paid By --', '-- भुगतानकर्ता चुनें --')}</option>
+                        {(db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 )}
 
@@ -1302,6 +1347,20 @@ export default function ApprovalPanel({
                     <option value="Bank Transfer">Bank Transfer</option>
                     <option value="UPI / Online">UPI / Online</option>
                     <option value="Cheque">Cheque</option>
+                  </select>
+                </div>
+
+                <div className="fld">
+                  <label>{t('Paid By Option', 'भुगतानकर्ता (Paid By)')}</label>
+                  <select
+                    value={newPaymentPaidBy}
+                    onChange={e => setNewPaymentPaidBy(e.target.value)}
+                    className="fi bg-white"
+                  >
+                    <option value="">{t('-- Select Paid By --', '-- भुगतानकर्ता चुनें --')}</option>
+                    {(db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1555,6 +1614,20 @@ export default function ApprovalPanel({
                     onChange={e => setNewPaymentDesc(e.target.value)}
                     className="fi bg-white"
                   />
+                </div>
+
+                <div className="fld">
+                  <label>{t('Correct Paid By', 'सही भुगतानकर्ता (Paid By)')}</label>
+                  <select
+                    value={newPaymentPaidBy}
+                    onChange={e => setNewPaymentPaidBy(e.target.value)}
+                    className="fi bg-white"
+                  >
+                    <option value="">{t('-- Select Paid By --', '-- भुगतानकर्ता चुनें --')}</option>
+                    {(db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             )}

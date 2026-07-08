@@ -179,15 +179,28 @@ function WheelColumn<T>({
     setDragOffset(0);
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    if (isAnimatingRef.current) return;
-    const divisor = 60;
-    const delta = Math.round(e.deltaY / divisor);
-    if (delta !== 0) {
-      const slots = delta > 0 ? 1 : -1;
-      animateToSlot(slots, 0);
-    }
-  };
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (isAnimatingRef.current) return;
+      const divisor = 60;
+      const delta = Math.round(e.deltaY / divisor);
+      if (delta !== 0) {
+        const slots = delta > 0 ? 1 : -1;
+        animateToSlot(slots, 0);
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+    };
+  }, [value, onChange]);
 
   useEffect(() => {
     const handleGlobalTouchMove = (e: TouchEvent) => {
@@ -256,7 +269,7 @@ function WheelColumn<T>({
 
       {/* Squeezed Wheel viewport */}
       <div 
-        onWheel={handleWheel}
+        ref={containerRef}
         onMouseDown={(e) => handleStart(e.clientY)}
         onTouchStart={(e) => handleStart(e.touches[0].clientY)}
         className="relative w-[70px] h-[132px] overflow-hidden cursor-ns-resize select-none flex flex-col justify-center items-center"

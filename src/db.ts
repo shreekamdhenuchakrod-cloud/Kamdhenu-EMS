@@ -634,3 +634,100 @@ export function validatePunchRequestRules(
 
   return { valid: true };
 }
+
+export function formatHrsMins(h: number): string {
+  const hr = Math.floor(h);
+  const mn = Math.round((h - hr) * 60);
+  return `${String(hr).padStart(2, '0')}:${String(mn).padStart(2, '0')}`;
+}
+
+export interface DailyAttendanceMetrics {
+  punchIn: string;
+  punchOut: string;
+  workedHrs: number;
+  workedHrsStr: string;
+  standardHrs: number;
+  standardHrsStr: string;
+  otHrs: number;
+  otHrsStr: string;
+  fineHrs: number;
+  fineHrsStr: string;
+  status: string;
+}
+
+export function getDailyAttendanceMetrics(
+  employee: Employee,
+  dateStr: string,
+  record: AttendanceRecord | undefined,
+  db: AppDatabase
+): DailyAttendanceMetrics {
+  const baseHours = employee.baseHours || 8;
+  const standardHrsStr = `${String(baseHours).padStart(2, '0')}:00`;
+  
+  let workedHrs = 0;
+  let punchIn = '--:--';
+  let punchOut = '--:--';
+
+  if (record && record.sessions && record.sessions.length > 0) {
+    record.sessions.forEach((s) => {
+      if (s.in && s.out) {
+        workedHrs += timeToHrs(s.in, s.out);
+      }
+    });
+
+    const validSessions = record.sessions.filter(s => s.in);
+    if (validSessions.length > 0) {
+      const minIn = validSessions.reduce((min, s) => {
+        return !min || toMin(s.in) < toMin(min) ? s.in : min;
+      }, '');
+      punchIn = minIn;
+
+      const allOut = validSessions.every(s => s.out);
+      if (allOut) {
+        const maxOut = validSessions.reduce((max, s) => {
+          return !max || toMin(s.out) > toMin(max) ? s.out : max;
+        }, '');
+        punchOut = maxOut;
+      }
+    }
+  }
+
+  const dayOts = db.overtimeEntries?.filter(o => o.employeeId === employee.id && o.date === dateStr) || [];
+  const otHrs = dayOts.reduce((sum, o) => sum + o.hours, 0);
+
+  const dayFines = db.lateFineEntries?.filter(f => f.employeeId === employee.id && f.date === dateStr) || [];
+  const fineHrs = dayFines.reduce((sum, f) => sum + f.hours, 0);
+
+  const workedHrsStr = formatHrsMins(workedHrs);
+  const otHrsStr = formatHrsMins(otHrs);
+  const fineHrsStr = formatHrsMins(fineHrs);
+
+  let status = 'Not Marked';
+  if (record && record.status) {
+    status = record.status;
+  } else if (workedHrs > 0) {
+    status = 'Present';
+  }
+
+  if (status === 'Present' || status === 'Half Day' || status === 'Overtime') {
+    if (otHrs > 0) {
+      status = 'Present + OT';
+    } else if (fineHrs > 0) {
+      status = 'Present - Late Fine';
+    }
+  }
+
+  return {
+    punchIn,
+    punchOut,
+    workedHrs,
+    workedHrsStr,
+    standardHrs: baseHours,
+    standardHrsStr,
+    otHrs,
+    otHrsStr,
+    fineHrs,
+    fineHrsStr,
+    status
+  };
+}

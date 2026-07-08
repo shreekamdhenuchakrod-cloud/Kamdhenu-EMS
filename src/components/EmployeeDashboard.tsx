@@ -3,7 +3,7 @@ import {
   AppDatabase, Employee, Payment, Earning, Deduction, 
   OvertimeEntry, LateFineEntry, AttendanceRecord, PunchSession, PaymentMode, AuditLogEntry, ApprovalRequest, LiveLocation, GeoFence
 } from '../types';
-import { calcEmployeeFinancials, getDaysInMonth, timeToHrs, getDistanceMeters, validateSessions, validatePunchRequestRules } from '../db';
+import { calcEmployeeFinancials, getDaysInMonth, timeToHrs, getDistanceMeters, validateSessions, validatePunchRequestRules, getDailyAttendanceMetrics, formatHrsMins } from '../db';
 import Icon from './Icon';
 import SalarySlipPDF, { downloadSalarySlipPDF } from './SalarySlipPDF';
 import ApprovalPanel from './ApprovalPanel';
@@ -99,6 +99,14 @@ export default function EmployeeDashboard({
   const today = new Date();
   const [selYear, setSelYear] = useState<number>(today.getFullYear());
   const [selMonth, setSelMonth] = useState<number>(today.getMonth());
+  const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({
+    base: false,
+    ot: false,
+    bonus: false,
+    fine: false,
+    ded: false,
+    pay: false
+  });
 
   // Password form states
   const [currentPw, setCurrentPw] = useState('');
@@ -607,6 +615,25 @@ export default function EmployeeDashboard({
         {/* --- TAB CONTENT: 1. OVERVIEW --- */}
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Quick Navigation Shortcut Banner */}
+            <div 
+              onClick={() => setActiveTab('requests')}
+              className="bg-gradient-to-r from-blue-600 to-indigo-650 rounded-2xl p-4 shadow-sm text-white flex items-center justify-between cursor-pointer active:scale-[0.98] hover:shadow-md transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Icon name="quickreply" size={20} className="text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-wider">{t('Requests Shortcuts Desk', 'त्वरित अनुरोध डेस्क')}</h4>
+                  <p className="text-[9.5px] text-white/80 font-medium mt-0.5">{t('Send leave, payments, or attendance correction requests', 'छुट्टी, भुगतान, या पंच सुधार अनुरोध भेजें')}</p>
+                </div>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all">
+                <Icon name="chevron_right" size={20} />
+              </div>
+            </div>
+
             {/* GeoFence verified Smart Punch Card */}
             <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -842,7 +869,7 @@ export default function EmployeeDashboard({
             </div>
 
             {/* Metric Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               
               {/* Today status */}
               <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-2">
@@ -859,6 +886,33 @@ export default function EmployeeDashboard({
                 <span className="text-[9px] uppercase tracking-wider text-slate-450 font-bold block">{t('Attendance', 'उपस्थिति')}</span>
                 <span className="block mt-1 text-lg font-black text-slate-900">{metrics.attendanceCounts.present} <span className="text-xs font-semibold text-slate-400">/ {metrics.attendanceCounts.totalMarked}</span></span>
                 <span className="text-[8px] text-slate-400 font-bold block">{t('Days Present', 'दिन उपस्थित')}</span>
+              </div>
+
+              {/* Total Worked Hours this Month */}
+              <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-1">
+                <span className="text-[9px] uppercase tracking-wider text-slate-455 font-bold block">{t('Total Worked Hours', 'कुल कार्य घंटे')}</span>
+                <span className="block mt-1">
+                  <span className="text-lg font-black text-slate-900">
+                    {(() => {
+                      let sumHrs = 0;
+                      const daysInMonth = getDaysInMonth(selYear, selMonth);
+                      for (let d = 1; d <= daysInMonth; d++) {
+                        const dStr = `${selYear}-${String(selMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                        const rec = db.attendance[`${employee?.id || ''}_${dStr}`];
+                        if (rec && rec.sessions) {
+                          rec.sessions.forEach(s => {
+                            if (s.in && s.out) {
+                              sumHrs += timeToHrs(s.in, s.out);
+                            }
+                          });
+                        }
+                      }
+                      return sumHrs.toFixed(1);
+                    })()}
+                    <span className="text-xs font-semibold text-slate-400 ml-1">{t('Hrs', 'घंटे')}</span>
+                  </span>
+                </span>
+                <span className="text-[8px] text-slate-400 font-bold block">{t('Worked this month', 'इस महीने कार्य')}</span>
               </div>
 
               {/* Net Pending salary */}
@@ -1087,171 +1141,245 @@ export default function EmployeeDashboard({
 
         {/* --- TAB CONTENT: 3. SALARY BREAKDOWN --- */}
         {activeTab === 'salary' && (
-          <div className="space-y-5 animate-in fade-in duration-200">
+          <div className="space-y-4 animate-in fade-in duration-200">
             {/* 1. Base Earnings Summary */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
-              <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                <span>{t('Earnings Summary (Base)', 'मूल अर्जित वेतन विवरण')}</span>
-                <span className="text-emerald-600">{formatCurrency(metrics.earnedSalary)}</span>
+            <div className="bg-white border border-slate-150 rounded-2xl shadow-3xs overflow-hidden">
+              <div 
+                onClick={() => setOpenFolders(prev => ({ ...prev, base: !prev.base }))}
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon name="folder" size={20} className="text-amber-500" />
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{t('Earnings Summary (Base)', 'मूल अर्जित वेतन विवरण')}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded-lg">{formatCurrency(metrics.earnedSalary)}</span>
+                  <Icon name="keyboard_arrow_down" size={18} className={`text-slate-400 transition-transform duration-200 ${openFolders.base ? 'rotate-180' : ''}`} />
+                </div>
               </div>
-              <div className="space-y-2 text-xs">
-                {metrics.details.earningsRows.length === 0 ? (
-                  <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                    {t('No base earnings recorded for this period', 'इस अवधि के लिए कोई मूल आय दर्ज नहीं है')}
-                  </div>
-                ) : (
-                  metrics.details.earningsRows.map((row, idx) => (
-                    <div key={idx} className="flex justify-between font-medium text-slate-500">
-                      <span>{row.label} ({row.date})</span>
-                      <span className="font-bold text-slate-800">{formatCurrency(row.value)}</span>
+              {openFolders.base && (
+                <div className="px-4 pb-4 border-t border-slate-50 pt-3 space-y-2 text-xs animate-in slide-in-from-top-1">
+                  {metrics.details.earningsRows.length === 0 ? (
+                    <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                      {t('No base earnings recorded for this period', 'इस अवधि के लिए कोई मूल आय दर्ज नहीं है')}
                     </div>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    metrics.details.earningsRows.map((row, idx) => (
+                      <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
+                        <span>{row.label} ({row.date})</span>
+                        <span className="font-bold text-slate-800">{formatCurrency(row.value)}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             {/* 2. Overtime (OT) Details */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
-              <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                <span>{t('Overtime (OT) Ledger', 'ओवरटाइम विवरण')}</span>
-                <span className="text-amber-600">{formatCurrency(metrics.overtime)}</span>
+            <div className="bg-white border border-slate-150 rounded-2xl shadow-3xs overflow-hidden">
+              <div 
+                onClick={() => setOpenFolders(prev => ({ ...prev, ot: !prev.ot }))}
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon name="folder" size={20} className="text-amber-500" />
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{t('Overtime (OT) Ledger', 'ओवरटाइम विवरण')}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black text-amber-700 bg-amber-50 border border-amber-100/50 px-2 py-0.5 rounded-lg">{formatCurrency(metrics.overtime)}</span>
+                  <Icon name="keyboard_arrow_down" size={18} className={`text-slate-400 transition-transform duration-200 ${openFolders.ot ? 'rotate-180' : ''}`} />
+                </div>
               </div>
-              <div className="space-y-2 text-xs">
-                {metrics.details.overtimeRows.length === 0 ? (
-                  <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                    {t('No overtime hours registered this month', 'इस महीने कोई ओवरटाइम दर्ज नहीं है')}
-                  </div>
-                ) : (
-                  metrics.details.overtimeRows.map((row, idx) => (
-                    <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
-                      <div>
-                        <div className="font-bold text-slate-800">{row.desc}</div>
-                        <div className="text-[9px] text-slate-400 font-mono mt-0.5">{row.date} · {row.hours.toFixed(1)} hrs</div>
-                      </div>
-                      <span className="font-black text-slate-855 self-center">{formatCurrency(row.amount)}</span>
+              {openFolders.ot && (
+                <div className="px-4 pb-4 border-t border-slate-50 pt-3 space-y-2.5 text-xs animate-in slide-in-from-top-1">
+                  {metrics.details.overtimeRows.length === 0 ? (
+                    <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                      {t('No overtime hours registered this month', 'इस महीने कोई ओवरटाइम दर्ज नहीं है')}
                     </div>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    metrics.details.overtimeRows.map((row, idx) => (
+                      <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                        <div>
+                          <div className="font-bold text-slate-800">{row.desc}</div>
+                          <div className="text-[9px] text-slate-400 font-mono mt-0.5">{row.date} · {row.hours.toFixed(1)} hrs</div>
+                        </div>
+                        <span className="font-black text-slate-800 self-center">{formatCurrency(row.amount)}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             {/* 3. Extra Earnings (Bonus/Incentives) */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
-              <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                <span>{t('Bonuses & Extra Earnings', 'बोनस एवं अन्य आय')}</span>
-                <span className="text-emerald-600">{formatCurrency(metrics.extraEarnings)}</span>
+            <div className="bg-white border border-slate-150 rounded-2xl shadow-3xs overflow-hidden">
+              <div 
+                onClick={() => setOpenFolders(prev => ({ ...prev, bonus: !prev.bonus }))}
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon name="folder" size={20} className="text-amber-500" />
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{t('Bonuses & Extra Earnings', 'बोनस एवं अन्य आय')}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black text-emerald-650 bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded-lg">{formatCurrency(metrics.extraEarnings)}</span>
+                  <Icon name="keyboard_arrow_down" size={18} className={`text-slate-400 transition-transform duration-200 ${openFolders.bonus ? 'rotate-180' : ''}`} />
+                </div>
               </div>
-              <div className="space-y-2 text-xs">
-                {metrics.details.extraEarningsRows.length === 0 ? (
-                  <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                    {t('No bonuses registered this month', 'इस महीने कोई अतिरिक्त आय या बोनस नहीं है')}
-                  </div>
-                ) : (
-                  metrics.details.extraEarningsRows.map((row, idx) => (
-                    <div key={idx} className="flex justify-between font-medium text-slate-555 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
-                      <div>
-                        <div className="font-bold text-slate-850">{row.desc}</div>
-                        <div className="text-[9px] text-slate-400 font-mono mt-0.5">{row.date}</div>
-                      </div>
-                      <span className="font-black text-emerald-600 self-center">+ {formatCurrency(row.amount)}</span>
+              {openFolders.bonus && (
+                <div className="px-4 pb-4 border-t border-slate-50 pt-3 space-y-2.5 text-xs animate-in slide-in-from-top-1">
+                  {metrics.details.extraEarningsRows.length === 0 ? (
+                    <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                      {t('No bonuses registered this month', 'इस महीने कोई अतिरिक्त आय या बोनस नहीं है')}
                     </div>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    metrics.details.extraEarningsRows.map((row, idx) => (
+                      <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                        <div>
+                          <div className="font-bold text-slate-800">{row.desc}</div>
+                          <div className="text-[9px] text-slate-400 font-mono mt-0.5">{row.date}</div>
+                        </div>
+                        <span className="font-black text-emerald-600 self-center">+ {formatCurrency(row.amount)}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             {/* 4. Late Fines (Fines separate) */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
+            <div className="bg-white border border-slate-150 rounded-2xl shadow-3xs overflow-hidden">
               {(() => {
                 const lateFineRows = metrics.details.deductionsRows.filter(r => r.desc.startsWith('Late Fine:'));
                 const totalLateFine = lateFineRows.reduce((sum, r) => sum + r.amount, 0);
 
                 return (
                   <>
-                    <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                      <span>{t('Late Fines Ledger', 'विलंब जुर्माना विवरण')}</span>
-                      <span className="text-rose-600">{formatCurrency(totalLateFine)}</span>
+                    <div 
+                      onClick={() => setOpenFolders(prev => ({ ...prev, fine: !prev.fine }))}
+                      className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Icon name="folder" size={20} className="text-amber-500" />
+                        <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{t('Late Fines Ledger', 'विलंब जुर्माना विवरण')}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100/50 px-2 py-0.5 rounded-lg">{formatCurrency(totalLateFine)}</span>
+                        <Icon name="keyboard_arrow_down" size={18} className={`text-slate-400 transition-transform duration-200 ${openFolders.fine ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
-                    <div className="space-y-2 text-xs">
-                      {lateFineRows.length === 0 ? (
-                        <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                          {t('No late fines registered this month', 'इस महीने कोई लेट फाइन नहीं है')}
-                        </div>
-                      ) : (
-                        lateFineRows.map((row, idx) => (
-                          <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
-                            <div>
-                              <div className="font-bold text-slate-800">{row.desc.replace('Late Fine:', '').trim()}</div>
-                              <div className="text-[9px] text-slate-455 font-mono mt-0.5">{row.date}</div>
-                            </div>
-                            <span className="font-black text-rose-600 self-center">- {formatCurrency(row.amount)}</span>
+                    {openFolders.fine && (
+                      <div className="px-4 pb-4 border-t border-slate-50 pt-3 space-y-2.5 text-xs animate-in slide-in-from-top-1">
+                        {lateFineRows.length === 0 ? (
+                          <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                            {t('No late fines registered this month', 'इस महीने कोई लेट फाइन नहीं है')}
                           </div>
-                        ))
-                      )}
-                    </div>
+                        ) : (
+                          lateFineRows.map((row, idx) => (
+                            <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                              <div>
+                                <div className="font-bold text-slate-800">{row.desc.replace('Late Fine:', '').trim()}</div>
+                                <div className="text-[9px] text-slate-400 font-mono mt-0.5">{row.date}</div>
+                              </div>
+                              <span className="font-black text-rose-600 self-center">- {formatCurrency(row.amount)}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </>
                 );
               })()}
             </div>
 
             {/* 5. Deductions (Damage, Recoveries, etc.) */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
+            <div className="bg-white border border-slate-150 rounded-2xl shadow-3xs overflow-hidden">
               {(() => {
                 const standardDeductions = metrics.details.deductionsRows.filter(r => !r.desc.startsWith('Late Fine:'));
                 const totalDeductions = standardDeductions.reduce((sum, r) => sum + r.amount, 0);
 
                 return (
                   <>
-                    <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                      <span>{t('Standard Deductions', 'कटौती एवं अन्य वसूलियां')}</span>
-                      <span className="text-rose-600">{formatCurrency(totalDeductions)}</span>
+                    <div 
+                      onClick={() => setOpenFolders(prev => ({ ...prev, ded: !prev.ded }))}
+                      className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Icon name="folder" size={20} className="text-amber-500" />
+                        <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{t('Standard Deductions', 'कटौती एवं अन्य वसूलियां')}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100/50 px-2 py-0.5 rounded-lg">{formatCurrency(totalDeductions)}</span>
+                        <Icon name="keyboard_arrow_down" size={18} className={`text-slate-400 transition-transform duration-200 ${openFolders.ded ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
-                    <div className="space-y-2 text-xs">
-                      {standardDeductions.length === 0 ? (
-                        <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                          {t('No other deductions this month', 'इस महीने कोई अन्य कटौती नहीं है')}
-                        </div>
-                      ) : (
-                        standardDeductions.map((row, idx) => (
-                          <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
-                            <div>
-                              <div className="font-bold text-slate-800">{row.desc}</div>
-                              <div className="text-[9px] text-slate-455 font-mono mt-0.5">{row.date}</div>
-                            </div>
-                            <span className="font-black text-rose-600 self-center">- {formatCurrency(row.amount)}</span>
+                    {openFolders.ded && (
+                      <div className="px-4 pb-4 border-t border-slate-50 pt-3 space-y-2.5 text-xs animate-in slide-in-from-top-1">
+                        {standardDeductions.length === 0 ? (
+                          <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                            {t('No other deductions this month', 'इस महीने कोई अन्य कटौती नहीं है')}
                           </div>
-                        ))
-                      )}
-                    </div>
+                        ) : (
+                          standardDeductions.map((row, idx) => (
+                            <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                              <div>
+                                <div className="font-bold text-slate-800">{row.desc}</div>
+                                <div className="text-[9px] text-slate-400 font-mono mt-0.5">{row.date}</div>
+                              </div>
+                              <span className="font-black text-rose-600 self-center">- {formatCurrency(row.amount)}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </>
                 );
               })()}
             </div>
 
             {/* 6. Payments Ledger */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
-              <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                <span>{t('Received Payments Ledger', 'प्राप्त भुगतान बही (Ledger)')}</span>
-                <span className="text-blue-650">{formatCurrency(metrics.payments)}</span>
-              </div>
-
-              {metrics.details.paymentsRows.length === 0 ? (
-                <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                  {t('No payment transactions received this month', 'इस महीने कोई भुगतान प्राप्त नहीं हुआ')}
+            <div className="bg-white border border-slate-150 rounded-2xl shadow-3xs overflow-hidden">
+              <div 
+                onClick={() => setOpenFolders(prev => ({ ...prev, pay: !prev.pay }))}
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon name="folder" size={20} className="text-amber-500" />
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{t('Received Payments Ledger', 'प्राप्त भुगतान बही (Ledger)')}</span>
                 </div>
-              ) : (
-                <div className="space-y-2.5 text-xs">
-                  {metrics.details.paymentsRows.map((row, idx) => (
-                    <div key={idx} className="flex items-center justify-between gap-4 border-b border-slate-50 pb-2 last:border-b-0 last:pb-0">
-                      <div className="space-y-0.5">
-                        <div className="font-bold text-slate-800">{row.desc || t('Salary Disbursed', 'वेतन भुगतान')}</div>
-                        <div className="text-[10px] text-slate-450 font-semibold">
-                          {row.date} · <span className="bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5 font-mono">{row.mode}</span>
-                        </div>
-                      </div>
-                      <span className="font-black text-emerald-600">{formatCurrency(row.amount)}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black text-blue-700 bg-blue-50 border border-blue-100/50 px-2 py-0.5 rounded-lg">{formatCurrency(metrics.payments)}</span>
+                  <Icon name="keyboard_arrow_down" size={18} className={`text-slate-400 transition-transform duration-200 ${openFolders.pay ? 'rotate-180' : ''}`} />
+                </div>
+              </div>
+              {openFolders.pay && (
+                <div className="px-4 pb-4 border-t border-slate-50 pt-3 space-y-3.5 text-xs animate-in slide-in-from-top-1">
+                  {metrics.details.paymentsRows.length === 0 ? (
+                    <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                      {t('No payment transactions received this month', 'इस महीने कोई भुगतान प्राप्त नहीं हुआ')}
                     </div>
-                  ))}
+                  ) : (
+                    metrics.details.paymentsRows.map((row, idx) => {
+                      const origPay = db.payments.find(p => p.employeeId === employee?.id && p.date === row.date && p.amount === row.value);
+                      return (
+                        <div key={idx} className="flex justify-between items-start gap-4 border-b border-slate-50 pb-2.5 last:border-b-0 last:pb-0">
+                          <div className="space-y-1">
+                            <div className="font-bold text-slate-800">{row.desc || t('Salary Disbursed', 'वेतन भुगतान')}</div>
+                            <div className="text-[10px] text-slate-450 font-semibold flex items-center gap-1.5 flex-wrap">
+                              <span>{row.date}</span>
+                              <span className="bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5 font-mono text-[9px]">{row.mode}</span>
+                              {origPay?.paidBy && (
+                                <span className="bg-blue-50 text-blue-700 border border-blue-100/50 rounded px-1.5 py-0.5 font-bold text-[9px]">
+                                  👤 {origPay.paidBy}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <span className="font-black text-slate-800">{formatCurrency(row.value)}</span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               )}
             </div>
