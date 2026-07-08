@@ -97,6 +97,9 @@ export default function ApprovalPanel({
   // Edit Request State
   const [editingRequest, setEditingRequest] = useState<ApprovalRequest | null>(null);
 
+  // Correction type mode: sessions vs simple status
+  const [correctionMode, setCorrectionMode] = useState<'sessions' | 'status'>('sessions');
+
   // Admin rejection reason input
   const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string>('');
@@ -126,11 +129,12 @@ export default function ApprovalPanel({
     let newVal = '';
 
     if (requestType === 'attendance') {
-      // Old Value from database
       const key = `${employeeId}_${reqDate}`;
       const existingRec = db.attendance[key];
+      const isSessions = employeeType === 'Hourly' || correctionMode === 'sessions';
+
       if (existingRec) {
-        if (employeeType === 'Hourly') {
+        if (isSessions) {
           const sessions = existingRec.sessions || [];
           oldVal = sessions.map(s => `${s.in || '—'} to ${s.out || '—'}`).join(', ') || t('No Punch', 'कोई पंच नहीं');
         } else {
@@ -138,7 +142,7 @@ export default function ApprovalPanel({
         }
       }
 
-      if (employeeType === 'Hourly') {
+      if (isSessions) {
         const enabledSessions = punchSessions.filter(s => s.inEnabled || s.outEnabled);
         const isMultiple = enabledSessions.length > 1;
         const isInOnly = enabledSessions.length === 1 && enabledSessions[0].inEnabled && !enabledSessions[0].outEnabled;
@@ -399,15 +403,7 @@ export default function ApprovalPanel({
           req.category === 'Attendance Correction' || 
           req.category === 'Leave' || 
           req.category === 'Manual Attendance' || 
-          req.category === 'GeoFence Attendance'
-        ) {
-          const key = `${req.employeeId}_${req.date}`;
-          const existingRec = draft.attendance[key] || {};
-          draft.attendance[key] = {
-            ...existingRec,
-            status: req.newValue as any
-          };
-        } else if (
+          req.category === 'GeoFence Attendance' ||
           req.category === 'Punch In' || 
           req.category === 'Punch Out' || 
           req.category === 'Early Exit'
@@ -425,30 +421,47 @@ export default function ApprovalPanel({
                 out: s.out !== undefined && s.out !== '' ? s.out : (exist.out || '')
               };
             });
+            draft.attendance[key] = {
+              ...existingRec,
+              status: 'Present',
+              sessions
+            };
           } else {
-            if (req.category === 'Punch In' || req.category === 'Late Entry') {
-              if (sessions.length > 0 && !sessions[sessions.length - 1].out) {
-                sessions[sessions.length - 1].in = req.newValue;
-              } else {
-                sessions.push({ in: req.newValue, out: '' });
-              }
-            } else if (req.category === 'Punch Out' || req.category === 'Early Exit') {
-              if (sessions.length > 0 && !sessions[sessions.length - 1].out) {
-                sessions[sessions.length - 1].out = req.newValue;
-              } else {
-                sessions.push({ in: '', out: req.newValue });
-              }
+            if (req.category === 'Leave') {
+              draft.attendance[key] = {
+                ...existingRec,
+                status: 'Leave'
+              };
+            } else if (req.category === 'Attendance Correction' && !req.newValue.includes(':')) {
+              draft.attendance[key] = {
+                ...existingRec,
+                status: req.newValue as any
+              };
             } else {
-              if (sessions.length > 0) sessions[0].out = req.newValue;
-              else sessions.push({ in: '', out: req.newValue });
+              if (req.category === 'Punch In' || req.category === 'Late Entry') {
+                if (sessions.length > 0 && !sessions[sessions.length - 1].out) {
+                  sessions[sessions.length - 1].in = req.newValue;
+                } else {
+                  sessions.push({ in: req.newValue, out: '' });
+                }
+              } else if (req.category === 'Punch Out' || req.category === 'Early Exit') {
+                if (sessions.length > 0 && !sessions[sessions.length - 1].out) {
+                  sessions[sessions.length - 1].out = req.newValue;
+                } else {
+                  sessions.push({ in: '', out: req.newValue });
+                }
+              } else {
+                if (sessions.length > 0) sessions[0].out = req.newValue;
+                else sessions.push({ in: '', out: req.newValue });
+              }
+
+              draft.attendance[key] = {
+                ...existingRec,
+                status: 'Present',
+                sessions
+              };
             }
           }
-
-          draft.attendance[key] = {
-            ...existingRec,
-            status: 'Present',
-            sessions
-          };
         } else if (req.category === 'Overtime') {
           let otHours = 0;
           try {
@@ -690,7 +703,8 @@ export default function ApprovalPanel({
       }
     } else {
       setRequestType('attendance');
-      if (employeeType === 'Hourly') {
+      if (employeeType === 'Hourly' || req.newValue.startsWith('[')) {
+        setCorrectionMode('sessions');
         try {
           if (req.newValue.startsWith('[')) {
             const parsed = JSON.parse(req.newValue) as Array<{ in: string; out: string }>;
@@ -716,6 +730,7 @@ export default function ApprovalPanel({
           console.error('Failed to parse newValue during edit load:', e);
         }
       } else {
+        setCorrectionMode('status');
         setStatusVal(req.newValue as any);
       }
     }
@@ -966,8 +981,28 @@ export default function ApprovalPanel({
                   />
                 </div>
 
-                {/* HOURLY EMPLOYEE CORRECTION FORM */}
-                {employeeType === 'Hourly' && (
+                {/* Mode Selector for Daily/Monthly */}
+                {employeeType !== 'Hourly' && (
+                  <div className="flex bg-slate-100 border border-slate-150 rounded-xl p-1 mb-4 gap-1 select-none">
+                    <button
+                      type="button"
+                      onClick={() => setCorrectionMode('sessions')}
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'sessions' ? 'bg-white text-blue-600 shadow-3xs' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {t('Punch Times', 'पंच समय')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCorrectionMode('status')}
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'status' ? 'bg-white text-blue-600 shadow-3xs' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {t('Simple Status', 'हाजिरी स्थिति')}
+                    </button>
+                  </div>
+                )}
+
+                {/* HOURLY OR SESSIONS CORRECTION FORM */}
+                {(employeeType === 'Hourly' || correctionMode === 'sessions') && (
                   <div className="space-y-4 border-t border-slate-100 pt-3">
                     <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide block">
                       {t('Punch Times Sessions Correction', 'पंच समय सुधार विवरण')}
@@ -1052,7 +1087,7 @@ export default function ApprovalPanel({
                 )}
 
                 {/* DAILY / MONTHLY EMPLOYEE CORRECTION FORM */}
-                {employeeType !== 'Hourly' && (
+                {employeeType !== 'Hourly' && correctionMode === 'status' && (
                   <div className="fld">
                     <label>{t('Requested Status', 'वांछित उपस्थिति स्थिति')}</label>
                     <select
@@ -1068,7 +1103,7 @@ export default function ApprovalPanel({
                   </div>
                 )}
                 
-                {employeeType !== 'Hourly' && statusVal === 'Overtime' && (
+                {employeeType !== 'Hourly' && correctionMode === 'status' && statusVal === 'Overtime' && (
                   <div className="fld animate-in slide-in-from-top-2 duration-200">
                     <label className="text-center block mb-2">{t('Overtime Duration (Hours & Minutes)', 'ओवरटाइम अवधि (घंटे और मिनट)')}</label>
                     {(() => {
@@ -1326,8 +1361,28 @@ export default function ApprovalPanel({
                   />
                 </div>
 
-                {/* Hourly Edit */}
-                {employeeType === 'Hourly' && (
+                {/* Mode Selector for Daily/Monthly */}
+                {employeeType !== 'Hourly' && (
+                  <div className="flex bg-slate-100 border border-slate-150 rounded-xl p-1 mb-4 gap-1 select-none">
+                    <button
+                      type="button"
+                      onClick={() => setCorrectionMode('sessions')}
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'sessions' ? 'bg-white text-blue-600 shadow-3xs' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {t('Punch Times', 'पंच समय')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCorrectionMode('status')}
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'status' ? 'bg-white text-blue-600 shadow-3xs' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {t('Simple Status', 'हाजिरी स्थिति')}
+                    </button>
+                  </div>
+                )}
+
+                {/* Hourly Edit / Sessions Edit */}
+                {(employeeType === 'Hourly' || correctionMode === 'sessions') && (
                   <div className="space-y-4 border-t border-slate-100 pt-3">
                     <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide block">
                       {t('Punch Times Sessions Correction', 'पंच समय सुधार विवरण')}
@@ -1411,8 +1466,8 @@ export default function ApprovalPanel({
                   </div>
                 )}
 
-                {/* Daily/Monthly Edit */}
-                {employeeType !== 'Hourly' && (
+                {/* Daily/Monthly Edit Status */}
+                {employeeType !== 'Hourly' && correctionMode === 'status' && (
                   <div className="fld">
                     <label>{t('Requested Status', 'वांछित उपस्थिति स्थिति')}</label>
                     <select
@@ -1428,7 +1483,7 @@ export default function ApprovalPanel({
                   </div>
                 )}
                 
-                {employeeType !== 'Hourly' && statusVal === 'Overtime' && (
+                {employeeType !== 'Hourly' && correctionMode === 'status' && statusVal === 'Overtime' && (
                   <div className="fld animate-in slide-in-from-top-2 duration-200">
                     <label>{t('Overtime Duration (HH:MM)', 'ओवरटाइम अवधि')}</label>
                     <button

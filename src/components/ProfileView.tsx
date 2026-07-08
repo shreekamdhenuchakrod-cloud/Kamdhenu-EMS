@@ -364,7 +364,7 @@ export default function ProfileView({
       const parts = dateStr.split("-");
       if (parts.length < 2) return 0;
       const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10);
+      const month = parseInt(parts[1], 10) - 1; // 0-indexed!
       if (isNaN(year) || isNaN(month)) return 0;
       const baseSalary = getRateForMonth(emp, year, month);
       const daysCount = getDaysInMonth(year, month);
@@ -1666,10 +1666,8 @@ export default function ProfileView({
                         </div>
                         <div className="text-right text-[11px] font-black text-slate-500 font-mono">
                           {(() => {
-                            const empOt = db.overtimeEntries.find(o => o.employeeId === emp.id && o.date === dateStr);
-                            const otHrs = empOt ? empOt.hours : 0;
-                            const empFine = db.lateFineEntries.find(f => f.employeeId === emp.id && f.date === dateStr);
-                            const fineHrs = empFine ? empFine.hours : 0;
+                            const otHrs = db.overtimeEntries.filter(o => o.employeeId === emp.id && o.date === dateStr).reduce((sum, o) => sum + o.hours, 0);
+                            const fineHrs = db.lateFineEntries.filter(f => f.employeeId === emp.id && f.date === dateStr).reduce((sum, f) => sum + f.hours, 0);
                             
                             const baseHrsStr = formatHrsMins(totalHrs);
                             const otStr = otHrs > 0 ? ` [+ ${formatHrsMins(otHrs)}]` : '';
@@ -1919,10 +1917,8 @@ export default function ProfileView({
                         </div>
                         <div className="text-right font-mono">
                           {(() => {
-                            const empOt = db.overtimeEntries.find(o => o.employeeId === emp.id && o.date === dateStr);
-                            const otHrs = empOt ? empOt.hours : 0;
-                            const empFine = db.lateFineEntries.find(f => f.employeeId === emp.id && f.date === dateStr);
-                            const fineHrs = empFine ? empFine.hours : 0;
+                            const otHrs = db.overtimeEntries.filter(o => o.employeeId === emp.id && o.date === dateStr).reduce((sum, o) => sum + o.hours, 0);
+                            const fineHrs = db.lateFineEntries.filter(f => f.employeeId === emp.id && f.date === dateStr).reduce((sum, f) => sum + f.hours, 0);
                             
                             const otStr = otHrs > 0 ? ` [+ ${formatHrsMins(otHrs)}]` : '';
                             const fineStr = fineHrs > 0 ? ` [- ${formatHrsMins(fineHrs)}]` : '';

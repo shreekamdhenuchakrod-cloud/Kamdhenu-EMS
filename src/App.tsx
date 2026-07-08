@@ -42,16 +42,16 @@ export default function App() {
     return localStorage.getItem('gaushala_employee_session_id') || null;
   });
 
-  // Helper function to sync auto overtime entries for Daily/Monthly employees
+  // Helper function to sync auto overtime and late fine entries for all employees
   const syncAutoOvertime = (currentDb: AppDatabase): AppDatabase => {
     let otEntries = [...(currentDb.overtimeEntries || [])];
+    let lfEntries = [...(currentDb.lateFineEntries || [])];
     
     // Filter out previous auto-calculated entries to clean slate
-    otEntries = otEntries.filter(
-      (o) => o.description !== "Auto-calculated Overtime" && o.description !== "Overtime Request Approved" && o.description !== "Overtime"
-    );
+    otEntries = otEntries.filter((o) => o.description !== "Auto-calculated Overtime");
+    lfEntries = lfEntries.filter((f) => f.description !== "Auto-calculated Late Fine");
 
-    // Calculate overtime for each day for Daily/Monthly employees
+    // Calculate overtime and late fine for each day
     Object.keys(currentDb.attendance).forEach((key) => {
       const parts = key.split('_');
       if (parts.length < 2) return;
@@ -84,12 +84,25 @@ export default function App() {
           amount: 0,
           description: 'Auto-calculated Overtime'
         });
+      } else if (totalHrs > 0 && totalHrs < baseHours) {
+        const deficitHrs = baseHours - totalHrs;
+        lfEntries.push({
+          id: `_LF_AUTO_${employeeId}_${date}_${Date.now()}`,
+          employeeId,
+          date,
+          hours: parseFloat(deficitHrs.toFixed(2)),
+          calcType: 'HourlyRate',
+          amount: 0,
+          description: 'Auto-calculated Late Fine',
+          time: '05:00 PM'
+        });
       }
     });
 
     return {
       ...currentDb,
-      overtimeEntries: otEntries
+      overtimeEntries: otEntries,
+      lateFineEntries: lfEntries
     };
   };
 

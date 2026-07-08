@@ -1045,7 +1045,19 @@ export default function EmployeeDashboard({
                               <div className="flex items-center gap-2 flex-wrap sm:flex-col sm:items-end">
                                 {totalHrs > 0 && (
                                   <span className="text-[9.5px] text-blue-600 font-black bg-blue-50 border border-blue-100/50 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                                    ⏱ {totalHrs.toFixed(1)} {t('Hrs', 'घंटे')}
+                                    {(() => {
+                                      const dateOT = db.overtimeEntries?.filter(o => o.employeeId === employee.id && o.date === dateStr) || [];
+                                      const totalOT = dateOT.reduce((acc, o) => acc + o.hours, 0);
+                                      
+                                      const dateFine = db.lateFineEntries?.filter(f => f.employeeId === employee.id && f.date === dateStr) || [];
+                                      const totalFine = dateFine.reduce((acc, f) => acc + f.hours, 0);
+
+                                      const baseHrsStr = totalHrs.toFixed(1);
+                                      const otStr = totalOT > 0 ? ` [+ ${totalOT.toFixed(1)}]` : '';
+                                      const fineStr = totalFine > 0 ? ` [- ${totalFine.toFixed(1)}]` : '';
+                                      
+                                      return `⏱ ${baseHrsStr}${otStr}${fineStr} ${t('Hrs', 'घंटे')}`;
+                                    })()}
                                   </span>
                                 )}
                                 {(() => {
