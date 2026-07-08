@@ -218,10 +218,11 @@ export default function App() {
     const unsubscribe = syncDatabaseFromFirebase(
       (firestoreDb) => {
         if (!isSubscribed) return;
-        const serialized = JSON.stringify(firestoreDb);
+        const syncedDb = syncAutoOvertime(firestoreDb);
+        const serialized = JSON.stringify(syncedDb);
         if (serialized !== lastFetchedDbRef.current && serialized !== JSON.stringify(db)) {
           lastFetchedDbRef.current = serialized;
-          setDb(firestoreDb);
+          rawSetDb(syncedDb);
         }
         setSyncStatus('synced');
         setSyncError(null);
