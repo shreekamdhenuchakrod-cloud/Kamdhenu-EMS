@@ -60,9 +60,7 @@ export class LocationManager {
   public startTracking(employeeId: string, onTick?: (loc: LiveLocation) => void, onError?: (err: any) => void) {
     if (onTick) this.onLocationTickCallback = onTick;
 
-    if (this.intervalTimerId) clearInterval(this.intervalTimerId);
-
-    // Watch position using Platform Abstraction Layer
+    // Watch position using Platform Abstraction Layer (runs continuously and stable)
     PlatformLocation.startWatchPosition(
       (coords) => {
         this.isGPSEnabled = true;
@@ -74,19 +72,6 @@ export class LocationManager {
         if (onError) onError(err);
       }
     );
-
-    // Start adaptive interval timer loop
-    this.intervalTimerId = setInterval(() => {
-      this.evaluateAdaptiveInterval(employeeId);
-    }, 15000); // Check every 15s to adjust intervals dynamically
-  }
-
-  public stopTracking() {
-    PlatformLocation.clearWatch();
-    if (this.intervalTimerId) {
-      clearInterval(this.intervalTimerId);
-      this.intervalTimerId = null;
-    }
   }
 
   private async handlePlatformLocationUpdate(coords: any, employeeId: string) {
@@ -187,24 +172,8 @@ export class LocationManager {
     this.lastPosition = { lat, lng, timestamp: now };
   }
 
-  private evaluateAdaptiveInterval(employeeId: string) {
-    if (!this.lastPosition) return;
-
-    const speed = 0; // default stationary
-    let targetInterval = 45000; // 45s (Moving)
-
-    const isMoving = speed > 1; // speed > 1 m/s (approx 3.6 km/h)
-    
-    if (document.hidden) {
-      targetInterval = 300000; // 5 mins (Background)
-    } else if (!isMoving) {
-      targetInterval = 180000; // 3 mins (Stationary)
-    }
-
-    if (targetInterval !== this.currentInterval) {
-      this.currentInterval = targetInterval;
-      this.startTracking(employeeId); // restart watch with new frequency interval rules
-    }
+  public stopTracking() {
+    PlatformLocation.clearWatch();
   }
 
   public async forceLocationUpdate(employeeId: string, lat: number, lng: number) {
