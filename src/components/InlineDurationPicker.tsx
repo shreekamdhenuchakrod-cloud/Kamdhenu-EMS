@@ -29,32 +29,70 @@ function WheelColumn<T>({
   format = (v) => String(v)
 }: WheelColumnProps<T>) {
   const [dragOffset, setDragOffset] = useState(0);
+  const offsetRef = useRef(0);
+  const targetOffsetRef = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
+
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
 
+  const animateToTarget = (targetVal: number) => {
+    targetOffsetRef.current = targetVal;
+    
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    
+    const step = () => {
+      const diff = targetOffsetRef.current - offsetRef.current;
+      if (Math.abs(diff) < 0.1) {
+        offsetRef.current = targetOffsetRef.current;
+        setDragOffset(targetOffsetRef.current);
+        
+        // Snapped! Calculate slots shifted
+        const slots = Math.round(-targetOffsetRef.current / ITEM_HEIGHT);
+        if (slots !== 0) {
+          const newValue = getOffsetValue(value, slots);
+          onChange(newValue);
+        }
+        
+        // Reset offsets since state updated
+        offsetRef.current = 0;
+        targetOffsetRef.current = 0;
+        setDragOffset(0);
+        animationFrameRef.current = null;
+      } else {
+        offsetRef.current += diff * 0.18; // ease-out physics constant
+        setDragOffset(offsetRef.current);
+        animationFrameRef.current = requestAnimationFrame(step);
+      }
+    };
+    
+    animationFrameRef.current = requestAnimationFrame(step);
+  };
+
   const handleStart = (clientY: number) => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     isDraggingRef.current = true;
-    startYRef.current = clientY;
-    setDragOffset(0);
+    startYRef.current = clientY - offsetRef.current;
   };
 
   const handleMove = (clientY: number) => {
     if (!isDraggingRef.current) return;
-    const diff = clientY - startYRef.current;
-    // Damp dragging slightly for extreme control
-    setDragOffset(diff);
+    const currentOffset = clientY - startYRef.current;
+    offsetRef.current = currentOffset;
+    setDragOffset(currentOffset);
   };
 
   const handleEnd = () => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
     
-    const slots = Math.round(-dragOffset / ITEM_HEIGHT);
-    if (slots !== 0) {
-      const newValue = getOffsetValue(value, slots);
-      onChange(newValue);
-    }
-    setDragOffset(0);
+    const closestSlot = Math.round(offsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
+    animateToTarget(closestSlot);
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -63,8 +101,8 @@ function WheelColumn<T>({
     const delta = Math.round(e.deltaY / divisor);
     if (delta !== 0) {
       const slots = delta > 0 ? 1 : -1;
-      const newValue = getOffsetValue(value, slots);
-      onChange(newValue);
+      const targetVal = -slots * ITEM_HEIGHT;
+      animateToTarget(targetVal);
     }
   };
 
@@ -103,6 +141,9 @@ function WheelColumn<T>({
       window.removeEventListener('touchend', handleGlobalTouchEnd);
       window.removeEventListener('mousemove', handleGlobalMouseMove);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, [value, onChange]);
 
@@ -123,7 +164,7 @@ function WheelColumn<T>({
       style={{ touchAction: 'none' }}
     >
       <div 
-        className="w-full flex flex-col items-center justify-center transition-transform duration-75"
+        className="w-full flex flex-col items-center justify-center"
         style={{ transform: `translateY(${translateY}px)` }}
       >
         {displayedItems.map((item) => {
@@ -133,7 +174,7 @@ function WheelColumn<T>({
               key={item.offset}
               onClick={() => {
                 if (item.offset !== 0) {
-                  onChange(item.val);
+                  animateToTarget(-item.offset * ITEM_HEIGHT);
                 }
               }}
               className={`h-[30px] w-full flex items-center justify-center select-none text-center transition-all ${

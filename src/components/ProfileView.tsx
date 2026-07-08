@@ -4141,30 +4141,35 @@ export default function ProfileView({
 
       {/* Admin Salary Slip PDF Modal */}
       {showPdfModal && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                {t("Generate Salary Slip PDF", "सैलरी स्लिप पीडीएफ उत्पन्न करें")}
-              </h3>
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-3xl h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <Icon name="picture_as_pdf" className="text-red-500" size={20} />
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+                  {t("Print Salary Slip", "सैलरी स्लिप प्रिंट करें")}
+                </h3>
+              </div>
               <button 
                 onClick={() => setShowPdfModal(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center cursor-pointer hover:bg-slate-200"
+                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-350 text-slate-650 flex items-center justify-center cursor-pointer transition-colors"
               >
-                ✕
+                <Icon name="close" size={18} />
               </button>
             </div>
 
-            {/* Select month & year */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="fld">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+            {/* Select month & year parameters panel */}
+            <div className="bg-white px-6 py-3 border-b border-slate-100 flex gap-4 flex-shrink-0">
+              <div className="flex-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">
                   {t("Select Month", "महीना चुनें")}
                 </label>
                 <select
                   value={pdfMonth}
                   onChange={(e) => setPdfMonth(parseInt(e.target.value))}
-                  className="fi bg-white h-10 border border-slate-200 rounded-xl px-3 w-full"
+                  className="fi bg-white h-9 border border-slate-200 rounded-lg px-2 text-xs w-full"
                 >
                   {MN.map((m, idx) => {
                     const today = new Date();
@@ -4174,8 +4179,8 @@ export default function ProfileView({
                 </select>
               </div>
 
-              <div className="fld">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+              <div className="flex-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">
                   {t("Select Year", "वर्ष चुनें")}
                 </label>
                 <select
@@ -4188,7 +4193,7 @@ export default function ProfileView({
                       setPdfMonth(today.getMonth());
                     }
                   }}
-                  className="fi bg-white h-10 border border-slate-200 rounded-xl px-3 w-full"
+                  className="fi bg-white h-9 border border-slate-200 rounded-lg px-2 text-xs w-full"
                 >
                   {Array.from({ length: new Date().getFullYear() - 2024 + 1 }, (_, i) => 2024 + i).map((yr) => (
                     <option key={yr} value={yr}>{yr}</option>
@@ -4197,7 +4202,8 @@ export default function ProfileView({
               </div>
             </div>
 
-            <div className="pt-2 max-h-[50vh] overflow-y-auto border border-slate-100 rounded-2xl p-4 bg-slate-50" id="salary-slip-print-box">
+            {/* PDF Slip container for rendering and printing */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50" id="salary-slip-print-box">
               <SalarySlipPDF
                 employee={emp}
                 year={pdfYear}
@@ -4207,7 +4213,8 @@ export default function ProfileView({
               />
             </div>
 
-            <div className="flex gap-3 border-t border-slate-100 pt-4 text-xs font-bold">
+            {/* Modal Footer with Download and Close Triggers */}
+            <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-4 flex-shrink-0">
               <button
                 onClick={async () => {
                   const monthsEn = [
@@ -4217,14 +4224,15 @@ export default function ProfileView({
                   const period = `${monthsEn[pdfMonth]}_${pdfYear}`;
                   await downloadSalarySlipPDF(emp.name, period);
                 }}
-                className="flex-1 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-xl cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all"
+                className="flex-1 h-12 btn bbl text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-blue-500/10"
               >
-                <Icon name="download" size={14} />
+                <Icon name="download" size={18} />
                 <span>{t("Download PDF", "पीडीएफ डाउनलोड करें")}</span>
               </button>
+              
               <button
                 onClick={() => setShowPdfModal(false)}
-                className="w-24 h-10 border border-slate-250 bg-white text-slate-650 rounded-xl cursor-pointer flex items-center justify-center active:scale-[0.98] transition-all"
+                className="w-32 h-12 border border-slate-250 text-slate-650 bg-white rounded-xl font-bold text-xs hover:bg-slate-100 active:scale-[0.98] transition-all cursor-pointer"
               >
                 {t("Close", "बंद करें")}
               </button>

@@ -57,7 +57,7 @@ export class LocationManager {
     this.activeGeoFences = geofences.filter(g => g.assignedStaff && g.assignedStaff.includes(employeeId));
   }
 
-  public startTracking(employeeId: string, onTick?: (loc: LiveLocation) => void) {
+  public startTracking(employeeId: string, onTick?: (loc: LiveLocation) => void, onError?: (err: any) => void) {
     if (onTick) this.onLocationTickCallback = onTick;
 
     if (this.intervalTimerId) clearInterval(this.intervalTimerId);
@@ -65,11 +65,13 @@ export class LocationManager {
     // Watch position using Platform Abstraction Layer
     PlatformLocation.startWatchPosition(
       (coords) => {
+        this.isGPSEnabled = true;
         this.handlePlatformLocationUpdate(coords, employeeId);
       },
       (err) => {
         console.error('GPS Watch Position Error:', err);
         this.isGPSEnabled = false;
+        if (onError) onError(err);
       }
     );
 

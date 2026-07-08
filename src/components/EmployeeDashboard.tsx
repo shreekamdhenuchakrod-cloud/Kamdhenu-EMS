@@ -120,34 +120,47 @@ export default function EmployeeDashboard({
   const [isPdfReady, setIsPdfReady] = useState(false);
   const [punchType, setPunchType] = useState<'Punch In' | 'Punch Out'>('Punch In');
   const [showPunchModal, setShowPunchModal] = useState(false);
+  const [isLocationBlocked, setIsLocationBlocked] = useState<boolean>(false);
 
   useEffect(() => {
     if (!employee || isDeviceBlocked) return;
 
-    LocationManagerService.startTracking(employee.id, (loc) => {
-      setGpsLoc(loc);
+    if (!navigator.geolocation) {
+      setIsLocationBlocked(true);
+    }
 
-      const fences = db.geofences || [];
-      const myFences = fences.filter(f => f.assignedStaff && f.assignedStaff.includes(employee.id));
-      LocationManagerService.updateActiveGeoFences(fences, employee.id);
+    LocationManagerService.startTracking(
+      employee.id,
+      (loc) => {
+        setGpsLoc(loc);
+        setIsLocationBlocked(false);
 
-      if (myFences.length > 0) {
-        let minDistance = Infinity;
-        let bestFence = myFences[0];
-        myFences.forEach(f => {
-          const d = getDistanceMeters(f.lat, f.lng, loc.lat, loc.lng);
-          if (d < minDistance) {
-            minDistance = d;
-            bestFence = f;
-          }
-        });
-        setClosestFence(bestFence);
-        setDistanceToFence(minDistance);
-      } else {
-        setClosestFence(null);
-        setDistanceToFence(null);
+        const fences = db.geofences || [];
+        const myFences = fences.filter(f => f.assignedStaff && f.assignedStaff.includes(employee.id));
+        LocationManagerService.updateActiveGeoFences(fences, employee.id);
+
+        if (myFences.length > 0) {
+          let minDistance = Infinity;
+          let bestFence = myFences[0];
+          myFences.forEach(f => {
+            const d = getDistanceMeters(f.lat, f.lng, loc.lat, loc.lng);
+            if (d < minDistance) {
+              minDistance = d;
+              bestFence = f;
+            }
+          });
+          setClosestFence(bestFence);
+          setDistanceToFence(minDistance);
+        } else {
+          setClosestFence(null);
+          setDistanceToFence(null);
+        }
+      },
+      (err) => {
+        console.error('GPS tracking failed:', err);
+        setIsLocationBlocked(true);
       }
-    });
+    );
 
     return () => {
       LocationManagerService.stopTracking();
@@ -161,6 +174,43 @@ export default function EmployeeDashboard({
         <button onClick={onLogout} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">
           {t('Go to Login', 'लॉगिन पर जाएं')}
         </button>
+      </div>
+    );
+  }
+
+  if (isLocationBlocked) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center select-none animate-in fade-in duration-200">
+        <div className="max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center text-red-500 mx-auto">
+            <Icon name="location_off" size={32} />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">{t('Location Required', 'लोकेशन आवश्यक है')}</h2>
+            <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+              {t('please turnon location first to use the application.', 'एप का उपयोग करने के लिए कृपया अपनी लोकेशन / GPS चालू करें।')}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  setIsLocationBlocked(false);
+                  window.location.reload();
+                },
+                (err) => {
+                  alert(t('Location is still disabled or blocked. Please enable it in browser settings.', 'लोकेशन अभी भी बंद या ब्लॉक है। कृपया ब्राउज़र सेटिंग में जाकर अनुमति दें।'));
+                }
+              );
+            }}
+            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md transition-all flex items-center justify-center"
+          >
+            {t('Try Again', 'पुनः प्रयास करें')}
+          </button>
+          <button onClick={onLogout} className="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black cursor-pointer transition-all">
+            {t('Logout', 'लॉगआउट')}
+          </button>
+        </div>
       </div>
     );
   }
@@ -239,7 +289,7 @@ export default function EmployeeDashboard({
   const submitPunchRequest = async () => {
     if (!gpsLoc) return;
 
-    if (db.company?.enableSelfie && !punchSelfie) {
+    if (!punchSelfie) {
       alert(t('Selfie verification is mandatory to submit punch request.', 'पंच अनुरोध के लिए सेल्फी सत्यापन अनिवार्य है।'));
       return;
     }
@@ -736,27 +786,27 @@ export default function EmployeeDashboard({
                       </div>
 
                       {/* Camera Selfie Verification Block */}
-                      <div className="border border-slate-150 rounded-2xl p-3 bg-slate-50 flex flex-col items-center justify-center space-y-2">
-                        <div className="text-[9px] font-black text-slate-550 uppercase tracking-wider">
-                          🤳 {t('Camera Selfie Verification', 'सेल्फी सत्यापन')} {db.company?.enableSelfie && <span className="text-rose-600 font-black">({t('Mandatory', 'अनिवार्य')})</span>}
+                      <div className="border border-rose-100 rounded-2xl p-3 bg-rose-50/10 flex flex-col items-center justify-center space-y-2">
+                        <div className="text-[9px] font-black text-rose-600 uppercase tracking-wider">
+                          🤳 {t('Live Selfie Required', 'सेल्फी अनिवार्य है')} — <span className="text-rose-500">{t('Camera Only', 'सिर्फ कैमरे से')}</span>
                         </div>
                         
                         {punchSelfie ? (
-                          <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-black flex-shrink-0">
+                          <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-black flex-shrink-0">
                             <img src={punchSelfie} alt="Selfie preview" className="w-full h-full object-cover" />
                             <button
                               type="button"
                               onClick={() => setPunchSelfie(null)}
-                              className="absolute top-1 right-1 bg-black/65 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] cursor-pointer"
+                              className="absolute top-1 right-1 bg-black/65 text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px] cursor-pointer"
                             >
                               ✕
                             </button>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center">
-                            <label className="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95">
+                          <div className="flex flex-col items-center justify-center gap-1.5">
+                            <label className="h-8 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95">
                               <Icon name="photo_camera" size={14} />
-                              <span>{t('Capture Selfie', 'सेल्फी फोटो लें')}</span>
+                              <span>{t('Take Selfie Now', 'अभी सेल्फी लें')}</span>
                               <input
                                 type="file"
                                 accept="image/*"
@@ -765,6 +815,7 @@ export default function EmployeeDashboard({
                                 className="hidden"
                               />
                             </label>
+                            <p className="text-[8px] text-rose-500 font-semibold">{t('Gallery upload blocked', 'गैलरी फोटो मान्य नहीं है')}</p>
                           </div>
                         )}
                       </div>
@@ -773,7 +824,7 @@ export default function EmployeeDashboard({
                     <div className="flex gap-3 pt-2">
                       <button
                         onClick={submitPunchRequest}
-                        disabled={isPunching || !gpsLoc || (db.company?.enableSelfie && !punchSelfie)}
+                        disabled={isPunching || !gpsLoc || !punchSelfie}
                         className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md disabled:opacity-40 transition-all flex items-center justify-center"
                       >
                         {isPunching ? t('Submitting...', 'जमा किया जा रहा है...') : t('Submit Request', 'अनुरोध भेजें')}
@@ -785,6 +836,9 @@ export default function EmployeeDashboard({
                         {t('Cancel', 'रद्द करें')}
                       </button>
                     </div>
+                    {!punchSelfie && (
+                      <p className="text-center text-[9px] text-rose-500 font-bold mt-1">{t('Selfie is mandatory to submit punch', 'पंच भेजने के लिए सेल्फी जरूरी है')}</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -904,124 +958,272 @@ export default function EmployeeDashboard({
         {/* --- TAB CONTENT: 2. ATTENDANCE --- */}
         {activeTab === 'attendance' && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2 mb-2">
-              <Icon name="calendar_month" size={16} className="text-blue-600" />
-              <span>{t('Daily Attendance Register', 'दैनिक उपस्थिति विवरण')}</span>
-            </h3>
-
-            {attendanceList.length === 0 ? (
-              <div className="text-center py-8 bg-white border border-slate-150 rounded-2xl text-xs text-slate-400 font-medium">
-                {t('No attendance records found for this period.', 'इस अवधि के लिए कोई हाजिरी रिकॉर्ड नहीं मिला।')}
-              </div>
-            ) : (
-              <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
-                {attendanceList.map(({ dateStr, day, record }) => {
-                  let totalHrs = 0;
-                  if (record?.sessions) {
-                    record.sessions.forEach(s => {
-                      if (s.in && s.out) totalHrs += timeToHrs(s.in, s.out);
-                    });
+            {(() => {
+              const toMin = (t: string) => {
+                const [h, m] = t.split(':').map(Number);
+                return h * 60 + m;
+              };
+              const formatTime12h = (time24?: string) => {
+                if (!time24) return '—';
+                const parts = time24.split(':');
+                if (parts.length < 2) return time24;
+                const h = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10);
+                if (isNaN(h) || isNaN(m)) return time24;
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 === 0 ? 12 : h % 12;
+                return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+              };
+              const calculateBreakHours = (sessions: PunchSession[]): number => {
+                if (sessions.length <= 1) return 0;
+                const sorted = [...sessions]
+                  .filter(s => s.in && s.out)
+                  .sort((a, b) => toMin(a.in) - toMin(b.in));
+                let breakMins = 0;
+                for (let i = 0; i < sorted.length - 1; i++) {
+                  const endCurrent = toMin(sorted[i].out);
+                  const startNext = toMin(sorted[i + 1].in);
+                  if (startNext > endCurrent) {
+                    breakMins += (startNext - endCurrent);
                   }
+                }
+                return breakMins / 60;
+              };
 
-                  return (
-                    <div key={day} className="bg-white border border-slate-150 rounded-xl p-3 shadow-3xs flex items-center justify-between gap-4">
-                      <div className="space-y-1">
-                        <div className="text-xs font-bold text-slate-900">
-                          {day} {months[selMonth]} {selYear}
-                        </div>
-                        {record?.sessions && record.sessions.length > 0 ? (
-                          <div className="text-[10px] text-slate-400 font-medium">
-                            {record.sessions.map((s, sidx) => (
-                              <span key={sidx} className="inline-block mr-2.5 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
-                                {s.in} - {s.out || '...'}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">
-                            {t('No punch sessions active', 'कोई पंच सत्र नहीं है')}
-                          </div>
-                        )}
-                      </div>
+              return (
+                <>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2 mb-2">
+                    <Icon name="calendar_month" size={16} className="text-blue-600" />
+                    <span>{t('Daily Attendance Register', 'दैनिक उपस्थिति विवरण')}</span>
+                  </h3>
 
-                      <div className="text-right space-y-1">
-                        <span className={`text-[10px] inline-block ${getStatusBadgeClass(record?.status)}`}>
-                          {record?.status ? translateStatus(record.status) : (totalHrs > 0 ? t('Present', 'उपस्थित') : t('Not Marked', 'अचिह्नित'))}
-                        </span>
-                        {totalHrs > 0 && (
-                          <div className="text-[10px] text-slate-500 font-bold">
-                            {totalHrs.toFixed(2)} {t('Hrs worked', 'घंटे काम किया')}
-                          </div>
-                        )}
-                      </div>
+                  {attendanceList.length === 0 ? (
+                    <div className="text-center py-8 bg-white border border-slate-150 rounded-2xl text-xs text-slate-400 font-medium">
+                      {t('No attendance records found for this period.', 'इस अवधि के लिए कोई हाजिरी रिकॉर्ड नहीं मिला।')}
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  ) : (
+                    <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+                      {attendanceList.map(({ dateStr, day, record }) => {
+                        let totalHrs = 0;
+                        if (record?.sessions) {
+                          record.sessions.forEach(s => {
+                            if (s.in && s.out) totalHrs += timeToHrs(s.in, s.out);
+                          });
+                        }
+
+                        return (
+                          <div key={day} className="bg-white border border-slate-150 rounded-xl p-3.5 shadow-3xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all hover:border-slate-250">
+                            <div className="space-y-1.5 flex-1">
+                              <div className="flex items-center gap-2">
+                                <div className="text-xs font-black text-slate-950">
+                                  {day} {months[selMonth]} {selYear}
+                                </div>
+                                {(() => {
+                                  const dateOT = db.overtimeEntries?.filter(o => o.employeeId === employee.id && o.date === dateStr) || [];
+                                  const totalOT = dateOT.reduce((acc, o) => acc + o.hours, 0);
+                                  return totalOT > 0 ? (
+                                    <span className="text-[8px] font-black bg-amber-50 text-amber-700 border border-amber-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                                      OT: {totalOT.toFixed(1)}h
+                                    </span>
+                                  ) : null;
+                                })()}
+                              </div>
+
+                              {record?.sessions && record.sessions.length > 0 ? (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {record.sessions.map((s, sidx) => (
+                                    <span key={sidx} className="inline-flex items-center text-[9px] text-slate-500 font-bold bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-lg font-mono">
+                                      🚪 {formatTime12h(s.in)} - {s.out ? formatTime12h(s.out) : '...'}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">
+                                  {t('No punch sessions active', 'कोई पंच सत्र नहीं है')}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-3 sm:text-right flex-wrap sm:flex-nowrap">
+                              <div className="flex items-center gap-2 flex-wrap sm:flex-col sm:items-end">
+                                {totalHrs > 0 && (
+                                  <span className="text-[9.5px] text-blue-600 font-black bg-blue-50 border border-blue-100/50 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                    ⏱ {totalHrs.toFixed(1)} {t('Hrs', 'घंटे')}
+                                  </span>
+                                )}
+                                {(() => {
+                                  const breakHrs = record?.sessions ? calculateBreakHours(record.sessions) : 0;
+                                  return breakHrs > 0 ? (
+                                    <span className="text-[9px] text-slate-500 font-bold bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-lg flex items-center gap-1 font-mono">
+                                      ☕ Break: {breakHrs.toFixed(1)}h
+                                    </span>
+                                  ) : null;
+                                })()}
+                              </div>
+
+                              <span className={`text-[10px] inline-block shrink-0 ${getStatusBadgeClass(record?.status)}`}>
+                                {record?.status ? translateStatus(record.status) : (totalHrs > 0 ? t('Present', 'उपस्थित') : t('Not Marked', 'अचिह्नित'))}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
 
         {/* --- TAB CONTENT: 3. SALARY BREAKDOWN --- */}
         {activeTab === 'salary' && (
           <div className="space-y-5 animate-in fade-in duration-200">
-            {/* Earnings breakdown */}
+            {/* 1. Base Earnings Summary */}
             <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
               <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                <span>{t('Earnings Summary', 'अर्जित विवरण')}</span>
-                <span className="text-emerald-600">{formatCurrency(metrics.earnedSalary + metrics.overtime + metrics.extraEarnings)}</span>
+                <span>{t('Earnings Summary (Base)', 'मूल अर्जित वेतन विवरण')}</span>
+                <span className="text-emerald-600">{formatCurrency(metrics.earnedSalary)}</span>
               </div>
-              
               <div className="space-y-2 text-xs">
-                {metrics.details.earningsRows.map((row, idx) => (
-                  <div key={idx} className="flex justify-between font-medium text-slate-500">
-                    <span>{row.label} ({row.date})</span>
-                    <span className="font-bold text-slate-800">{formatCurrency(row.value)}</span>
+                {metrics.details.earningsRows.length === 0 ? (
+                  <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    {t('No base earnings recorded for this period', 'इस अवधि के लिए कोई मूल आय दर्ज नहीं है')}
                   </div>
-                ))}
-                {metrics.details.overtimeRows.map((row, idx) => (
-                  <div key={idx} className="flex justify-between font-medium text-slate-500">
-                    <span>{row.desc} ({row.date})</span>
-                    <span className="font-bold text-slate-800">{formatCurrency(row.amount)}</span>
-                  </div>
-                ))}
-                {metrics.details.extraEarningsRows.map((row, idx) => (
-                  <div key={idx} className="flex justify-between font-medium text-slate-500">
-                    <span>{row.desc} ({row.date})</span>
-                    <span className="font-bold text-slate-800">{formatCurrency(row.amount)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Deductions breakdown */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
-              <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                <span>{t('Deductions & Fines', 'कटौती एवं जुर्माना')}</span>
-                <span className="text-rose-600">{formatCurrency(metrics.deductions)}</span>
-              </div>
-
-              {metrics.details.deductionsRows.length === 0 ? (
-                <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                  {t('No deductions registered this month', 'इस महीने कोई कटौती नहीं है')}
-                </div>
-              ) : (
-                <div className="space-y-2 text-xs">
-                  {metrics.details.deductionsRows.map((row, idx) => (
+                ) : (
+                  metrics.details.earningsRows.map((row, idx) => (
                     <div key={idx} className="flex justify-between font-medium text-slate-500">
-                      <span>{row.desc} ({row.date})</span>
-                      <span className="font-bold text-rose-600">- {formatCurrency(row.amount)}</span>
+                      <span>{row.label} ({row.date})</span>
+                      <span className="font-bold text-slate-800">{formatCurrency(row.value)}</span>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </div>
 
-            {/* Payments breakdown */}
+            {/* 2. Overtime (OT) Details */}
             <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
               <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
-                <span>{t('Received Payments Ledger', 'प्राप्त भुगतानों का लेखा')}</span>
-                <span className="text-blue-600">{formatCurrency(metrics.payments)}</span>
+                <span>{t('Overtime (OT) Ledger', 'ओवरटाइम विवरण')}</span>
+                <span className="text-amber-600">{formatCurrency(metrics.overtime)}</span>
+              </div>
+              <div className="space-y-2 text-xs">
+                {metrics.details.overtimeRows.length === 0 ? (
+                  <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    {t('No overtime hours registered this month', 'इस महीने कोई ओवरटाइम दर्ज नहीं है')}
+                  </div>
+                ) : (
+                  metrics.details.overtimeRows.map((row, idx) => (
+                    <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
+                      <div>
+                        <div className="font-bold text-slate-800">{row.desc}</div>
+                        <div className="text-[9px] text-slate-400 font-mono mt-0.5">{row.date} · {row.hours.toFixed(1)} hrs</div>
+                      </div>
+                      <span className="font-black text-slate-855 self-center">{formatCurrency(row.amount)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* 3. Extra Earnings (Bonus/Incentives) */}
+            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
+              <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
+                <span>{t('Bonuses & Extra Earnings', 'बोनस एवं अन्य आय')}</span>
+                <span className="text-emerald-600">{formatCurrency(metrics.extraEarnings)}</span>
+              </div>
+              <div className="space-y-2 text-xs">
+                {metrics.details.extraEarningsRows.length === 0 ? (
+                  <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    {t('No bonuses registered this month', 'इस महीने कोई अतिरिक्त आय या बोनस नहीं है')}
+                  </div>
+                ) : (
+                  metrics.details.extraEarningsRows.map((row, idx) => (
+                    <div key={idx} className="flex justify-between font-medium text-slate-555 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
+                      <div>
+                        <div className="font-bold text-slate-850">{row.desc}</div>
+                        <div className="text-[9px] text-slate-400 font-mono mt-0.5">{row.date}</div>
+                      </div>
+                      <span className="font-black text-emerald-600 self-center">+ {formatCurrency(row.amount)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* 4. Late Fines (Fines separate) */}
+            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
+              {(() => {
+                const lateFineRows = metrics.details.deductionsRows.filter(r => r.desc.startsWith('Late Fine:'));
+                const totalLateFine = lateFineRows.reduce((sum, r) => sum + r.amount, 0);
+
+                return (
+                  <>
+                    <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
+                      <span>{t('Late Fines Ledger', 'विलंब जुर्माना विवरण')}</span>
+                      <span className="text-rose-600">{formatCurrency(totalLateFine)}</span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      {lateFineRows.length === 0 ? (
+                        <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                          {t('No late fines registered this month', 'इस महीने कोई लेट फाइन नहीं है')}
+                        </div>
+                      ) : (
+                        lateFineRows.map((row, idx) => (
+                          <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
+                            <div>
+                              <div className="font-bold text-slate-800">{row.desc.replace('Late Fine:', '').trim()}</div>
+                              <div className="text-[9px] text-slate-455 font-mono mt-0.5">{row.date}</div>
+                            </div>
+                            <span className="font-black text-rose-600 self-center">- {formatCurrency(row.amount)}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* 5. Deductions (Damage, Recoveries, etc.) */}
+            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
+              {(() => {
+                const standardDeductions = metrics.details.deductionsRows.filter(r => !r.desc.startsWith('Late Fine:'));
+                const totalDeductions = standardDeductions.reduce((sum, r) => sum + r.amount, 0);
+
+                return (
+                  <>
+                    <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
+                      <span>{t('Standard Deductions', 'कटौती एवं अन्य वसूलियां')}</span>
+                      <span className="text-rose-600">{formatCurrency(totalDeductions)}</span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      {standardDeductions.length === 0 ? (
+                        <div className="text-center py-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                          {t('No other deductions this month', 'इस महीने कोई अन्य कटौती नहीं है')}
+                        </div>
+                      ) : (
+                        standardDeductions.map((row, idx) => (
+                          <div key={idx} className="flex justify-between font-medium text-slate-550 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
+                            <div>
+                              <div className="font-bold text-slate-800">{row.desc}</div>
+                              <div className="text-[9px] text-slate-455 font-mono mt-0.5">{row.date}</div>
+                            </div>
+                            <span className="font-black text-rose-600 self-center">- {formatCurrency(row.amount)}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* 6. Payments Ledger */}
+            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-3xs space-y-3">
+              <div className="text-xs font-black text-slate-950 uppercase tracking-wider flex items-center justify-between border-b border-slate-50 pb-2">
+                <span>{t('Received Payments Ledger', 'प्राप्त भुगतान बही (Ledger)')}</span>
+                <span className="text-blue-650">{formatCurrency(metrics.payments)}</span>
               </div>
 
               {metrics.details.paymentsRows.length === 0 ? (
@@ -1033,9 +1235,9 @@ export default function EmployeeDashboard({
                   {metrics.details.paymentsRows.map((row, idx) => (
                     <div key={idx} className="flex items-center justify-between gap-4 border-b border-slate-50 pb-2 last:border-b-0 last:pb-0">
                       <div className="space-y-0.5">
-                        <div className="font-bold text-slate-800">{row.desc || t('Salary Disbursed', 'वेतन प्राप्त')}</div>
+                        <div className="font-bold text-slate-800">{row.desc || t('Salary Disbursed', 'वेतन भुगतान')}</div>
                         <div className="text-[10px] text-slate-450 font-semibold">
-                          {row.date} · <span className="bg-slate-50 border border-slate-100 rounded px-1.5 py-0.2">{row.mode}</span>
+                          {row.date} · <span className="bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5 font-mono">{row.mode}</span>
                         </div>
                       </div>
                       <span className="font-black text-emerald-600">{formatCurrency(row.amount)}</span>

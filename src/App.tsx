@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppDatabase, Employee, EmployeeType, RecycleBinItem, AuditLogEntry, ApprovalRequest } from './types';
-import { loadDatabase, saveDatabase, calcEmployeeFinancials, DEFAULT_DATABASE } from './db';
+import { loadDatabase, saveDatabase, calcEmployeeFinancials, DEFAULT_DATABASE, timeToHrs } from './db';
+import { SyncEngineService } from './services/SyncEngine';
 import { 
   saveDatabaseToFirebase, 
   syncDatabaseFromFirebase, 
@@ -41,7 +42,66 @@ export default function App() {
     return localStorage.getItem('gaushala_employee_session_id') || null;
   });
 
-  const [db, setDb] = useState<AppDatabase>(() => loadDatabase());
+  // Helper function to sync auto overtime entries for Daily/Monthly employees
+  const syncAutoOvertime = (currentDb: AppDatabase): AppDatabase => {
+    let otEntries = [...(currentDb.overtimeEntries || [])];
+    
+    // Filter out previous auto-calculated entries to clean slate
+    otEntries = otEntries.filter(
+      (o) => o.description !== "Auto-calculated Overtime" && o.description !== "Overtime Request Approved" && o.description !== "Overtime"
+    );
+
+    // Calculate overtime for each day for Daily/Monthly employees
+    Object.keys(currentDb.attendance).forEach((key) => {
+      const parts = key.split('_');
+      if (parts.length < 2) return;
+      const employeeId = parts[0];
+      const date = parts[1];
+
+      const employee = currentDb.employees.find((e) => e.id === employeeId);
+      if (!employee || employee.type === 'Hourly') return;
+
+      const rec = currentDb.attendance[key];
+      if (!rec || !rec.sessions || rec.sessions.length === 0) return;
+
+      // Sum hours of all sessions for this day
+      let totalHrs = 0;
+      rec.sessions.forEach((s) => {
+        if (s.in && s.out) {
+          totalHrs += timeToHrs(s.in, s.out);
+        }
+      });
+
+      const baseHours = employee.baseHours || 8;
+      if (totalHrs > baseHours) {
+        const excessHrs = totalHrs - baseHours;
+        otEntries.push({
+          id: `_OT_AUTO_${employeeId}_${date}_${Date.now()}`,
+          employeeId,
+          date,
+          hours: parseFloat(excessHrs.toFixed(2)),
+          calcType: 'HourlyRate',
+          amount: 0,
+          description: 'Auto-calculated Overtime'
+        });
+      }
+    });
+
+    return {
+      ...currentDb,
+      overtimeEntries: otEntries
+    };
+  };
+
+  const [db, rawSetDb] = useState<AppDatabase>(() => loadDatabase());
+
+  const setDb = (newDb: AppDatabase | ((prev: AppDatabase) => AppDatabase)) => {
+    if (typeof newDb === 'function') {
+      rawSetDb((prev) => syncAutoOvertime(newDb(prev)));
+    } else {
+      rawSetDb(syncAutoOvertime(newDb));
+    }
+  };
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   // Enterprise overlays
@@ -190,6 +250,87 @@ export default function App() {
         });
     }
   }, [db, syncStatus]);
+
+  // Periodic background SyncEngine queue flush to Firebase every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (syncStatus === 'synced') {
+        SyncEngineService.processQueue(db, (updatedDb) => {
+          setDb(updatedDb);
+        });
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [db, syncStatus]);
+
+  // Auto-delete audit logs older than 15 days on application start
+  useEffect(() => {
+    if (db.auditLogs && db.auditLogs.length > 0) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 15);
+      const filtered = db.auditLogs.filter((log) => {
+        try {
+          // Format YYYY-MM-DD HH:mm:ss to parsable ISO format
+          const parsableStr = log.timestamp.replace(' ', 'T');
+          return new Date(parsableStr) >= cutoff;
+        } catch {
+          return true; 
+        }
+      });
+      if (filtered.length !== db.auditLogs.length) {
+        setDb((prev) => ({
+          ...prev,
+          auditLogs: filtered
+        }));
+      }
+    }
+    // Run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Check at 8:00 PM if any employee forgot to punch out and alert the admin
+  useEffect(() => {
+    const checkForgotPunchOut = () => {
+      const now = new Date();
+      if (now.getHours() === 20 && now.getMinutes() < 2) {
+        const dateStr = now.toISOString().split('T')[0];
+        let updated = false;
+        let newNotifs = [...(db.notifications || [])];
+
+        db.employees.forEach((emp) => {
+          if (emp.status !== 'Active') return;
+          const rec = db.attendance[`${emp.id}_${dateStr}`];
+          if (rec && rec.sessions && rec.sessions.length > 0) {
+            const lastSession = rec.sessions[rec.sessions.length - 1];
+            if (lastSession.in && !lastSession.out) {
+              const notifId = `_NTF_FPO_${emp.id}_${dateStr}`;
+              if (!newNotifs.some((n) => n.id === notifId)) {
+                newNotifs.unshift({
+                  id: notifId,
+                  userId: 'admin',
+                  title: lang === 'en' ? 'Forgot Punch Out' : 'पंच-आउट भूल गए',
+                  message: `${emp.name} ${lang === 'en' ? 'forgot to punch out today.' : 'आज शाम को पंच-आउट करना भूल गए।'}`,
+                  timestamp: new Date().toISOString(),
+                  read: false
+                });
+                updated = true;
+              }
+            }
+          }
+        });
+
+        if (updated) {
+          setDb((prev) => ({
+            ...prev,
+            notifications: newNotifs
+          }));
+        }
+      }
+    };
+
+    const interval = setInterval(checkForgotPunchOut, 60000);
+    return () => clearInterval(interval);
+  }, [db.employees, db.attendance, db.notifications, lang]);
 
   useEffect(() => {
     localStorage.setItem('gaushala_lang', lang);
