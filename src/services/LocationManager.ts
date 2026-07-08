@@ -51,17 +51,6 @@ export class LocationManager {
   }
 
   /**
-   * Detects fake/mock GPS apps based on heuristics
-   */
-  private detectMockLocation(accuracy: number, speed: number): boolean {
-    // Suspiciously perfect accuracy (mock GPS usually reports exactly 0-2m)
-    if (accuracy !== null && accuracy < 2) return true;
-    // Speed impossibly high without movement (teleportation)
-    if (speed > 100) return true; // > 360 km/h is suspicious
-    return false;
-  }
-
-  /**
    * Sets up active geofences for boundary crossing detection
    */
   public updateActiveGeoFences(geofences: GeoFence[], employeeId: string) {
@@ -146,12 +135,6 @@ export class LocationManager {
       }
     }
 
-    // Detect mock GPS
-    const isMock = this.detectMockLocation(accuracy, speed) || this.isMockLocationDetected;
-    if (isMock) {
-      this.isMockLocationDetected = true;
-    }
-
     const loc: LiveLocation = {
       employeeId,
       lat,
@@ -160,7 +143,7 @@ export class LocationManager {
       speed,
       accuracy,
       timestamp,
-      isMock,
+      isMock: this.isMockLocationDetected,
       network: this.isOnline ? 'online' : 'offline',
       address: this.lastResolvedAddress || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`
     };

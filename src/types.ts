@@ -35,7 +35,6 @@ export interface PunchSession {
 export interface AttendanceRecord {
   status?: 'Present' | 'Absent' | 'Half Day' | 'Leave';
   sessions?: PunchSession[];
-  selfieUrl?: string; // selfie photo from GeoFence punch
 }
 
 // Flat Transactions Structure
@@ -124,9 +123,7 @@ export type ApprovalCategory =
   | 'Punch Out' 
   | 'Attendance Correction' 
   | 'Leave' 
-  | 'Leave Request'
   | 'Payment' 
-  | 'New Payment'
   | 'Manual Attendance' 
   | 'GeoFence Attendance' 
   | 'Overtime' 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppDatabase, Employee, EmployeeType, RecycleBinItem, AuditLogEntry, ApprovalRequest } from './types';
 import { loadDatabase, saveDatabase, calcEmployeeFinancials, DEFAULT_DATABASE } from './db';
-import { SyncEngineService } from './services/SyncEngine';
 import { 
   saveDatabaseToFirebase, 
   syncDatabaseFromFirebase, 
@@ -191,69 +190,6 @@ export default function App() {
         });
     }
   }, [db, syncStatus]);
-
-  // Wire SyncEngine processQueue for live location tracking (every 30s)
-  const onUpdateDbRef = useRef<((d: AppDatabase) => void) | null>(null);
-  const dbRef = useRef<AppDatabase>(db);
-  useEffect(() => { dbRef.current = db; }, [db]);
-  useEffect(() => {
-    onUpdateDbRef.current = (newDb: AppDatabase) => setDb(newDb);
-  }, []);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (dbRef.current && onUpdateDbRef.current) {
-        SyncEngineService.processQueue(dbRef.current, onUpdateDbRef.current);
-      }
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Auto-delete audit logs older than 15 days
-  useEffect(() => {
-    if (!db.auditLogs || db.auditLogs.length === 0) return;
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 15);
-    const filtered = db.auditLogs.filter(log => {
-      try { return new Date(log.timestamp) >= cutoff; } catch { return true; }
-    });
-    if (filtered.length !== db.auditLogs.length) {
-      setDb(prev => ({ ...prev, auditLogs: filtered }));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Check for employees who forgot to punch out (notify admin at 8 PM)
-  useEffect(() => {
-    const checkForgotPunchOut = () => {
-      const now = new Date();
-      if (now.getHours() !== 20 || now.getMinutes() > 5) return;
-      const todayStr = now.toISOString().split('T')[0];
-      const forgotList = db.employees.filter(emp => {
-        const rec = db.attendance[`${emp.id}_${todayStr}`];
-        if (!rec?.sessions) return false;
-        const last = rec.sessions[rec.sessions.length - 1];
-        return last && last.in && !last.out;
-      });
-      if (forgotList.length > 0) {
-        const notifs = forgotList.map(emp => ({
-          id: `_NTF_FPO_${emp.id}_${Date.now()}`,
-          userId: 'admin',
-          title: lang === 'en' ? 'Forgot Punch Out' : 'पंच आउट भूल गए',
-          message: `${emp.name} ${lang === 'en' ? 'did not punch out today.' : 'आज पंच आउट नहीं किया।'}`,
-          timestamp: new Date().toISOString(),
-          read: false
-        }));
-        const alreadyNotified = notifs.every(n =>
-          (db.notifications || []).some(existing => existing.id === n.id)
-        );
-        if (!alreadyNotified) {
-          setDb(prev => ({ ...prev, notifications: [...notifs, ...(prev.notifications || [])] }));
-        }
-      }
-    };
-    const interval = setInterval(checkForgotPunchOut, 60000);
-    return () => clearInterval(interval);
-  }, [db, lang]);
 
   useEffect(() => {
     localStorage.setItem('gaushala_lang', lang);

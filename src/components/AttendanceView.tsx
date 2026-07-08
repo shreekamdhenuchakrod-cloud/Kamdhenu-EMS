@@ -503,22 +503,6 @@ export default function AttendanceView({
                     </div>
                   </div>
 
-                  {/* Selfie Badge — if GeoFence punch had selfie */}
-                  {rec.selfieUrl && (
-                    <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5">
-                      <img
-                        src={rec.selfieUrl}
-                        alt="Punch selfie"
-                        className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm cursor-pointer hover:scale-105 transition-transform"
-                        onClick={() => window.open(rec.selfieUrl!, '_blank')}
-                      />
-                      <div>
-                        <div className="text-[9px] font-black text-emerald-700 uppercase tracking-wider">{t('GeoFence Selfie Verified', 'जियोफेंस सेल्फी सत्यापित')}</div>
-                        <div className="text-[8px] text-emerald-600 font-semibold">{t('Click to view full size', 'पूरी तस्वीर देखने के लिए क्लिक करें')}</div>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Operational Punch Actions inline */}
                   <div className="flex gap-2 items-center">
                     <button

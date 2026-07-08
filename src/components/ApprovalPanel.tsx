@@ -37,13 +37,13 @@ export default function ApprovalPanel({
   // Employee-facing views: 'list' | 'new_request' | 'edit_request'
   const [empView, setEmpView] = useState<'list' | 'new_request' | 'edit_request'>('list');
 
-  // Request Type: 'attendance' | 'payment' | 'leave' | 'new_payment'
-  const [requestType, setRequestType] = useState<'attendance' | 'payment' | 'leave' | 'new_payment'>('attendance');
+  // Request Type: 'attendance' | 'payment'
+  const [requestType, setRequestType] = useState<'attendance' | 'payment'>('attendance');
 
   // Categories list
   const categories: ApprovalCategory[] = [
-    'Punch In', 'Punch Out', 'Attendance Correction', 'Leave', 'Leave Request',
-    'Payment', 'New Payment', 'Manual Attendance', 'GeoFence Attendance', 'Overtime', 'Early Exit', 'Late Entry', 'Device Register'
+    'Punch In', 'Punch Out', 'Attendance Correction', 'Leave', 
+    'Payment', 'Manual Attendance', 'GeoFence Attendance', 'Overtime', 'Early Exit', 'Late Entry', 'Device Register'
   ];
 
   // Filtering (Admin & Employee)
@@ -79,11 +79,6 @@ export default function ApprovalPanel({
   const [newPaymentAmount, setNewPaymentAmount] = useState<string>('');
   const [newPaymentMode, setNewPaymentMode] = useState<string>('Cash');
   const [newPaymentDesc, setNewPaymentDesc] = useState<string>('');
-
-  // Leave request form states
-  const [leaveStartDate, setLeaveStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [leaveDays, setLeaveDays] = useState<number>(1);
-  const [leaveReason, setLeaveReason] = useState<string>('');
 
   // Time Picker states
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -157,19 +152,6 @@ export default function ApprovalPanel({
           newVal = statusVal;
         }
       }
-    } else if (requestType === 'leave') {
-      category = 'Leave Request';
-      oldVal = t('No leave on record', 'कोई छुट्टी नहीं है');
-      newVal = JSON.stringify({ startDate: leaveStartDate, days: leaveDays, reason: leaveReason });
-    } else if (requestType === 'new_payment') {
-      category = 'New Payment';
-      oldVal = t('No payment', 'कोई भुगतान नहीं');
-      newVal = JSON.stringify({
-        amount: parseFloat(newPaymentAmount) || 0,
-        date: newPaymentDate,
-        mode: newPaymentMode,
-        description: newPaymentDesc
-      });
     } else {
       // Payment Correction Request
       category = 'Payment';
@@ -202,37 +184,22 @@ export default function ApprovalPanel({
       if (employeeType === 'Hourly') {
         const hasAnyCheck = punchSessions.some(s => s.inEnabled || s.outEnabled);
         if (!hasAnyCheck) {
-          alert(t('Please select at least one punch time!', 'कम से कम एक पंच टाइम चुनें!'));
+          alert(t('Please select at least one Punch In or Punch Out time to request correction!', 'कृपया सुधार का अनुरोध करने के लिए कम से कम एक पंच इन या पंच आउट समय चुनें!'));
           return;
         }
       }
-    } else if (requestType === 'leave') {
-      if (!leaveReason.trim()) {
-        alert(t('Reason is mandatory for leave request!', 'छुट्टी की वजह लिखना जरूरी है!'));
-        return;
-      }
-    } else if (requestType === 'new_payment') {
-      const amt = parseFloat(newPaymentAmount);
-      if (isNaN(amt) || amt <= 0) {
-        alert(t('Please enter a valid amount!', 'सही राशि दर्ज करें!'));
-        return;
-      }
-      if (!newPaymentDate) {
-        alert(t('Please select date!', 'तारीख चुनें!'));
-        return;
-      }
     } else {
       if (!selPaymentId) {
-        alert(t('Please select a payment to edit!', 'संपादित करने के लिए भुगतान चुनें!'));
+        alert(t('Please select a payment record to edit!', 'कृपया संपादित करने के लिए एक भुगतान रिकॉर्ड चुनें!'));
         return;
       }
       const amt = parseFloat(newPaymentAmount);
       if (isNaN(amt) || amt <= 0) {
-        alert(t('Please enter a valid amount!', 'सही राशि दर्ज करें!'));
+        alert(t('Please enter a valid amount!', 'कृपया मान्य राशि दर्ज करें!'));
         return;
       }
       if (!newPaymentDate) {
-        alert(t('Please select date!', 'तारीख चुनें!'));
+        alert(t('Please select date!', 'कृपया तारीख का चयन करें!'));
         return;
       }
     }
@@ -417,9 +384,7 @@ export default function ApprovalPanel({
           draft.attendance[key] = {
             ...existingRec,
             status: 'Present',
-            sessions,
-            // Save selfie photo from punch request for admin to view
-            selfieUrl: req.employeePic || existingRec.selfieUrl
+            sessions
           };
         } else if (req.category === 'Overtime') {
           let otHours = 0;
@@ -450,33 +415,6 @@ export default function ApprovalPanel({
               ? { ...p, date: parsed.date, amount: parsed.amount, mode: parsed.mode, description: parsed.description } 
               : p
           );
-        } else if (req.category === 'New Payment') {
-          // Employee requested a new payment entry — create it
-          const parsed = JSON.parse(req.newValue);
-          const newPayment = {
-            id: `_PAY_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-            employeeId: req.employeeId,
-            amount: parsed.amount,
-            date: parsed.date,
-            mode: parsed.mode as any,
-            description: parsed.description || '',
-            paymentType: 'Employee Request'
-          };
-          draft.payments = [...draft.payments, newPayment];
-        } else if (req.category === 'Leave Request') {
-          // Mark leave days in attendance
-          let parsed: { startDate: string; days: number; reason: string } | null = null;
-          try { parsed = JSON.parse(req.newValue); } catch {}
-          if (parsed) {
-            const start = new Date(parsed.startDate);
-            for (let d = 0; d < parsed.days; d++) {
-              const date = new Date(start);
-              date.setDate(start.getDate() + d);
-              const dateStr = date.toISOString().split('T')[0];
-              const key = `${req.employeeId}_${dateStr}`;
-              draft.attendance[key] = { ...draft.attendance[key], status: 'Leave' };
-            }
-          }
         } else if (req.category === 'Device Register') {
           draft.employees = draft.employees.map(emp => 
             emp.id === req.employeeId 
@@ -801,19 +739,13 @@ export default function ApprovalPanel({
 
   const getCategoryHi = (cat: string) => {
     switch(cat) {
-      case 'GeoFence Attendance': return 'जियोफेंस हाजिरी';
-      case 'Attendance Correction': return 'हाजिरी सुधार';
-      case 'Punch In': return 'पंच इन';
-      case 'Punch Out': return 'पंच आउट';
+      case 'GeoFence Attendance': return 'जियोफेंस से हाजिरी';
+      case 'Attendance Correction': return 'मैनुअल हाजिरी सुधार';
+      case 'Punch In': return 'पंच इन (सुधार)';
+      case 'Punch Out': return 'पंच आउट (सुधार)';
       case 'Payment': return 'भुगतान सुधार';
-      case 'New Payment': return 'नया भुगतान';
-      case 'Overtime': return 'ओवरटाइम';
+      case 'Overtime': return 'ओवरटाइम (अतिरिक्त समय)';
       case 'Leave': return 'छुट्टी';
-      case 'Leave Request': return 'छुट्टी रिक्वेस्ट';
-      case 'Manual Attendance': return 'मैनुअल हाजिरी';
-      case 'Device Register': return 'डिवाइस रजिस्ट्रेशन';
-      case 'Early Exit': return 'जल्दी निकलना';
-      case 'Late Entry': return 'देर से आना';
       default: return cat;
     }
   };
@@ -900,46 +832,26 @@ export default function ApprovalPanel({
           </div>
 
           {/* Request Type Toggle Selector */}
-          <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1 mb-4">
+          <div className="flex rounded-xl border border-slate-200 overflow-hidden bg-slate-50 p-1 mb-4">
             <button
               type="button"
               onClick={() => setRequestType('attendance')}
-              className={`h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 requestType === 'attendance' ? 'bg-white text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              <Icon name="edit_calendar" size={14} />
+              <Icon name="edit_calendar" size={16} />
               <span>{t('Attendance', 'हाजिरी सुधार')}</span>
             </button>
             <button
               type="button"
-              onClick={() => setRequestType('leave')}
-              className={`h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                requestType === 'leave' ? 'bg-white text-violet-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <Icon name="beach_access" size={14} />
-              <span>{t('Leave', 'छुट्टी')}</span>
-            </button>
-            <button
-              type="button"
               onClick={() => setRequestType('payment')}
-              className={`h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 requestType === 'payment' ? 'bg-white text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              <Icon name="edit_note" size={14} />
-              <span>{t('Fix Payment', 'भुगतान सुधार')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setRequestType('new_payment')}
-              className={`h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                requestType === 'new_payment' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <Icon name="add_card" size={14} />
-              <span>{t('New Payment', 'नया भुगतान')}</span>
+              <Icon name="payments" size={16} />
+              <span>{t('Payment Request', 'भुगतान सुधार')}</span>
             </button>
           </div>
 
@@ -1183,69 +1095,6 @@ export default function ApprovalPanel({
                   </div>
                 )}
 
-              </div>
-            )}
-
-            {/* LEAVE REQUEST FORM */}
-            {requestType === 'leave' && (
-              <div className="space-y-4 border-t border-slate-100 pt-3 animate-in slide-in-from-top-2 duration-200">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="fld mb-0">
-                    <label>{t('Leave Start Date', 'छुट्टी शुरू होने की तारीख')}</label>
-                    <input type="date" value={leaveStartDate} onChange={e => setLeaveStartDate(e.target.value)} className="fi" required />
-                  </div>
-                  <div className="fld mb-0">
-                    <label>{t('No. of Days', 'कितने दिन')}</label>
-                    <select value={leaveDays} onChange={e => setLeaveDays(parseInt(e.target.value))} className="fi">
-                      {[1,2,3,4,5,6,7,8,9].map(d => (
-                        <option key={d} value={d}>{d} {t('Day', 'दिन')}{d > 1 && lang === 'en' ? 's' : ''}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="fld">
-                  <label>{t('Reason for Leave', 'छुट्टी की वजह')} <span className="text-rose-500 ml-1">*</span></label>
-                  <textarea
-                    value={leaveReason}
-                    onChange={e => setLeaveReason(e.target.value)}
-                    placeholder={t('e.g. Medical, Family event, Personal work...', 'जैसे: बीमारी, शादी, निजी काम...')}
-                    className="fi resize-none h-20"
-                    required
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* NEW PAYMENT REQUEST FORM */}
-            {requestType === 'new_payment' && (
-              <div className="space-y-4 border-t border-slate-100 pt-3 animate-in slide-in-from-top-2 duration-200">
-                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-[10px] text-emerald-700 font-semibold">
-                  💡 {t('Request admin to record a payment you received.', 'जो पैसा मिला है उसे दर्ज करने के लिए admin को रिक्वेस्ट भेजें।')}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="fld mb-0">
-                    <label>{t('Payment Date', 'भुगतान की तारीख')}</label>
-                    <input type="date" value={newPaymentDate} onChange={e => setNewPaymentDate(e.target.value)} className="fi" required />
-                  </div>
-                  <div className="fld mb-0">
-                    <label>{t('Amount (₹)', 'राशि (₹)')}</label>
-                    <input type="number" value={newPaymentAmount} onChange={e => setNewPaymentAmount(e.target.value)} placeholder="5000" className="fi" required />
-                  </div>
-                </div>
-                <div className="fld">
-                  <label>{t('Payment Mode', 'भुगतान का तरीका')}</label>
-                  <select value={newPaymentMode} onChange={e => setNewPaymentMode(e.target.value)} className="fi bg-white">
-                    <option value="Cash">Cash (नकद)</option>
-                    <option value="UPI">UPI / Online</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Cheque">Cheque</option>
-                  </select>
-                </div>
-                <div className="fld">
-                  <label>{t('Description', 'विवरण')} <span className="text-slate-400 text-[9px] ml-1">({t('optional', 'वैकल्पिक')})</span></label>
-                  <input type="text" value={newPaymentDesc} onChange={e => setNewPaymentDesc(e.target.value)}
-                    placeholder={t('e.g. June salary, Advance...', 'जैसे: जून सैलरी, अग्रिम...')} className="fi bg-white" />
-                </div>
               </div>
             )}
 
