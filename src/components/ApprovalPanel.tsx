@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AppDatabase, Employee, ApprovalRequest, ApprovalCategory, ApprovalStatus, AttendanceRecord, AuditLogEntry, Payment
 } from '../types';
@@ -81,7 +81,7 @@ export default function ApprovalPanel({
     inTime: string;
     outEnabled: boolean;
     outTime: string;
-  }>>([{ inEnabled: true, inTime: getCurrentTimeHHmm(), outEnabled: false, outTime: getCurrentTimeHHmm() }]);
+  }>>([{ inEnabled: true, inTime: '09:00', outEnabled: false, outTime: '17:00' }]);
 
   // Payment correction form states
   const [selPaymentId, setSelPaymentId] = useState<string>('');
@@ -106,6 +106,42 @@ export default function ApprovalPanel({
   const [rejectionReason, setRejectionReason] = useState<string>('');
   const [selectedRequestDetails, setSelectedRequestDetails] = useState<ApprovalRequest | null>(null);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+  // Load existing punches when target date, requestType or correctionMode changes in new request mode
+  useEffect(() => {
+    if (empView !== 'new_request') return;
+    if (requestType === 'attendance') {
+      const key = `${employeeId}_${reqDate}`;
+      const existingRec = db.attendance[key];
+
+      if (existingRec) {
+        if (existingRec.sessions && existingRec.sessions.length > 0) {
+          setCorrectionMode('sessions');
+          setPunchSessions(existingRec.sessions.map(s => ({
+            inEnabled: !!s.in,
+            inTime: s.in || '09:00',
+            outEnabled: !!s.out,
+            outTime: s.out || '17:00'
+          })));
+        } else {
+          setCorrectionMode('status');
+          if (existingRec.status) {
+            setStatusVal(existingRec.status as any);
+          }
+        }
+      } else {
+        // No record exists
+        if (employeeType === 'Hourly') {
+          setCorrectionMode('sessions');
+          setPunchSessions([{ inEnabled: true, inTime: '09:00', outEnabled: false, outTime: '17:00' }]);
+        } else {
+          setCorrectionMode('status');
+          setStatusVal('Present');
+          setPunchSessions([{ inEnabled: true, inTime: '09:00', outEnabled: false, outTime: '17:00' }]);
+        }
+      }
+    }
+  }, [reqDate, requestType, empView, employeeId, db.attendance, employeeType]);
 
   const formatTimeForDisplay = (time24?: string) => {
     if (!time24) return '—';
@@ -311,7 +347,7 @@ export default function ApprovalPanel({
 
     // Reset form
     setReason('');
-    setPunchSessions([{ inEnabled: true, inTime: getCurrentTimeHHmm(), outEnabled: false, outTime: getCurrentTimeHHmm() }]);
+    setPunchSessions([{ inEnabled: true, inTime: '09:00', outEnabled: false, outTime: '17:00' }]);
     setSelPaymentId('');
     setNewPaymentAmount('');
     setNewPaymentDesc('');
@@ -377,7 +413,7 @@ export default function ApprovalPanel({
 
     setEditingRequest(null);
     setReason('');
-    setPunchSessions([{ inEnabled: true, inTime: getCurrentTimeHHmm(), outEnabled: false, outTime: getCurrentTimeHHmm() }]);
+    setPunchSessions([{ inEnabled: true, inTime: '09:00', outEnabled: false, outTime: '17:00' }]);
     setSelPaymentId('');
     setNewPaymentAmount('');
     setNewPaymentDesc('');
@@ -734,7 +770,14 @@ export default function ApprovalPanel({
       }
     } else {
       setRequestType('attendance');
-      if (employeeType === 'Hourly' || req.newValue.startsWith('[')) {
+      const isPunchCategory = [
+        'Punch In', 'Punch Out', 'Early Exit', 'Late Entry', 
+        'GeoFence Attendance', 'Manual Attendance'
+      ].includes(req.category);
+      const isPunchValue = req.newValue.includes(':');
+      const isPunchRequest = isPunchCategory || isPunchValue || req.newValue.startsWith('[');
+
+      if (employeeType === 'Hourly' || isPunchRequest) {
         setCorrectionMode('sessions');
         try {
           if (req.newValue.startsWith('[')) {
@@ -752,10 +795,32 @@ export default function ApprovalPanel({
 
             setPunchSessions(parsed.map(s => ({
               inEnabled: s.in !== '',
-              inTime: parseTime12to24(s.in) || getCurrentTimeHHmm(),
+              inTime: parseTime12to24(s.in) || '09:00',
               outEnabled: s.out !== '',
-              outTime: parseTime12to24(s.out) || getCurrentTimeHHmm()
+              outTime: parseTime12to24(s.out) || '17:00'
             })));
+          } else {
+            // Single-punch request time string like "12:19" or "09:15 AM"
+            const parseTime12to24 = (time12: string) => {
+              if (!time12) return '';
+              if (!time12.includes(' ')) return time12;
+              const [time, ampm] = time12.split(' ');
+              let [h, m] = time.split(':').map(Number);
+              if (ampm === 'PM' && h !== 12) h += 12;
+              if (ampm === 'AM' && h === 12) h = 0;
+              return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            };
+            const parsedTime = parseTime12to24(req.newValue.trim());
+            const isPunchIn = req.category === 'Punch In' || req.category === 'Late Entry' || req.category === 'GeoFence Attendance' || req.category === 'Manual Attendance';
+            const isPunchOut = req.category === 'Punch Out' || req.category === 'Early Exit';
+            const inEnabled = isPunchIn || !isPunchOut;
+            const outEnabled = isPunchOut;
+            setPunchSessions([{
+              inEnabled,
+              inTime: inEnabled ? parsedTime : '09:00',
+              outEnabled,
+              outTime: outEnabled ? parsedTime : '17:00'
+            }]);
           }
         } catch (e) {
           console.error('Failed to parse newValue during edit load:', e);

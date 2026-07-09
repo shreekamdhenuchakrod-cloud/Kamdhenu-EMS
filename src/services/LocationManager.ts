@@ -82,6 +82,32 @@ export class LocationManager {
     const speed = coords.speed || 0;
     const now = Date.now();
 
+    // 1. Accuracy Filtering: Filter out low-accuracy coordinates (> 35 meters)
+    // Fallback: If we haven't written any location for 3 minutes (180000ms), we accept lower accuracy (up to 80 meters)
+    const timeSinceLastWrite = now - this.lastWriteTime;
+    const isStale = this.lastWriteTime === 0 || timeSinceLastWrite > 180000;
+    const maxAllowedAccuracy = isStale ? 80 : 35;
+
+    if (accuracy > maxAllowedAccuracy) {
+      console.warn(`[GPS Filter] Low accuracy ignored: ${accuracy.toFixed(1)}m (Max allowed: ${maxAllowedAccuracy}m)`);
+      return;
+    }
+
+    // 2. Velocity Jump Noise Filtering: Avoid teleportation jumps (e.g. GPS jumps when entering buildings)
+    if (this.lastPosition) {
+      const timeDiffSec = (now - this.lastPosition.timestamp) / 1000;
+      if (timeDiffSec > 0.5) {
+        const distanceMoved = getDistanceMeters(this.lastPosition.lat, this.lastPosition.lng, lat, lng);
+        const calculatedSpeed = distanceMoved / timeDiffSec; // speed in m/s
+        
+        // Speed threshold of 45 m/s (~160 km/h) to filter out unrealistic teleportations
+        if (calculatedSpeed > 45 && !isStale) {
+          console.warn(`[GPS Filter] Unrealistic movement speed ignored: ${(calculatedSpeed * 3.6).toFixed(1)} km/h.`);
+          return;
+        }
+      }
+    }
+
     // Determine if reverse geocoding is required based on event limits (Entry/Exit/100m movement)
     let needsGeocode = false;
 
@@ -142,10 +168,10 @@ export class LocationManager {
     // Determine if we should commit write to database (Throttling Check)
     let shouldWrite = false;
     
-    // Condition 1: Moved more than 20 meters
+    // Condition 1: Moved more than 10 meters (was 20m, reduced for smoother, more precise route lines)
     if (this.lastWritePosition) {
       const distFromLastWrite = getDistanceMeters(this.lastWritePosition.lat, this.lastWritePosition.lng, lat, lng);
-      if (distFromLastWrite > 20) {
+      if (distFromLastWrite > 10) {
         shouldWrite = true;
       }
     } else {
@@ -157,7 +183,7 @@ export class LocationManager {
       shouldWrite = true;
     }
 
-    // Condition 3: More than 60 seconds elapsed since last successful database write
+    // Condition 3: More than 60 seconds elapsed since last successful database write (heartbeat)
     if (now - this.lastWriteTime > 60000) {
       shouldWrite = true;
     }

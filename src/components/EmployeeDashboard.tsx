@@ -12,6 +12,12 @@ import { LocationManagerService } from '../services/LocationManager';
 import { PlatformDeviceInfo } from '../services/platform/PlatformAbstraction';
 import { optimizeImage } from '../utils/imageOptimizer';
 
+const formatHHmm = (d: Date = new Date()) => {
+  const hrs = String(d.getHours()).padStart(2, '0');
+  const mins = String(d.getMinutes()).padStart(2, '0');
+  return `${hrs}:${mins}`;
+};
+
 interface EmployeeDashboardProps {
   employeeId: string;
   db: AppDatabase;
@@ -323,7 +329,7 @@ export default function EmployeeDashboard({
       category: punchType,
       date: todayDateStr,
       oldValue: todayAtt?.sessions ? JSON.stringify(todayAtt.sessions) : 'None',
-      newValue: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+      newValue: formatHHmm(new Date()),
       reason: t('GeoFence punch verified by GPS', 'जीपीएस द्वारा जियोफेंस पंच सत्यापित'),
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
       status: 'Pending',
@@ -763,7 +769,7 @@ export default function EmployeeDashboard({
                         <div>
                           <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Date & Time', 'दिनांक और समय')}</span>
                           <span className="font-semibold text-slate-700">
-                            {new Date().toISOString().split('T')[0]} @ {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                            {new Date().toISOString().split('T')[0]} @ {formatHHmm(new Date())}
                           </span>
                         </div>
                       </div>
