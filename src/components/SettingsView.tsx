@@ -41,6 +41,33 @@ export default function SettingsView({
   const [saveStatus, setSaveStatus] = useState('');
   const [newPaidBy, setNewPaidBy] = useState('');
 
+  // Attendance Fine settings local state
+  const [fineEnabled, setFineEnabled] = useState(company.attendanceFineEnabled !== false);
+  const [autoDeduct, setAutoDeduct] = useState(company.autoDeductionEnabled !== false);
+  const [gracePeriod, setGracePeriod] = useState(company.gracePeriodDays ?? 3);
+  const [maxFine, setMaxFine] = useState(company.maxFineAmount ?? 50);
+  const [fiftyPercentRule, setFiftyPercentRule] = useState(company.fiftyPercentRuleEnabled !== false);
+  const [fineTable, setFineTable] = useState<Record<number, number>>(
+    company.companyFineTable || { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25, 6: 30, 7: 35, 8: 40, 9: 45, 10: 50, 11: 50, 12: 50 }
+  );
+
+  const handleSaveFineSettings = () => {
+    onUpdateDb({
+      ...db,
+      company: {
+        ...company,
+        attendanceFineEnabled: fineEnabled,
+        autoDeductionEnabled: autoDeduct,
+        gracePeriodDays: gracePeriod,
+        maxFineAmount: maxFine,
+        fiftyPercentRuleEnabled: fiftyPercentRule,
+        companyFineTable: fineTable
+      }
+    });
+    setSaveStatus(t('✓ Company attendance fine defaults saved!', '✓ गौशाला उपस्थिति जुर्माना नीतियां सहेजी गईं!'));
+    setTimeout(() => setSaveStatus(''), 4000);
+  };
+
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState<{
     title: string;
@@ -649,6 +676,115 @@ export default function SettingsView({
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* SECTION: COMPANY DEFAULT ATTENDANCE FINES */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-4">
+        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-2">
+          <Icon name="gavel" size={18} className="text-blue-600" />
+          <span>{t('Company Fine Defaults', 'कंपनी जुर्माना नीति डिफ़ॉल्ट')}</span>
+        </h3>
+
+        <div className="space-y-4">
+          {/* Toggles */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
+              <div>
+                <span className="text-[10px] font-bold text-slate-800 block leading-tight">{t('Attendance Fine', 'उपस्थिति जुर्माना')}</span>
+                <span className="text-[8px] text-slate-400 uppercase tracking-wider">{t('Global Active', 'वैश्विक स्तर पर सक्रिय')}</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={fineEnabled}
+                onChange={(e) => setFineEnabled(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
+              <div>
+                <span className="text-[10px] font-bold text-slate-800 block leading-tight">{t('Auto Deduction', 'स्वचालित कटौती')}</span>
+                <span className="text-[8px] text-slate-400 uppercase tracking-wider">{t('Automatic run', 'स्वतः जुर्माना प्रविष्टि')}</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={autoDeduct}
+                onChange={(e) => setAutoDeduct(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
+              <div>
+                <span className="text-[10px] font-bold text-slate-800 block leading-tight">{t('50% Safe Rule', '50% सुरक्षित नियम')}</span>
+                <span className="text-[8px] text-slate-400 uppercase tracking-wider">{t('No fine if >=50% work', '>=50% कार्य पर जुर्माना नहीं')}</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={fiftyPercentRule}
+                onChange={(e) => setFiftyPercentRule(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+              />
+            </div>
+
+            <div className="fld mb-0">
+              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">{t('Grace Period (Days)', 'अनुग्रह अवधि (दिन)')}</label>
+              <select
+                value={gracePeriod}
+                onChange={(e) => setGracePeriod(parseInt(e.target.value, 10))}
+                className="fi bg-white font-sans text-xs"
+              >
+                {[0, 1, 2, 3, 5, 7, 15, 30].map(d => (
+                  <option key={d} value={d}>{d} {t('Days', 'दिन')}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="fld mb-0">
+              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">{t('Max Fine Amount (₹)', 'अधिकतम जुर्माना राशि (₹)')}</label>
+              <input
+                type="number"
+                className="fi font-sans font-semibold text-slate-800"
+                value={maxFine}
+                onChange={(e) => setMaxFine(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+          </div>
+
+          {/* Default Fine Table mapping */}
+          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5 space-y-2.5">
+            <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">{t('Default Fine Table (Missing Hours → ₹)', 'डिफ़ॉल्ट जुर्माना तालिका (कम घंटे → ₹)')}</span>
+            <div className="grid grid-cols-3 gap-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(hrs => (
+                <div key={hrs} className="bg-white border border-slate-100 rounded-lg p-2 flex items-center justify-between gap-1.5 shadow-3xs">
+                  <span className="text-[10px] font-extrabold text-slate-600 shrink-0">{hrs} {t('hrs', 'घंटे')}</span>
+                  <input
+                    type="number"
+                    className="w-12 h-6 border-b border-slate-200 text-right font-sans font-bold text-[10px] text-blue-600 focus:outline-none focus:border-blue-500"
+                    value={fineTable[hrs] ?? ''}
+                    placeholder={`${hrs * 5}`}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setFineTable({ ...fineTable, [hrs]: val });
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={handleSaveFineSettings}
+            className="w-full btn bbl font-bold text-xs"
+          >
+            <Icon name="save" size={14} className="mr-1.5" />
+            <span>{t('Save Corporate Fine Policies', 'जुर्माना नीतियां सहेजें')}</span>
+          </button>
         </div>
       </div>
 

@@ -38,7 +38,13 @@ export const DEFAULT_DATABASE: AppDatabase = {
     allowDeductions: true,
     allowOvertime: true,
     theme: 'Light',
-    adminPin: '' // Initialized empty
+    adminPin: '', // Initialized empty
+    attendanceFineEnabled: true,
+    autoDeductionEnabled: true,
+    gracePeriodDays: 3,
+    maxFineAmount: 50,
+    fiftyPercentRuleEnabled: true,
+    companyFineTable: { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25, 6: 30, 7: 35, 8: 40, 9: 45, 10: 50, 11: 50, 12: 50 }
   }
 };
 
@@ -308,12 +314,21 @@ export function calcMonthMetrics(
     if (ded.employeeId === employee.id) {
       const dDate = new Date(ded.date + 'T00:00:00');
       if (dDate.getFullYear() === year && dDate.getMonth() === month) {
-        deductions += ded.amount;
-        deductionsRows.push({
-          date: ded.date,
-          amount: ded.amount,
-          desc: ded.description
-        });
+        const isExcluded = ded.status === 'Waived' || ded.status === 'Deleted';
+        if (!isExcluded) {
+          deductions += ded.amount;
+          deductionsRows.push({
+            date: ded.date,
+            amount: ded.amount,
+            desc: ded.description
+          });
+        } else {
+          deductionsRows.push({
+            date: ded.date,
+            amount: 0,
+            desc: `${ded.description} (${ded.status})`
+          });
+        }
       }
     }
   });

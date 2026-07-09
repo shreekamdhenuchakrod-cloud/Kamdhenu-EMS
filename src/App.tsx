@@ -42,16 +42,36 @@ export default function App() {
     return localStorage.getItem('gaushala_employee_session_id') || null;
   });
 
-  // Helper function to sync auto overtime and late fine entries for all employees
+  // Helper function to sync auto overtime, late fine evaluations, and auto deduction triggers
   const syncAutoOvertime = (currentDb: AppDatabase): AppDatabase => {
     let otEntries = [...(currentDb.overtimeEntries || [])];
-    let lfEntries = [...(currentDb.lateFineEntries || [])];
     
-    // Filter out previous auto-calculated entries to clean slate
+    // 1. Filter out previous auto-calculated overtime entries to clean slate
     otEntries = otEntries.filter((o) => o.description !== "Auto-calculated Overtime");
-    lfEntries = lfEntries.filter((f) => f.description !== "Auto-calculated Late Fine");
+    
+    // 2. Clear out legacy late fine entries (they are replaced by deductions module reviews)
+    let lfEntries: any[] = [];
 
-    // Calculate overtime and late fine for each day
+    // Copy collections to drafts
+    let reviews = [...(currentDb.attendanceReviews || [])];
+    let deductions = [...(currentDb.deductions || [])];
+    let notifications = [...(currentDb.notifications || [])];
+
+    // Helper to format Date + Days
+    const addDays = (dateStr: string, days: number): Date => {
+      const d = new Date(dateStr + 'T00:00:00');
+      return new Date(d.getTime() + days * 24 * 60 * 60 * 1000);
+    };
+
+    const isExpired = (dateStr: string, graceDays: number): boolean => {
+      const expiryDate = addDays(dateStr, graceDays);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      expiryDate.setHours(0, 0, 0, 0);
+      return today > expiryDate;
+    };
+
+    // Calculate overtime & under-hours for each day
     Object.keys(currentDb.attendance).forEach((key) => {
       const parts = key.split('_');
       if (parts.length < 2) return;
@@ -59,21 +79,24 @@ export default function App() {
       const date = parts[1];
 
       const employee = currentDb.employees.find((e) => e.id === employeeId);
-      if (!employee || employee.type === 'Hourly') return;
+      if (!employee) return;
 
       const rec = currentDb.attendance[key];
-      if (!rec || !rec.sessions || rec.sessions.length === 0) return;
-
+      
       // Sum hours of all sessions for this day
       let totalHrs = 0;
-      rec.sessions.forEach((s) => {
-        if (s.in && s.out) {
-          totalHrs += timeToHrs(s.in, s.out);
-        }
-      });
+      if (rec && rec.sessions) {
+        rec.sessions.forEach((s) => {
+          if (s.in && s.out) {
+            totalHrs += timeToHrs(s.in, s.out);
+          }
+        });
+      }
 
       const baseHours = employee.baseHours || 8;
-      if (totalHrs > baseHours) {
+      
+      // 3. Overtime logic: if Worked > Standard
+      if (totalHrs > baseHours && employee.type !== 'Hourly') {
         const excessHrs = totalHrs - baseHours;
         otEntries.push({
           id: `_OT_AUTO_${employeeId}_${date}_${Date.now()}`,
@@ -84,25 +107,147 @@ export default function App() {
           amount: 0,
           description: 'Auto-calculated Overtime'
         });
-      } else if (totalHrs > 0 && totalHrs < baseHours) {
-        const deficitHrs = baseHours - totalHrs;
-        lfEntries.push({
-          id: `_LF_AUTO_${employeeId}_${date}_${Date.now()}`,
-          employeeId,
-          date,
-          hours: parseFloat(deficitHrs.toFixed(2)),
-          calcType: 'HourlyRate',
-          amount: 0,
-          description: 'Auto-calculated Late Fine',
-          time: '05:00 PM'
-        });
+      }
+
+      // 4. Under-hours Fine Evaluation: if Worked < Standard
+      if (rec && (totalHrs < baseHours || rec.status === 'Absent')) {
+        const comp = currentDb.company || {};
+        const empSettings = employee.fineSettings;
+
+        const fineEnabled = empSettings ? empSettings.fineEnabled : (comp.attendanceFineEnabled !== false);
+        const autoDeductionOn = empSettings ? empSettings.autoDeductionEnabled : (comp.autoDeductionEnabled !== false);
+        const gracePeriodDays = empSettings ? empSettings.gracePeriodDays : (comp.gracePeriodDays ?? 3);
+        const maxFine = empSettings ? empSettings.maxFineAmount : (comp.maxFineAmount ?? 50);
+        const fiftyPercentRule = empSettings ? empSettings.fiftyPercentRuleEnabled : (comp.fiftyPercentRuleEnabled !== false);
+        
+        if (fineEnabled) {
+          const missingHrs = Math.max(0, baseHours - totalHrs);
+          
+          let fineAmt = 0;
+          if (fiftyPercentRule && totalHrs >= (baseHours * 0.5)) {
+            fineAmt = 0; // 50% No Deduction Rule
+          } else {
+            // Find in fine table
+            const table = (empSettings && empSettings.fineTable) ? empSettings.fineTable : (comp.companyFineTable || {});
+            const integerMissing = Math.round(missingHrs);
+            
+            if (table[integerMissing] !== undefined) {
+              fineAmt = table[integerMissing];
+            } else {
+              // Fallback: Proportional
+              fineAmt = (missingHrs / baseHours) * maxFine;
+            }
+          }
+
+          // Check if there is an approved leave request for this date
+          const approvedLeave = (currentDb.approvalRequests || []).find(r => 
+            r.employeeId === employeeId && 
+            r.category === 'Leave Request' && 
+            r.date === date && 
+            r.status === 'Approved'
+          );
+
+          if (approvedLeave) {
+            fineAmt = 0; // No fine for approved leave
+          }
+
+          if (fineAmt > 0) {
+            // Check if review entry exists
+            const reviewKey = `_REV_${employeeId}_${date}`;
+            let existingReview = reviews.find(r => r.id === reviewKey);
+
+            if (!existingReview) {
+              // Create Pending Review
+              existingReview = {
+                id: reviewKey,
+                employeeId,
+                date,
+                workedHours: parseFloat(totalHrs.toFixed(2)),
+                standardHours: baseHours,
+                missingHours: parseFloat(missingHrs.toFixed(2)),
+                fineAmount: parseFloat(fineAmt.toFixed(2)),
+                status: 'Pending Review',
+                createdDate: new Date().toISOString().split('T')[0],
+                gracePeriodDays,
+                autoDeductionOn
+              };
+              reviews.push(existingReview);
+
+              // Notify employee
+              notifications.push({
+                id: `_NTF_EMP_REV_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+                userId: employeeId,
+                title: 'Attendance Under Review',
+                message: `You worked only ${totalHrs.toFixed(1)} hours today. Missing Hours: ${missingHrs.toFixed(1)}. Your attendance is under review. Complete a leave request within ${gracePeriodDays} days to avoid automatic deduction.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              });
+
+              // Notify Admin
+              notifications.push({
+                id: `_NTF_ADM_REV_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+                userId: 'admin',
+                title: 'Employee Attendance Under Review',
+                message: `${employee.name} attendance is pending review. Grace period remaining: ${gracePeriodDays} days. Take action before automatic deduction.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              });
+            } else if (existingReview.status === 'Pending Review') {
+              // Check Grace Period expiration
+              if (isExpired(date, gracePeriodDays)) {
+                if (autoDeductionOn) {
+                  // Check if deduction already created
+                  const dedId = `_DED_AUTO_${employeeId}_${date}`;
+                  const hasDeduction = deductions.some(d => d.id === dedId);
+
+                  if (!hasDeduction) {
+                    // Create auto-generated deduction
+                    deductions.push({
+                      id: dedId,
+                      employeeId,
+                      amount: parseFloat(fineAmt.toFixed(2)),
+                      date,
+                      description: `Auto Fine: Under Hours on ${date}`,
+                      time: new Date().toLocaleTimeString(),
+                      isAutoGenerated: true,
+                      workedHours: parseFloat(totalHrs.toFixed(2)),
+                      standardHours: baseHours,
+                      missingHours: parseFloat(missingHrs.toFixed(2)),
+                      fineAmount: parseFloat(fineAmt.toFixed(2)),
+                      createdDate: new Date().toISOString().split('T')[0],
+                      status: 'Active',
+                      payrollStatus: 'Pending',
+                      originalAmount: parseFloat(fineAmt.toFixed(2))
+                    });
+
+                    existingReview.status = 'Approved';
+                    existingReview.deductionId = dedId;
+
+                    // Notify employee
+                    notifications.push({
+                      id: `_NTF_EMP_DED_${Date.now()}`,
+                      userId: employeeId,
+                      title: 'Auto Fine Deduction Created',
+                      message: `Auto fine of ₹${fineAmt.toFixed(2)} created for under hours on ${date} as grace period expired.`,
+                      timestamp: new Date().toISOString(),
+                      read: false
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     });
 
     return {
       ...currentDb,
       overtimeEntries: otEntries,
-      lateFineEntries: lfEntries
+      lateFineEntries: lfEntries,
+      attendanceReviews: reviews,
+      deductions,
+      notifications
     };
   };
 
