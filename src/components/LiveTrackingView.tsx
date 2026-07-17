@@ -212,7 +212,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
       const lastSeenStr = new Date(loc.timestamp).toLocaleTimeString();
 
       const todayDateStr = new Date().toISOString().split('T')[0];
-      const attRecord = db.attendance[`${emp.id}_${todayDateStr}`];
+      const attRecord = db.attendance ? db.attendance[`${emp.id}_${todayDateStr}`] : undefined;
       let todayHours = 0;
       let lastPunchStr = t('No punches today', 'आज कोई पंच नहीं');
 
@@ -258,7 +258,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
             <div><strong style="color:#64748b">${t('Status','स्थिति')}:</strong><br/><span style="background:${isWorking?'#dcfce7':'#f1f5f9'};color:${isWorking?'#15803d':'#475569'};padding:2px 6px;border-radius:6px;font-weight:700;font-size:10px">${isWorking ? t('Working','कार्यरत') : t('Offline','ऑफलाइन')}</span></div>
             <div><strong style="color:#64748b">${t('Battery','बैटरी')}:</strong><br/>⚡ ${loc.battery ?? '—'}%</div>
             <div><strong style="color:#64748b">${t('Today Hours','आज के घंटे')}:</strong><br/>⏱️ ${todayHours.toFixed(1)} hrs</div>
-            <div><strong style="color:#64748b">${t('GPS Accuracy','सटीकता')}:</strong><br/>📡 ${loc.accuracy?.toFixed(0)}m</div>
+            <div><strong style="color:#64748b">${t('GPS Accuracy','सटीकता')}:</strong><br/>📡 ${loc.accuracy !== undefined && loc.accuracy !== null ? Number(loc.accuracy).toFixed(0) : '—'}m</div>
             <div style="grid-column:span 2"><strong style="color:#64748b">${t('Last Punch','अंतिम पंच')}:</strong><br/>🚪 ${lastPunchStr}</div>
             <div style="grid-column:span 2"><strong style="color:#64748b">${t('GeoFence Distance','जियोफेंस')}:</strong><br/>📍 ${fenceDistStr}</div>
             <div style="grid-column:span 2;font-size:9px;color:#94a3b8;border-top:1px solid #f1f5f9;padding-top:6px;margin-top:4px">${loc.address || '—'}<br/>${lastSeenStr}</div>
@@ -576,7 +576,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
                 </div>
 
                 <div className="space-y-2 flex-1 overflow-y-auto pr-0.5">
-                  {db.employees.map(emp => {
+                  {(db.employees || []).map(emp => {
                     const loc = db.liveLocations?.[emp.id];
                     const isOnline = loc ? (Date.now() - new Date(loc.timestamp).getTime() < 300000) : false;
                     const isSelected = selectedEmpId === emp.id;
@@ -625,7 +625,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
                             </div>
                             <div className="flex items-center gap-1">
                               <Icon name="satellite" size={12} className="text-slate-400" />
-                              <span>{loc.accuracy ? `${loc.accuracy.toFixed(0)}m` : '—'}</span>
+                              <span>{loc.accuracy !== undefined && loc.accuracy !== null ? `${Number(loc.accuracy).toFixed(0)}m` : '—'}</span>
                             </div>
                             <div className="col-span-2 flex items-center gap-1 text-[9px] text-slate-400 truncate">
                               <Icon name="my_location" size={11} />
@@ -672,7 +672,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
                       className="w-full h-9 border border-slate-200 rounded-lg px-2 text-xs font-bold bg-white outline-none"
                     >
                       <option value="">{t('-- Choose Employee --', '-- कर्मचारी चुनें --')}</option>
-                      {db.employees.map(emp => (
+                      {(db.employees || []).map(emp => (
                         <option key={emp.id} value={emp.id}>{emp.name}</option>
                       ))}
                     </select>

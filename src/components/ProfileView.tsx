@@ -152,6 +152,8 @@ export default function ProfileView({
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLeftConfirm, setShowLeftConfirm] = useState(false);
+  const [leftPin, setLeftPin] = useState("");
+  const [deletePin, setDeletePin] = useState("");
 
   const [showFineSettingsModal, setShowFineSettingsModal] = useState(false);
   const [fineSettingsState, setFineSettingsState] = useState<{
@@ -1503,44 +1505,7 @@ export default function ProfileView({
                 <span>{t("Salary Rate History", "वेतन सेटिंग्स इतिहास")}</span>
               </button>
 
-              <button
-                onClick={() => {
-                  const currentCarry = emp.carryForward || 0;
-                  const newCarryStr = prompt(
-                    t(
-                      "Enter manual Carry Forward / Previous Month Due rate for this employee (₹):",
-                      "कर्मचारी का पिछला संचित देय (Carry Forward) दर्ज करें (₹):",
-                    ),
-                    String(currentCarry),
-                  );
-                  if (newCarryStr !== null) {
-                    const parsed = parseFloat(newCarryStr);
-                    if (!isNaN(parsed)) {
-                      const empsList = [...db.employees];
-                      const targetEmpIdx = empsList.findIndex(
-                        (e) => e.id === employeeId,
-                      );
-                      if (targetEmpIdx !== -1) {
-                        const targetEmpComp = { ...empsList[targetEmpIdx] };
-                        targetEmpComp.carryForward = parsed;
-                        empsList[targetEmpIdx] = targetEmpComp;
-                        onUpdateDb({ ...db, employees: empsList });
-                        alert(
-                          t(
-                            "✓ Carry Forward balance updated!",
-                            "✓ पिछला संचित देय अद्यतन किया गया!",
-                          ),
-                        );
-                      }
-                    }
-                  }
-                  setShowActionDropdown(false);
-                }}
-                className="w-full text-left px-4 py-2.5 hover:bg-slate-50 font-semibold flex items-center gap-2 border-t border-slate-100 cursor-pointer transition-colors"
-              >
-                <Icon name="payments" size={16} className="text-slate-400" />
-                <span>{t("Carry Forward Due", "संचित बकाया सेट करें")}</span>
-              </button>
+
 
               <button
                 onClick={() => {
@@ -1556,6 +1521,7 @@ export default function ProfileView({
               <button
                 onClick={() => {
                   setShowActionDropdown(false);
+                  setLeftPin("");
                   setShowLeftConfirm(true);
                 }}
                 className="w-full text-left px-4 py-2.5 text-rose-600 hover:bg-rose-50 font-semibold flex items-center gap-2 border-t border-slate-100 cursor-pointer transition-colors"
@@ -1567,6 +1533,7 @@ export default function ProfileView({
               <button
                 onClick={() => {
                   setShowActionDropdown(false);
+                  setDeletePin("");
                   setShowDeleteConfirm(true);
                 }}
                 className="w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 font-semibold flex items-center gap-2 border-t border-slate-100 cursor-pointer transition-colors"
@@ -1699,26 +1666,10 @@ export default function ProfileView({
                   prefix: "",
                   color: "green",
                   icon: "trending_up",
-                  colSpan: "col-span-3",
+                  colSpan: "col-span-4",
                   onClick: () => {
                     setActiveTab("transactions");
                     setActiveSubTab("Earnings");
-                  }
-                },
-                {
-                  id: "card-prev-due",
-                  label: t("Previous Due", "पिछला बकाया"),
-                  value: previousMonthDue,
-                  prefix: "",
-                  color: "orange",
-                  icon: "warning",
-                  colSpan: "col-span-3",
-                  onClick: () => {
-                    setBreakdownModal({
-                      isOpen: true,
-                      title: t("Previous Carried-Forward Due", "पिछले महीनों का बकाया"),
-                      type: "prevDue",
-                    });
                   }
                 },
                 {
@@ -1728,7 +1679,7 @@ export default function ProfileView({
                   prefix: "-",
                   color: "red",
                   icon: "payments",
-                  colSpan: "col-span-3",
+                  colSpan: "col-span-4",
                   onClick: () => {
                     setActiveTab("transactions");
                     setActiveSubTab("Payments");
@@ -1741,7 +1692,7 @@ export default function ProfileView({
                   prefix: "+",
                   color: "blue",
                   icon: "schedule",
-                  colSpan: "col-span-3",
+                  colSpan: "col-span-4",
                   onClick: () => {
                     setActiveTab("transactions");
                     setActiveSubTab("Overtime");
@@ -4069,6 +4020,20 @@ export default function ProfileView({
                 "यह इस कर्मचारी और उनके सभी भुगतान प्रविष्टियों, दैनिक इतिहास, और पिछले शेष को मिटा देगा। यह कार्रवाई अपरिवर्तनीय है। क्या आप जारी रखना चाहते हैं?",
               )}
             </p>
+            {/* PIN Input Field */}
+            <div className="mt-4 space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
+                {t("Enter 4-Digit Admin PIN", "4-अंकीय एडमिन पिन दर्ज करें")}
+              </label>
+              <input
+                type="password"
+                maxLength={4}
+                value={deletePin}
+                onChange={(e) => setDeletePin(e.target.value.replace(/\D/g, ""))}
+                placeholder="••••"
+                className="w-full h-10 border border-slate-200 rounded-xl text-center font-mono font-black text-lg tracking-widest bg-slate-50 outline-none focus:border-blue-500 focus:bg-white transition-all"
+              />
+            </div>
             <div className="flex gap-3 mt-6 text-xs font-bold font-sans">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
@@ -4078,6 +4043,11 @@ export default function ProfileView({
               </button>
               <button
                 onClick={() => {
+                  const correctPin = db.company?.adminPin || "1234";
+                  if (deletePin !== correctPin) {
+                    alert(t("Incorrect Admin PIN!", "गलत एडमिन पिन!"));
+                    return;
+                  }
                   setShowDeleteConfirm(false);
 
                   // Filter all tables
@@ -4145,6 +4115,20 @@ export default function ProfileView({
                 "क्या आप इस कर्मचारी को कार्य मुक्त (Left Job) के रूप में चिह्नित करना चाहते हैं? इससे उनका नाम दैनिक सूची में सक्रिय रूप से बंद हो जायेगा।",
               )}
             </p>
+            {/* PIN Input Field */}
+            <div className="mt-4 space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
+                {t("Enter 4-Digit Admin PIN", "4-अंकीय एडमिन पिन दर्ज करें")}
+              </label>
+              <input
+                type="password"
+                maxLength={4}
+                value={leftPin}
+                onChange={(e) => setLeftPin(e.target.value.replace(/\D/g, ""))}
+                placeholder="••••"
+                className="w-full h-10 border border-slate-200 rounded-xl text-center font-mono font-black text-lg tracking-widest bg-slate-50 outline-none focus:border-blue-500 focus:bg-white transition-all"
+              />
+            </div>
             <div className="flex gap-3 mt-6 text-xs font-bold font-sans">
               <button
                 onClick={() => setShowLeftConfirm(false)}
@@ -4154,10 +4138,15 @@ export default function ProfileView({
               </button>
               <button
                 onClick={() => {
+                  const correctPin = db.company?.adminPin || "1234";
+                  if (leftPin !== correctPin) {
+                    alert(t("Incorrect Admin PIN!", "गलत एडमिन पिन!"));
+                    return;
+                  }
                   setShowLeftConfirm(false);
                   const empsList = db.employees.map((e) =>
                     e.id === employeeId
-                      ? { ...e, status: "Left Job" as const }
+                      ? { ...e, status: "Inactive" as const }
                       : e,
                   );
                   onUpdateDb({ ...db, employees: empsList });
@@ -4204,18 +4193,7 @@ export default function ProfileView({
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-800 block leading-tight">{t('Auto Deduction', 'स्वचालित कटौती')}</span>
-                    <span className="text-[8px] text-slate-400 uppercase tracking-wider">{t('Automatic run', 'स्वतः जुर्माना')}</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={fineSettingsState.autoDeductionEnabled}
-                    onChange={(e) => setFineSettingsState({ ...fineSettingsState, autoDeductionEnabled: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
-                  />
-                </div>
+
               </div>
 
               <div className="grid grid-cols-2 gap-4">

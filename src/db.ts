@@ -399,79 +399,13 @@ export function calcMonthMetrics(
   };
 }
 
-export function calcPreviousDue(employee: Employee, year: number, month: number, db: AppDatabase): number {
-  let startYear = year;
-  let startMonth = month;
-
-  if (employee.join) {
-    const jd = new Date(employee.join + 'T00:00:00');
-    if (!isNaN(jd.getTime())) {
-      startYear = jd.getFullYear();
-      startMonth = jd.getMonth();
-    }
-  }
-
-  // Ensure startYear goes back to at least 2024 or 2 years before the target year to prevent skipped months
-  const minYear = Math.min(startYear, year - 2, 2024);
-  if (minYear < startYear) {
-    startYear = minYear;
-    startMonth = 0; // January
-  }
-
-  const checkDate = (dateStr: string) => {
-    if (!dateStr) return;
-    const d = new Date(dateStr + 'T00:00:00');
-    if (!isNaN(d.getTime())) {
-      const y = d.getFullYear();
-      const m = d.getMonth();
-      if (y < startYear || (y === startYear && m < startMonth)) {
-        startYear = y;
-        startMonth = m;
-      }
-    }
-  };
-
-  db.payments.forEach(p => {
-    if (p.employeeId === employee.id) checkDate(p.date);
-  });
-  db.earnings.forEach(e => {
-    if (e.employeeId === employee.id) checkDate(e.date);
-  });
-  db.deductions.forEach(d => {
-    if (d.employeeId === employee.id) checkDate(d.date);
-  });
-  db.overtimeEntries.forEach(o => {
-    if (o.employeeId === employee.id) checkDate(o.date);
-  });
-  db.lateFineEntries.forEach(l => {
-    if (l.employeeId === employee.id) checkDate(l.date);
-  });
-  Object.keys(db.attendance).forEach(k => {
-    if (k.startsWith(`${employee.id}_`)) {
-      const dateStr = k.substring(employee.id.length + 1);
-      if (dateStr) checkDate(dateStr);
-    }
-  });
-
-  if (startYear > year || (startYear === year && startMonth >= month)) {
-    return employee.carryForward || 0;
-  }
-
-  let accumulatedDue = employee.carryForward || 0;
-  let cYear = startYear;
-  let cMonth = startMonth;
-
-  while (cYear < year || (cYear === year && cMonth < month)) {
-    const metrics = calcMonthMetrics(employee, cYear, cMonth, db);
-    accumulatedDue += metrics.netPending;
-    cMonth++;
-    if (cMonth > 11) {
-      cMonth = 0;
-      cYear++;
-    }
-  }
-
-  return accumulatedDue;
+export function calcPreviousDue(
+  employee: Employee,
+  year: number,
+  month: number,
+  db: AppDatabase
+): number {
+  return 0;
 }
 
 export interface FullFinancialStatus {

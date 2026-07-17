@@ -25,21 +25,25 @@ export default function StaffListView({
 
   // Filters staff by active status only
   const filteredStaff = db.employees.filter(emp => emp.status === 'Active');
+  const inactiveStaff = db.employees.filter(emp => emp.status === 'Inactive' || emp.status === 'Left Job');
 
   // Group by Employee Type
   const hourlyStaff = filteredStaff.filter(e => e.type === 'Hourly');
-  const dailyStaff = filteredStaff.filter(e => e.type === 'Daily');
   const monthlyStaff = filteredStaff.filter(e => e.type === 'Monthly');
+  const dailyStaff = filteredStaff.filter(e => e.type === 'Daily');
 
   const renderStaffCard = (emp: Employee) => {
     const initials = emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || emp.name.slice(0, 2).toUpperCase();
 
     // Today's attendance status
-    const r = db.attendance[`${emp.id}_${todayStr}`];
+    const r = db.attendance ? db.attendance[`${emp.id}_${todayStr}`] : undefined;
     let statusText = t('Not Marked', 'बिना हाजिरी');
     let pillStyle = 'bg-slate-55 text-slate-500 border-slate-200';
 
-    if (r) {
+    if (emp.status === 'Inactive' || emp.status === 'Left Job') {
+      statusText = emp.status === 'Left Job' ? t('Left Job', 'कार्यमुक्त') : t('Inactive', 'निष्क्रिय');
+      pillStyle = 'bg-slate-100 text-slate-400 border-slate-200';
+    } else if (r) {
       if (emp.type === 'Hourly') {
         const hasWork = (r.sessions || []).some((s: any) => s.in && s.out);
         if (hasWork) {
@@ -73,11 +77,13 @@ export default function StaffListView({
       totalDue = financial.totalDue;
     } catch {}
 
+    const isInactive = emp.status === 'Inactive' || emp.status === 'Left Job';
+
     return (
       <div 
         key={emp.id}
         onClick={() => onSelectEmployee(emp.id)}
-        className="bg-white border border-slate-150 cursor-pointer hover:border-blue-300 hover:shadow-xs active:scale-[0.99] rounded-2xl p-3.5 mb-2.5 transition-all flex items-center justify-between shadow-3xs"
+        className={`bg-white border border-slate-150 cursor-pointer hover:border-blue-300 hover:shadow-xs active:scale-[0.99] rounded-2xl p-3.5 mb-2.5 transition-all flex items-center justify-between shadow-3xs ${isInactive ? 'opacity-65 bg-slate-50/50' : ''}`}
       >
         <div className="flex items-center gap-3.5 min-w-0">
           {/* Profile Pic with modern rounded-xl avatar box */}
@@ -146,16 +152,6 @@ export default function StaffListView({
           </div>
         )}
 
-        {/* Daily Section */}
-        {dailyStaff.length > 0 && (
-          <div className="mb-4">
-            <div className="slbl text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-2">
-              {t('Daily Staff', 'दैनिक वेतन कर्मचारी')} ({dailyStaff.length})
-            </div>
-            {dailyStaff.map(emp => renderStaffCard(emp))}
-          </div>
-        )}
-
         {/* Monthly Section */}
         {monthlyStaff.length > 0 && (
           <div className="mb-4">
@@ -166,7 +162,28 @@ export default function StaffListView({
           </div>
         )}
 
-        {filteredStaff.length === 0 && (
+        {/* Daily Section */}
+        {dailyStaff.length > 0 && (
+          <div className="mb-4">
+            <div className="slbl text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-2">
+              {t('Daily Staff', 'दैनिक वेतन कर्मचारी')} ({dailyStaff.length})
+            </div>
+            {dailyStaff.map(emp => renderStaffCard(emp))}
+          </div>
+        )}
+
+        {/* Inactive Section */}
+        {inactiveStaff.length > 0 && (
+          <div className="mb-4 border-t border-slate-100 pt-4 mt-4">
+            <div className="slbl text-[10px] font-black tracking-wider text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+              <Icon name="block" size={13} className="text-slate-400" />
+              <span>{t('Inactive / Left Job', 'निष्क्रिय / कार्यमुक्त कर्मचारी')} ({inactiveStaff.length})</span>
+            </div>
+            {inactiveStaff.map(emp => renderStaffCard(emp))}
+          </div>
+        )}
+
+        {filteredStaff.length === 0 && inactiveStaff.length === 0 && (
           <div className="text-center bg-white border border-slate-150 rounded-2xl p-10 shadow-2xs flex flex-col items-center justify-center">
             <div className="w-14 h-14 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mb-3">
               <Icon name="group" size={28} />

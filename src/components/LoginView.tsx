@@ -162,7 +162,7 @@ export default function LoginView({
 
     // Find employee by mobile number
     const foundEmp = employees.find(
-      emp => emp.mobile === empMobile && emp.status !== 'Left Job'
+      emp => emp.mobile === empMobile && emp.status === 'Active'
     );
 
     if (!foundEmp) {

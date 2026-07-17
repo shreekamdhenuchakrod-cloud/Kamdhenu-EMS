@@ -688,7 +688,7 @@ export default function SettingsView({
 
         <div className="space-y-4">
           {/* Toggles */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
               <div>
                 <span className="text-[10px] font-bold text-slate-800 block leading-tight">{t('Attendance Fine', 'उपस्थिति जुर्माना')}</span>
@@ -698,19 +698,6 @@ export default function SettingsView({
                 type="checkbox"
                 checked={fineEnabled}
                 onChange={(e) => setFineEnabled(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
-              <div>
-                <span className="text-[10px] font-bold text-slate-800 block leading-tight">{t('Auto Deduction', 'स्वचालित कटौती')}</span>
-                <span className="text-[8px] text-slate-400 uppercase tracking-wider">{t('Automatic run', 'स्वतः जुर्माना प्रविष्टि')}</span>
-              </div>
-              <input
-                type="checkbox"
-                checked={autoDeduct}
-                onChange={(e) => setAutoDeduct(e.target.checked)}
                 className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
               />
             </div>
