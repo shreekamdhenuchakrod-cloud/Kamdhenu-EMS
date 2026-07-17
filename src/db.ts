@@ -65,7 +65,17 @@ export function loadDatabase(): AppDatabase {
           deductions: parsed.deductions || [],
           overtimeEntries: parsed.overtimeEntries || [],
           lateFineEntries: parsed.lateFineEntries || [],
-          company: loadedCompany
+          company: loadedCompany,
+          auditLogs: parsed.auditLogs || [],
+          recycleBin: parsed.recycleBin || [],
+          approvalRequests: parsed.approvalRequests || [],
+          notifications: parsed.notifications || [],
+          geofences: parsed.geofences || [],
+          devices: parsed.devices || [],
+          offlineQueue: parsed.offlineQueue || [],
+          routeHistories: parsed.routeHistories || [],
+          liveLocations: parsed.liveLocations || {},
+          attendanceReviews: parsed.attendanceReviews || []
         };
       }
     }

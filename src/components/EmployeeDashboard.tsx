@@ -172,7 +172,12 @@ export default function EmployeeDashboard({
       },
       (err) => {
         console.error('GPS tracking failed:', err);
-        setIsLocationBlocked(true);
+        // Only block if permission is explicitly denied (code 1)
+        if (err && err.code === 1) {
+          setIsLocationBlocked(true);
+        } else {
+          console.warn('GPS tracking encountered a non-fatal watch error (signal low/timeout):', err);
+        }
       }
     );
 

@@ -20,17 +20,18 @@ export interface TrackedStop {
 // Robust, high-fidelity stop detection
 export function detectRouteStops(path: { lat: number; lng: number; timestamp: string }[]): TrackedStop[] {
   const stops: TrackedStop[] = [];
-  if (path.length < 2) return stops;
+  const cleanPath = (path || []).filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number' && !isNaN(p.lat) && !isNaN(p.lng));
+  if (cleanPath.length < 2) return stops;
 
   let startNodeIdx = 0;
-  for (let i = 1; i < path.length; i++) {
-    const startNode = path[startNodeIdx];
-    const currentNode = path[i];
+  for (let i = 1; i < cleanPath.length; i++) {
+    const startNode = cleanPath[startNodeIdx];
+    const currentNode = cleanPath[i];
     const distance = getDistanceMeters(startNode.lat, startNode.lng, currentNode.lat, currentNode.lng);
     
     // If they moved more than 15 meters, check if they were stopped there
     if (distance > 15) {
-      const durationMs = new Date(path[i-1].timestamp).getTime() - new Date(startNode.timestamp).getTime();
+      const durationMs = new Date(cleanPath[i-1].timestamp).getTime() - new Date(startNode.timestamp).getTime();
       const durationMin = durationMs / (1000 * 60);
       if (durationMin >= 5) {
         stops.push({
@@ -38,16 +39,16 @@ export function detectRouteStops(path: { lat: number; lng: number; timestamp: st
           lng: startNode.lng,
           durationMin: Math.round(durationMin),
           startTime: startNode.timestamp,
-          endTime: path[i-1].timestamp
+          endTime: cleanPath[i-1].timestamp
         });
       }
       startNodeIdx = i;
     }
   }
 
-  const lastIdx = path.length - 1;
-  const startNode = path[startNodeIdx];
-  const lastNode = path[lastIdx];
+  const lastIdx = cleanPath.length - 1;
+  const startNode = cleanPath[startNodeIdx];
+  const lastNode = cleanPath[lastIdx];
   const durationMs = new Date(lastNode.timestamp).getTime() - new Date(startNode.timestamp).getTime();
   const durationMin = durationMs / (1000 * 60);
   if (durationMin >= 5) {
@@ -201,6 +202,12 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
       const emp = employees.find(e => e.id === empId);
       if (!emp) return;
 
+      // SAFETY Check: coordinate validity to prevent Leaflet "Invalid LatLng" crashes
+      if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number' || isNaN(loc.lat) || isNaN(loc.lng)) {
+        console.warn(`[LiveTrackingView] Invalid coordinates ignored for employee ID ${empId}:`, loc);
+        return;
+      }
+
       const isRecent = Date.now() - new Date(loc.timestamp).getTime() < 300000;
       const lastSeenStr = new Date(loc.timestamp).toLocaleTimeString();
 
@@ -297,7 +304,6 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
     }
   }, [db.liveLocations, db.employees, lang, selectedEmpId, activeReplay]);
 
-  // Utility to fit live markers in bounds
   const fitAllLiveMarkers = () => {
     if (!mapRef.current) return;
     const liveLocs = db.liveLocations || {};
@@ -305,10 +311,14 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
     let boundsToFit: L.LatLngBounds;
     if (selectedEmpId && liveLocs[selectedEmpId]) {
       const loc = liveLocs[selectedEmpId];
-      boundsToFit = L.latLngBounds([[loc.lat, loc.lng]]);
-      mapRef.current.setView([loc.lat, loc.lng], 16);
+      if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number' && !isNaN(loc.lat) && !isNaN(loc.lng)) {
+        boundsToFit = L.latLngBounds([[loc.lat, loc.lng]]);
+        mapRef.current.setView([loc.lat, loc.lng], 16);
+      }
     } else {
-      const coords = Object.values(liveLocs).map(loc => [loc.lat, loc.lng] as [number, number]);
+      const coords = Object.values(liveLocs)
+        .filter(loc => loc && typeof loc.lat === 'number' && typeof loc.lng === 'number' && !isNaN(loc.lat) && !isNaN(loc.lng))
+        .map(loc => [loc.lat, loc.lng] as [number, number]);
       if (coords.length > 0) {
         boundsToFit = L.latLngBounds(coords);
         if (boundsToFit.isValid()) {
@@ -332,46 +342,50 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
 
     if (!selectedEmpId || !replayDate) { setActiveReplay(null); return; }
 
-    const route = (db.routeHistories || []).find(r => r.employeeId === selectedEmpId && r.date === replayDate);
-    if (!route || !route.path || route.path.length === 0) { setActiveReplay(null); return; }
+    const cleanPath = route.path.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number' && !isNaN(p.lat) && !isNaN(p.lng));
+    if (cleanPath.length === 0) { setActiveReplay(null); return; }
 
     setActiveReplay(route);
 
-    const coords: [number, number][] = route.path.map(p => [p.lat, p.lng]);
+    const coords: [number, number][] = cleanPath.map(p => [p.lat, p.lng]);
     
     // Draw route path line
     routeLineRef.current = L.polyline(coords, { color: '#3b82f6', weight: 5, opacity: 0.85, lineJoin: 'round' }).addTo(mapRef.current);
     mapRef.current.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
 
     // Start marker
-    const startPoint = route.path[0];
-    const startMarker = L.circleMarker([startPoint.lat, startPoint.lng], {
-      radius: 8,
-      fillColor: '#10b981',
-      color: '#ffffff',
-      weight: 2,
-      fillOpacity: 0.9,
-    }).addTo(mapRef.current);
-    startMarker.bindPopup(`<strong>Start Position</strong><br/>⏰ ${new Date(startPoint.timestamp).toLocaleTimeString()}`);
-    routeMarkersRef.current.push(startMarker);
-
-    // End marker
-    if (coords.length > 1) {
-      const endPoint = route.path[route.path.length - 1];
-      const endMarker = L.circleMarker([endPoint.lat, endPoint.lng], {
+    const startPoint = cleanPath[0];
+    if (startPoint) {
+      const startMarker = L.circleMarker([startPoint.lat, startPoint.lng], {
         radius: 8,
-        fillColor: '#ef4444',
+        fillColor: '#10b981',
         color: '#ffffff',
         weight: 2,
         fillOpacity: 0.9,
       }).addTo(mapRef.current);
-      endMarker.bindPopup(`<strong>End Position</strong><br/>🏁 ${new Date(endPoint.timestamp).toLocaleTimeString()}`);
-      routeMarkersRef.current.push(endMarker);
+      startMarker.bindPopup(`<strong>Start Position</strong><br/>⏰ ${new Date(startPoint.timestamp).toLocaleTimeString()}`);
+      routeMarkersRef.current.push(startMarker);
+    }
+
+    // End marker
+    if (cleanPath.length > 1) {
+      const endPoint = cleanPath[cleanPath.length - 1];
+      if (endPoint) {
+        const endMarker = L.circleMarker([endPoint.lat, endPoint.lng], {
+          radius: 8,
+          fillColor: '#ef4444',
+          color: '#ffffff',
+          weight: 2,
+          fillOpacity: 0.9,
+        }).addTo(mapRef.current);
+        endMarker.bindPopup(`<strong>End Position</strong><br/>🏁 ${new Date(endPoint.timestamp).toLocaleTimeString()}`);
+        routeMarkersRef.current.push(endMarker);
+      }
     }
 
     // Stops overlay markers
     if (showStopsOverlay) {
-      detectRouteStops(route.path).forEach((stop, idx) => {
+      detectRouteStops(cleanPath).forEach((stop, idx) => {
         const stopMarker = L.circleMarker([stop.lat, stop.lng], {
           radius: 7,
           fillColor: '#f59e0b',
@@ -388,8 +402,12 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
   // 7. Route Replay Timeline Slider & Live Marker positioning
   useEffect(() => {
     if (!mapRef.current || !activeReplay?.path?.length) return;
-    const idx = Math.min(sliderIndex, activeReplay.path.length - 1);
-    const node = activeReplay.path[idx];
+    // Safety check path nodes
+    const cleanPath = activeReplay.path.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number' && !isNaN(p.lat) && !isNaN(p.lng));
+    if (cleanPath.length === 0) return;
+
+    const idx = Math.min(sliderIndex, cleanPath.length - 1);
+    const node = cleanPath[idx];
     if (!node) return;
 
     const popupContent = `
@@ -397,7 +415,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
         <div style="font-weight:900;color:#1e3a8a">Replaying Position</div>
         <div>📍 Coord: ${node.lat.toFixed(5)}, ${node.lng.toFixed(5)}</div>
         <div>⏰ Time: ${new Date(node.timestamp).toLocaleTimeString()}</div>
-        <div>🔢 Node: ${idx + 1}/${activeReplay.path.length}</div>
+        <div>🔢 Node: ${idx + 1}/${cleanPath.length}</div>
       </div>
     `;
 

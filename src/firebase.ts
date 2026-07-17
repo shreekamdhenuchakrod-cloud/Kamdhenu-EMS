@@ -271,6 +271,7 @@ export async function saveDatabaseToFirebase(newDb: AppDatabase): Promise<void> 
     diffEntity(newDb.routeHistories || [], lastSavedDb.routeHistories || [], 'routeHistories');
     diffEntity(newDb.devices || [], lastSavedDb.devices || [], 'devices');
     diffEntity(newDb.offlineQueue || [], lastSavedDb.offlineQueue || [], 'offlineQueue');
+    diffEntity(newDb.attendanceReviews || [], lastSavedDb.attendanceReviews || [], 'attendanceReviews');
 
     // 2.5 Diff Live Locations
     const newLocs = newDb.liveLocations || {};
@@ -359,7 +360,8 @@ export function syncDatabaseFromFirebase(
     devices: [],
     offlineQueue: [],
     routeHistories: [],
-    liveLocations: {}
+    liveLocations: {},
+    attendanceReviews: []
   };
 
   let cleanupScheduled = false;
@@ -447,8 +449,8 @@ export function syncDatabaseFromFirebase(
 
   const triggerUpdate = (key: string) => {
     loadedKeys.add(key);
-    // Only fire update events to App.tsx when all 17 listeners have completed their initial fetch
-    if (loadedKeys.size >= 17) {
+    // Only fire update events to App.tsx when all 18 listeners have completed their initial fetch
+    if (loadedKeys.size >= 18) {
       const freshDb = { ...state };
       lastSavedDb = JSON.parse(JSON.stringify(freshDb));
       onUpdate(freshDb);
@@ -494,6 +496,7 @@ export function syncDatabaseFromFirebase(
   setupCollectionListener<DeviceRegistration>('devices', 'devices', (data) => data as DeviceRegistration);
   setupCollectionListener<SyncQueueItem>('offlineQueue', 'offlineQueue', (data) => data as SyncQueueItem);
   setupCollectionListener<RouteHistory>('routeHistories', 'routeHistories', (data) => data as RouteHistory);
+  setupCollectionListener<AttendanceReview>('attendanceReviews', 'attendanceReviews', (data) => data as AttendanceReview);
 
   // Setup liveLocations listener (15th listener)
   const unsubLocs = onSnapshot(
