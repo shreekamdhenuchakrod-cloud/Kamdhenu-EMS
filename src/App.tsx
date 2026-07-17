@@ -803,7 +803,7 @@ export default function App() {
   const pendingApprovalsCount = (db.approvalRequests || []).filter(r => r.status === 'Pending').length;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="min-h-screen h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800 overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       
       {/* Premium Desktop Sidebar Navigation */}
       <aside className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200/50 shrink-0 h-screen sticky top-0 p-6 justify-between shadow-2xs">
@@ -1085,8 +1085,10 @@ export default function App() {
         </header>
       )}
 
-      {/* Main Container Wrapper */}
-      <main className="flex-1 w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto px-3 md:px-6 pt-4 pb-24 md:pb-8 md:py-8 overflow-x-hidden md:h-screen md:overflow-y-auto">
+      {/* Main Container Wrapper — hidden when tracking/geofences map view is active */}
+      <main className={`flex-1 w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto px-3 md:px-6 pt-4 pb-24 md:pb-8 md:py-8 overflow-x-hidden md:h-screen md:overflow-y-auto ${
+        currentView === 'tracking' || currentView === 'geofences' ? 'hidden' : ''
+      }`}>
         
         {/* Firebase Error Warning Banner */}
         {syncStatus === 'error' && (
@@ -1201,24 +1203,29 @@ export default function App() {
           />
         )}
 
-        {/* 8. Live Tracking maps dashboard */}
-        {currentView === 'tracking' && (
+        {/* Note: LiveTrackingView and GeoFenceManager rendered OUTSIDE main to avoid overflow/max-w clipping */}
+      </main>
+
+      {/* Map Views - Full screen sibling outside main container to avoid Leaflet clipping */}
+      {currentView === 'tracking' && (
+        <div className="flex-1 w-full overflow-hidden" style={{ minHeight: 0 }}>
           <LiveTrackingView 
             db={db}
             lang={lang}
           />
-        )}
+        </div>
+      )}
 
-        {/* 9. GeoFence Manager desk */}
-        {currentView === 'geofences' && (
+      {/* 9. GeoFence Manager desk */}
+      {currentView === 'geofences' && (
+        <div className="flex-1 w-full overflow-hidden" style={{ minHeight: 0 }}>
           <GeoFenceManager 
             db={db}
             onUpdateDb={handleUpdateDatabaseDirectly}
             lang={lang}
           />
-        )}
-
-      </main>
+        </div>
+      )}
 
       {/* --- Sticky Floating Bottom Navigation Rail (Mobile Only) --- */}
       <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-150 py-2.5 px-3 shadow-lg z-50 rounded-2xl max-w-md mx-auto transition-transform duration-200">

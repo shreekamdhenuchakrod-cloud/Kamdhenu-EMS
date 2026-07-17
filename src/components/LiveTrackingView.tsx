@@ -514,7 +514,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
   const liveCount = Object.keys(db.liveLocations || {}).length;
 
   return (
-    <div className={`flex flex-col h-[calc(100vh-120px)] md:h-[78vh] gap-3 relative ${isFullscreen ? 'fixed inset-0 z-50 bg-slate-50 p-2 h-screen' : ''}`}>
+    <div className={`flex flex-col h-full min-h-0 gap-3 relative p-3 md:p-4 bg-slate-50 ${isFullscreen ? 'fixed inset-0 z-50 bg-slate-50 p-2' : ''}`}>
       
       {/* Mobile Control Header toolbar */}
       <div className="flex items-center justify-between gap-2 md:hidden">
