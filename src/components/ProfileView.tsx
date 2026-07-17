@@ -1666,10 +1666,26 @@ export default function ProfileView({
                   prefix: "",
                   color: "green",
                   icon: "trending_up",
-                  colSpan: "col-span-4",
+                  colSpan: "col-span-3",
                   onClick: () => {
                     setActiveTab("transactions");
                     setActiveSubTab("Earnings");
+                  }
+                },
+                {
+                  id: "card-prev-due",
+                  label: t("Previous Due", "पिछला बकाया"),
+                  value: previousMonthDue,
+                  prefix: "",
+                  color: "orange",
+                  icon: "warning",
+                  colSpan: "col-span-3",
+                  onClick: () => {
+                    setBreakdownModal({
+                      isOpen: true,
+                      title: t("Previous Carried-Forward Due", "पिछले महीनों का बकाया"),
+                      type: "prevDue",
+                    });
                   }
                 },
                 {
@@ -1679,7 +1695,7 @@ export default function ProfileView({
                   prefix: "-",
                   color: "red",
                   icon: "payments",
-                  colSpan: "col-span-4",
+                  colSpan: "col-span-3",
                   onClick: () => {
                     setActiveTab("transactions");
                     setActiveSubTab("Payments");
@@ -1692,7 +1708,7 @@ export default function ProfileView({
                   prefix: "+",
                   color: "blue",
                   icon: "schedule",
-                  colSpan: "col-span-4",
+                  colSpan: "col-span-3",
                   onClick: () => {
                     setActiveTab("transactions");
                     setActiveSubTab("Overtime");
