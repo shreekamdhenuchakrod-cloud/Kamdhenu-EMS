@@ -208,7 +208,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
         return;
       }
 
-      const isRecent = Date.now() - new Date(loc.timestamp).getTime() < 300000;
+      const isOnline = Date.now() - new Date(loc.timestamp).getTime() < 300000;
       const lastSeenStr = new Date(loc.timestamp).toLocaleTimeString();
 
       const todayDateStr = new Date().toISOString().split('T')[0];
