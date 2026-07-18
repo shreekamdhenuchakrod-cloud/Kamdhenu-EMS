@@ -339,7 +339,7 @@ export default function ApprovalPanel({
       r.newValue === newVal
     );
     if (isDuplicate) {
-      alert(t("An identical request is already pending.", "एक समान अनुरोध पहले से लंबित है।"));
+      alert(t("An identical request is already pending.", "यही रिक्वेस्ट पहले से पेंडिंग (बाकी) है।"));
       return;
     }
 
@@ -366,7 +366,7 @@ export default function ApprovalPanel({
     const newNotification = {
       id: `_NTF_${Date.now()}`,
       userId: 'admin',
-      title: t('New Approval Request', 'नया अनुमोदन अनुरोध'),
+      title: t('New Approval Request', 'नया मंजूरी अनुरोध'),
       message: `${employeeName} ${t('requested a correction in', 'ने')} ${category} ${t('on', 'पर सुधार का अनुरोध किया है')} ${reqDateToUse}`,
       timestamp: new Date().toISOString(),
       read: false
@@ -453,14 +453,14 @@ export default function ApprovalPanel({
 
   // Cancel/Delete Request (Only if pending)
   const handleCancelRequest = (reqId: string) => {
-    if (!confirm(t('Cancel this pending request?', 'क्या आप इस लंबित अनुरोध को रद्द करना चाहते हैं?'))) return;
+    if (!confirm(t('Cancel this pending request?', 'क्या आप इस पेंडिंग रिक्वेस्ट को रद्द करना चाहते हैं?'))) return;
     const updatedList = requestsList.filter(req => req.id !== reqId);
     if (onUpdateDb) onUpdateDb({ ...db, approvalRequests: updatedList });
   };
 
   // Approve Request (Updates DB records atomically via transaction wrapper)
   const handleApprove = (req: ApprovalRequest) => {
-    if (!confirm(t('Approve this request?', 'क्या आप इस अनुरोध को स्वीकृत करना चाहते हैं?'))) return;
+    if (!confirm(t('Approve this request?', 'क्या आप इस रिक्वेस्ट को मंजूर करना चाहते हैं?'))) return;
 
     try {
       const updatedDb = runPayrollTransaction(db, (draft) => {
@@ -607,8 +607,8 @@ export default function ApprovalPanel({
         const newNotification = {
           id: `_NTF_${Date.now()}`,
           userId: req.employeeId,
-          title: t('Request Approved', 'अनुरोध स्वीकृत'),
-          message: `${t('Your request for', 'आपका')} ${req.category} ${t('on', 'पर')} ${req.date} ${t('has been approved.', 'स्वीकृत कर दिया गया है।')}`,
+          title: t('Request Approved', 'रिक्वेस्ट मंजूर हुई'),
+          message: `${t('Your request for', 'आपका')} ${req.category} ${t('on', 'पर')} ${req.date} ${t('has been approved.', 'मंजूर कर दिया गया है।')}`,
           timestamp: new Date().toISOString(),
           read: false
         };
@@ -620,14 +620,14 @@ export default function ApprovalPanel({
       }
       setSelectedRequestDetails(null);
     } catch (err: any) {
-      alert(t('Transaction rolled back: ' + err.message, 'सौदा वापस ले लिया गया: ' + err.message));
+      alert(t('Transaction rolled back: ' + err.message, 'ट्रांजैक्शन फेल: ' + err.message));
     }
   };
 
   // Reject Request
   const handleReject = (reqId: string) => {
     if (!rejectionReason.trim()) {
-      alert(t('Please provide a reason for rejection!', 'कृपया अस्वीकृति का कारण लिखें!'));
+      alert(t('Please provide a reason for rejection!', 'कृपया नामंजूर करने का कारण लिखें!'));
       return;
     }
 
@@ -665,8 +665,8 @@ export default function ApprovalPanel({
         const newNotification = {
           id: `_NTF_${Date.now()}`,
           userId: targetReq.employeeId,
-          title: t('Request Rejected', 'अनुरोध अस्वीकृत'),
-          message: `${t('Your request for', 'का')} ${targetReq.category} ${t('on', 'पर')} ${targetReq.date} ${t('was rejected.', 'अस्वीकृत कर दिया गया है।')}`,
+          title: t('Request Rejected', 'रिक्वेस्ट नामंजूर हुई'),
+          message: `${t('Your request for', 'आपका')} ${targetReq.category} ${t('on', 'पर')} ${targetReq.date} ${t('was rejected.', 'नामंजूर कर दिया गया है।')}`,
           timestamp: new Date().toISOString(),
           read: false
         };
@@ -678,13 +678,13 @@ export default function ApprovalPanel({
       setRejectingRequestId(null);
       setRejectionReason('');
     } catch (err: any) {
-      alert(t('Rejection transaction failed: ' + err.message, 'अस्वीकृति विफलता: ' + err.message));
+      alert(t('Rejection transaction failed: ' + err.message, 'रिजेक्शन फेल: ' + err.message));
     }
   };
 
   const handleReturnForCorrection = (reqId: string) => {
     if (!rejectionReason.trim()) {
-      alert(t('Please provide a correction instruction remark!', 'कृपया सुधार निर्देश की टिप्पणी लिखें!'));
+      alert(t('Please provide a correction instruction remark!', 'कृपया सुधार के निर्देश लिखें!'));
       return;
     }
 
@@ -982,7 +982,7 @@ export default function ApprovalPanel({
             <Icon name="verified_user" size={18} />
           </div>
           <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            {isAdmin ? t('Manager Approval Panel', 'अनुमोदन प्रबंधन डेस्क') : t('My Correction Requests', 'मेरे सुधार अनुरोध')}
+            {isAdmin ? t('Manager Approval Panel', 'मैनेजर मंजूरी डेस्क') : t('My Correction Requests', 'मेरे सुधार रिक्वेस्ट')}
           </span>
         </div>
 

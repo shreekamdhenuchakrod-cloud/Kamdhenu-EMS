@@ -898,7 +898,7 @@ export default function App() {
             >
               <div className="flex items-center gap-3">
                 <Icon name="verified_user" size={20} fill={currentView === 'approvals'} />
-                <span>{t('Approval Desk', 'अनुमोदन डेस्क')}</span>
+                <span>{t('Approval Desk', 'मंजूरी डेस्क')}</span>
               </div>
               {pendingApprovalsCount > 0 && (
                 <span className="bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shrink-0">
@@ -1292,7 +1292,7 @@ export default function App() {
             }`}
           >
             <Icon name="verified_user" size={18} fill={currentView === 'approvals'} />
-            <span className="text-[8px] tracking-tight mt-1">{t('Approvals', 'अनुमोदन')}</span>
+            <span className="text-[8px] tracking-tight mt-1">{t('Approvals', 'मंजूरी')}</span>
             {pendingApprovalsCount > 0 && (
               <span className="absolute top-0 right-1.5 bg-amber-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">
                 {pendingApprovalsCount}

@@ -1507,16 +1507,7 @@ export default function ProfileView({
 
 
 
-              <button
-                onClick={() => {
-                  openFineSettingsModal();
-                  setShowActionDropdown(false);
-                }}
-                className="w-full text-left px-4 py-2.5 hover:bg-slate-50 font-semibold flex items-center gap-2 border-t border-slate-100 cursor-pointer transition-colors"
-              >
-                <Icon name="gavel" size={16} className="text-slate-400" />
-                <span>{t("Fine Settings", "जुर्माना नीतियां")}</span>
-              </button>
+
 
               <button
                 onClick={() => {
@@ -4028,18 +4019,18 @@ export default function ProfileView({
               <Icon name="warning" size={24} className="text-rose-600" />
             </div>
             <h3 className="text-sm font-black text-slate-900 text-center uppercase tracking-tight">
-              {t("PERMANENT DELETE WARNING", "स्थायी विलोपन चेतावनी")}
+              {t("PERMANENT DELETE WARNING", "कर्मचारी को पूरी तरह डिलीट करें")}
             </h3>
             <p className="text-xs text-slate-500 font-sans font-medium text-center leading-relaxed mt-2">
               {t(
                 "This will permanently purge this employee plus ALL their transaction logs, attendance entries, and historical balances. This action is IRREVERSIBLE. Proceed?",
-                "यह इस कर्मचारी और उनके सभी भुगतान प्रविष्टियों, दैनिक इतिहास, और पिछले शेष को मिटा देगा। यह कार्रवाई अपरिवर्तनीय है। क्या आप जारी रखना चाहते हैं?",
+                "इससे यह कर्मचारी और उनका सारा पुराना रिकॉर्ड (हाजिरी, भुगतान, आदि) हमेशा के लिए डिलीट हो जाएगा। क्या आप डिलीट करना चाहते हैं?",
               )}
             </p>
             {/* PIN Input Field */}
             <div className="mt-4 space-y-1">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
-                {t("Enter 4-Digit Admin PIN", "4-अंकीय एडमिन पिन दर्ज करें")}
+                {t("Enter 4-Digit Admin PIN", "४-अंकों का एडमिन पिन डालें")}
               </label>
               <input
                 type="password"
@@ -4055,13 +4046,13 @@ export default function ProfileView({
                 onClick={() => setShowDeleteConfirm(false)}
                 className="flex-1 btn bou font-bold"
               >
-                {t("No, Cancel", "नहीं, रद्द करें")}
+                {t("No, Cancel", "नहीं, वापस जाएं")}
               </button>
               <button
                 onClick={() => {
                   const correctPin = db.company?.adminPin || "1234";
                   if (deletePin !== correctPin) {
-                    alert(t("Incorrect Admin PIN!", "गलत एडमिन पिन!"));
+                    alert(t("Incorrect Admin PIN!", "गलत पिन!"));
                     return;
                   }
                   setShowDeleteConfirm(false);
@@ -4123,18 +4114,18 @@ export default function ProfileView({
               <Icon name="logout" size={24} className="text-amber-600" />
             </div>
             <h3 className="text-sm font-black text-slate-900 text-center uppercase tracking-tight">
-              {t("MARK JOB LEFT", "नौकरी कार्यमुक्त चिह्नित करें")}
+              {t("MARK JOB LEFT", "नौकरी छोड़ दी चिह्नित करें")}
             </h3>
             <p className="text-xs text-slate-500 font-sans font-medium text-center leading-relaxed mt-2">
               {t(
                 "Mark this employee status as LEFT JOB? This terminates active rosters.",
-                "क्या आप इस कर्मचारी को कार्य मुक्त (Left Job) के रूप में चिह्नित करना चाहते हैं? इससे उनका नाम दैनिक सूची में सक्रिय रूप से बंद हो जायेगा।",
+                "क्या आप दर्ज करना चाहते हैं कि इस कर्मचारी ने नौकरी छोड़ दी है? इससे ये लिस्ट में निष्क्रिय (Inactive) हो जाएंगे।",
               )}
             </p>
             {/* PIN Input Field */}
             <div className="mt-4 space-y-1">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
-                {t("Enter 4-Digit Admin PIN", "4-अंकीय एडमिन पिन दर्ज करें")}
+                {t("Enter 4-Digit Admin PIN", "४-अंकों का एडमिन पिन डालें")}
               </label>
               <input
                 type="password"
@@ -4150,13 +4141,13 @@ export default function ProfileView({
                 onClick={() => setShowLeftConfirm(false)}
                 className="flex-1 btn bou font-bold"
               >
-                {t("No, Cancel", "नहीं, रद्द करें")}
+                {t("No, Cancel", "नहीं, वापस जाएं")}
               </button>
               <button
                 onClick={() => {
                   const correctPin = db.company?.adminPin || "1234";
                   if (leftPin !== correctPin) {
-                    alert(t("Incorrect Admin PIN!", "गलत एडमिन पिन!"));
+                    alert(t("Incorrect Admin PIN!", "गलत पिन!"));
                     return;
                   }
                   setShowLeftConfirm(false);
@@ -4170,7 +4161,7 @@ export default function ProfileView({
                 }}
                 className="flex-1 btn bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-xs active:scale-[0.98] transition-all"
               >
-                {t("Yes, Mark Left", "हाँ, कार्यमुक्त करें")}
+                {t("Yes, Mark Left", "हाँ, दर्ज करें")}
               </button>
             </div>
           </div>

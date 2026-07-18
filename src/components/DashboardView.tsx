@@ -78,10 +78,10 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
             </div>
             <div>
               <h4 className="text-xs font-black text-amber-900 uppercase tracking-wide">
-                {t('Pending Approvals Alert', 'लंबित अनुमोदन अलर्ट')}
+                {t('Pending Approvals Alert', 'मंजूरी पेंडिंग अलर्ट')}
               </h4>
               <p className="text-[10px] text-amber-700 font-semibold mt-0.5">
-                {t(`You have ${pendingRequests.length} pending correction requests from employees.`, `आपके पास कर्मचारियों से ${pendingRequests.length} लंबित सुधार अनुरोध हैं।`)}
+                {t(`You have ${pendingRequests.length} pending correction requests from employees.`, `आपके पास कर्मचारियों की ${pendingRequests.length} पेंडिंग रिक्वेस्ट बाकी हैं।`)}
               </p>
             </div>
           </div>
@@ -89,9 +89,8 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
         </div>
       )}
 
-      {/* Quick Access Actions Section */}
       <div>
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">{t("Quick Actions", "त्वरित कार्य")}</h3>
+        <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">{t("Quick Actions", "शॉर्टकट काम")}</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {/* Staff List Link */}
           <div 
@@ -144,7 +143,7 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
               <Icon name="verified_user" size={22} className="text-amber-655" />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-xs text-slate-900 truncate">{t('Approval Desk', 'अनुमोदन डेस्क')}</div>
+              <div className="font-semibold text-xs text-slate-900 truncate">{t('Approval Desk', 'मंजूरी डेस्क')}</div>
               <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Review pending requests', 'रिक्वेस्ट अप्रूव करें')}</div>
             </div>
           </div>
@@ -158,8 +157,8 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
               <Icon name="radar" size={22} className="text-blue-650" />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-xs text-slate-900 truncate">{t('GeoFence Center', 'जियोफेंस केंद्र')}</div>
-              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Manage work regions', 'लोकेशन परिधि प्रबन्ध')}</div>
+              <div className="font-semibold text-xs text-slate-900 truncate">{t('GeoFence Center', 'जियोफेंस सेंटर')}</div>
+              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Manage work regions', 'जियोफेंस सीमाएं बदलें')}</div>
             </div>
           </div>
 
@@ -189,31 +188,31 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
           {/* Present Card */}
           <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Present Staff', 'उपस्थित स्टाफ')}</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Present Staff', 'हाजिर स्टाफ')}</span>
               <Icon name="check_circle" size={18} className="text-emerald-500" fill={true} />
             </div>
             <div className="flex items-baseline gap-1 mt-2">
               <span className="text-2xl font-black text-emerald-600 font-mono">{presentCount}</span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">{t('Active', 'सक्रिय')}</span>
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">{t('Active', 'एक्टिव')}</span>
             </div>
           </div>
 
           {/* Absent Card */}
           <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Absent Staff', 'अनुपस्थित स्टाफ')}</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Absent Staff', 'गैरहाजिर स्टाफ')}</span>
               <Icon name="cancel" size={18} className="text-red-500" fill={true} />
             </div>
             <div className="flex items-baseline gap-1 mt-2">
               <span className="text-2xl font-black text-red-500 font-mono">{absentCount}</span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">{t('Absent', 'अनुपस्थित')}</span>
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">{t('Absent', 'गैरहाजिर')}</span>
             </div>
           </div>
 
           {/* Pending Payment Card */}
           <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Pending Payment', 'लंबित बकाया')}</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Pending Payment', 'बाकी वेतन')}</span>
               <Icon name="payments" size={18} className="text-amber-500" fill={true} />
             </div>
             <div className="mt-2 font-mono">
@@ -239,19 +238,19 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
           {/* Attendance Summary */}
           <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Attendance Marked', 'सहेज हाजिरी')}</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Attendance Marked', 'हाजिरी दर्ज')}</span>
               <Icon name="assignment_turned_in" size={18} className="text-slate-500" fill={true} />
             </div>
             <div className="flex items-baseline gap-1 mt-2">
               <span className="text-lg font-black text-slate-800 font-mono">{markedCount} <span className="text-slate-350 font-normal">/</span> {activeEmployees.length}</span>
-              <span className="text-[9px] text-slate-400 font-bold">{t('Marked', 'सहेजा')}</span>
+              <span className="text-[9px] text-slate-400 font-bold">{t('Marked', 'दर्ज')}</span>
             </div>
           </div>
 
           {/* Total Registered Active Staff */}
           <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Total Staff Count', 'कुल सक्रिय कर्मचारी')}</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Total Staff Count', 'कुल एक्टिव स्टाफ')}</span>
               <Icon name="group" size={18} className="text-indigo-500" fill={true} />
             </div>
             <div className="flex items-baseline gap-1 mt-2">

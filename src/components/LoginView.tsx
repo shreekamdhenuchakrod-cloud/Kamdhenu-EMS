@@ -283,7 +283,7 @@ export default function LoginView({
               {/* Mobile Number */}
               <div className="fld mb-0">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                  {t('Registered Mobile Number', 'पंजीकृत मोबाइल नंबर')} <span className="text-red-500">*</span>
+                  {t('Registered Mobile Number', 'रजिस्टर्ड मोबाइल नंबर')} <span className="text-red-500">*</span>
                 </label>
                 <div className="pw">
                   <span className="pfx">+91</span>
