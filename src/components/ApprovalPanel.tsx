@@ -7,6 +7,34 @@ import TimeWheelPicker from './TimeWheelPicker';
 import InlineDurationPicker from './InlineDurationPicker';
 import { runPayrollTransaction, getDistanceMeters } from '../db';
 
+function formatLocalTimestamp(ts: string): string {
+  if (!ts) return '';
+  try {
+    let d: Date;
+    if (ts.includes('Z') || ts.includes('+') || (ts.includes('T') && !ts.endsWith('Z'))) {
+      d = new Date(ts);
+    } else {
+      const normalized = ts.replace(' ', 'T') + 'Z';
+      d = new Date(normalized);
+    }
+    if (isNaN(d.getTime())) {
+      d = new Date(ts);
+    }
+    if (isNaN(d.getTime())) return ts;
+    
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const mm = pad(d.getMonth() + 1);
+    const dd = pad(d.getDate());
+    const hh = pad(d.getHours());
+    const min = pad(d.getMinutes());
+    const ss = pad(d.getSeconds());
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+  } catch {
+    return ts;
+  }
+}
+
 interface ApprovalPanelProps {
   employeeId?: string; // defined if employee portal
   employeeName?: string; // defined if employee portal
@@ -221,7 +249,9 @@ export default function ApprovalPanel({
       }
     } else if (requestType === 'leave') {
       category = 'Leave Request';
-      oldVal = t('Active Duty / No Leave', 'कर्तव्य पर सक्रिय / कोई छुट्टी नहीं');
+      const key = `${employeeId}_${leaveStartDate}`;
+      const existingRec = db.attendance ? db.attendance[key] : undefined;
+      oldVal = existingRec ? (existingRec.status || 'Not Marked') : 'Not Marked';
       newVal = JSON.stringify({
         startDate: leaveStartDate,
         days: leaveDays,
@@ -858,6 +888,14 @@ export default function ApprovalPanel({
   // Helper to render readable sessions/payment newValue
   const renderNewValueText = (val: string) => {
     if (!val) return '—';
+    if (val === 'Active Duty / No Leave' || val === 'कर्तव्य पर सक्रिय / कोई छुट्टी नहीं' || val === 'Not Marked' || val === 'मार्क नहीं है') {
+      return t('Not Marked', 'मार्क नहीं है');
+    }
+    if (val === 'Present') return t('Present', 'उपस्थित');
+    if (val === 'Absent') return t('Absent', 'अनुपस्थित');
+    if (val === 'Half Day') return t('Half Day', 'आधा दिन');
+    if (val === 'Leave') return t('Leave', 'छुट्टी');
+
     if (val.startsWith('[')) {
       try {
         const parsed = JSON.parse(val) as Array<{ in: string; out: string }>;
@@ -1797,26 +1835,14 @@ export default function ApprovalPanel({
                 </div>
 
                 {/* Request details (Old vs New value) */}
-                <div className="relative bg-slate-50/70 border border-slate-100 rounded-xl p-2.5 text-xs">
-                  {(req.category === 'Payment' || req.newValue.includes('{') || (req.oldValue && req.oldValue.includes('₹'))) && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); }}
-                      className="absolute top-2 right-2 p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-600 transition-colors cursor-pointer select-none"
-                      title='Salary'
-                    >
-                      <Icon name='visibility' size={14} />
-                    </button>
-                  )}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-0.5">
-                      <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Current Value', 'वर्तमान मान')}</span>
-                      <span className="font-semibold text-slate-550 line-through">{renderNewValueText(req.oldValue || '-')}</span>
-                    </div>
-                    <div className="space-y-0.5 border-l border-slate-150 pl-4">
-                      <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Requested Value', 'वांचित मान')}</span>
-                      <span className="font-black text-blue-650">{renderNewValueText(req.newValue)}</span>
-                    </div>
+                <div className="relative text-xs grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 space-y-0.5 flex flex-col justify-center">
+                    <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Old Value', 'पुराना मान')}</span>
+                    <span className="font-semibold text-slate-500 line-through truncate">{renderNewValueText(req.oldValue || '-')}</span>
+                  </div>
+                  <div className="bg-blue-50/30 border border-blue-100/50 rounded-xl p-2.5 space-y-0.5 flex flex-col justify-center">
+                    <span className="text-[8px] uppercase tracking-wider text-blue-500 font-bold block">{t('Requested Value', 'अनुरोधित मान')}</span>
+                    <span className="font-black text-blue-700 truncate">{renderNewValueText(req.newValue)}</span>
                   </div>
                 </div>
 
@@ -1835,7 +1861,7 @@ export default function ApprovalPanel({
                 {/* Action panel */}
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t border-slate-50 pt-3">
                   <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
-                    {t('Submitted:', 'भेजा गया:')} {req.timestamp}
+                    {t('Submitted:', 'भेजा गया:')} {formatLocalTimestamp(req.timestamp)}
                   </span>
 
                   <div className="flex gap-2 w-full sm:w-auto">
@@ -1995,13 +2021,13 @@ export default function ApprovalPanel({
                   <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Request Date', 'दिनांक')}</span>
                   <span className="font-bold text-slate-700">{selectedRequestDetails.date}</span>
                 </div>
-                <div>
-                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Current Value', 'वर्तमान मान')}</span>
-                  <span className="font-semibold text-slate-550 line-through">{renderNewValueText(selectedRequestDetails.oldValue || '—')}</span>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 space-y-0.5">
+                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Old Value', 'पुराना मान')}</span>
+                  <span className="font-semibold text-slate-500 line-through">{renderNewValueText(selectedRequestDetails.oldValue || '—')}</span>
                 </div>
-                <div>
-                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Requested Value', 'वांचित मान')}</span>
-                  <span className="font-black text-blue-650">{renderNewValueText(selectedRequestDetails.newValue)}</span>
+                <div className="bg-blue-50/30 border border-blue-100/50 rounded-xl p-2.5 space-y-0.5">
+                  <span className="text-[8px] uppercase tracking-wider text-blue-500 font-bold block">{t('Requested Value', 'अनुरोधित मान')}</span>
+                  <span className="font-black text-blue-700">{renderNewValueText(selectedRequestDetails.newValue)}</span>
                 </div>
               </div>
 
@@ -2082,7 +2108,7 @@ export default function ApprovalPanel({
                   <div>
                     <span className="text-[8px] text-slate-400 block">{t('Diagnostic Context', 'अतिरिक्त संदर्भ')}</span>
                     <span className="text-slate-700">
-                      {t('Timestamp:', 'समय:')} {selectedRequestDetails.timestamp}
+                      {t('Timestamp:', 'समय:')} {formatLocalTimestamp(selectedRequestDetails.timestamp)}
                     </span>
                   </div>
                 </div>

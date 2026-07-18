@@ -340,10 +340,26 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
     setSliderIndex(0);
     setIsPlaying(false);
 
-    if (!selectedEmpId || !replayDate) { setActiveReplay(null); return; }
+    const route = (db.routeHistories || []).find(
+      (r) => r.employeeId === selectedEmpId && r.date === replayDate,
+    );
+    if (!route || !route.path || route.path.length === 0) {
+      setActiveReplay(null);
+      return;
+    }
 
-    const cleanPath = route.path.filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number' && !isNaN(p.lat) && !isNaN(p.lng));
-    if (cleanPath.length === 0) { setActiveReplay(null); return; }
+    const cleanPath = route.path.filter(
+      (p) =>
+        p &&
+        typeof p.lat === "number" &&
+        typeof p.lng === "number" &&
+        !isNaN(p.lat) &&
+        !isNaN(p.lng),
+    );
+    if (cleanPath.length === 0) {
+      setActiveReplay(null);
+      return;
+    }
 
     setActiveReplay(route);
 
