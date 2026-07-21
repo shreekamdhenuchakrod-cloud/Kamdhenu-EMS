@@ -178,13 +178,8 @@ export default function LoginView({
 
     let isValid = false;
     if (hasCustomPin) {
-      if (attempts >= 10) {
-        // Unlock fallback: both custom and default work
-        isValid = empPin === foundEmp.loginPin || empPin === defaultPin;
-      } else {
-        // Before 10 attempts: only custom works
-        isValid = empPin === foundEmp.loginPin;
-      }
+      // Custom PIN accounts can ONLY log in using their custom PIN (no default PIN fallback for security)
+      isValid = empPin === foundEmp.loginPin;
     } else {
       // No custom PIN set: only default works
       isValid = empPin === defaultPin;

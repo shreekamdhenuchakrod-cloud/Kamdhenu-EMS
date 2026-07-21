@@ -321,10 +321,18 @@ export default function App() {
       (firestoreDb) => {
         if (!isSubscribed) return;
         const syncedDb = syncAutoOvertime(firestoreDb);
-        const serialized = JSON.stringify(syncedDb);
+        
+        // Merge offline queue items on top of firestore snapshot before setting state
+        let mergedDb = syncedDb;
+        const pendingQueueItems = SyncEngineService.getQueue().filter(q => q.status !== 'Synced');
+        pendingQueueItems.forEach(item => {
+          mergedDb = SyncEngineService.applyActionToDb(mergedDb, item);
+        });
+
+        const serialized = JSON.stringify(mergedDb);
         if (serialized !== lastFetchedDbRef.current && serialized !== JSON.stringify(db)) {
           lastFetchedDbRef.current = serialized;
-          rawSetDb(syncedDb);
+          rawSetDb(mergedDb);
         }
         setSyncStatus('synced');
         setSyncError(null);

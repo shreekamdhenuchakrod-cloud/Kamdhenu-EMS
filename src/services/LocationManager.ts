@@ -82,11 +82,11 @@ export class LocationManager {
     const speed = coords.speed || 0;
     const now = Date.now();
 
-    // 1. Accuracy Filtering: Filter out low-accuracy coordinates (> 35 meters)
-    // Fallback: If we haven't written any location for 3 minutes (180000ms), we accept lower accuracy (up to 80 meters)
+    // 1. Accuracy Filtering: Filter out low-accuracy coordinates (> 60 meters)
+    // Fallback: If we haven't written any location for 3 minutes (180000ms), we accept lower accuracy (up to 100 meters)
     const timeSinceLastWrite = now - this.lastWriteTime;
     const isStale = this.lastWriteTime === 0 || timeSinceLastWrite > 180000;
-    const maxAllowedAccuracy = isStale ? 80 : 35;
+    const maxAllowedAccuracy = isStale ? 100 : 60;
 
     if (accuracy > maxAllowedAccuracy) {
       console.warn(`[GPS Filter] Low accuracy ignored: ${accuracy.toFixed(1)}m (Max allowed: ${maxAllowedAccuracy}m)`);

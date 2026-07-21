@@ -102,17 +102,19 @@ export class SyncEngine {
     console.log(`Processing sync queue containing ${this.queue.length} items...`);
 
     const failedItems: SyncQueueItem[] = [];
+    let currentDbState = dbToUse;
 
     // Loop through the queue
     for (const item of this.queue) {
       if (item.status === 'Synced') continue;
 
       try {
-        const updatedDb = this.applyActionToDb(dbToUse, item);
+        const updatedDb = this.applyActionToDb(currentDbState, item);
         
         // Sync changes immediately to Firebase
         await saveDatabaseToFirebase(updatedDb);
         updateCbToUse(updatedDb);
+        currentDbState = updatedDb;
 
         item.status = 'Synced';
       } catch (error: any) {
@@ -136,7 +138,7 @@ export class SyncEngine {
     this.isProcessing = false;
   }
 
-  private applyActionToDb(db: AppDatabase, item: SyncQueueItem): AppDatabase {
+  public applyActionToDb(db: AppDatabase, item: SyncQueueItem): AppDatabase {
     const fresh = JSON.parse(JSON.stringify(db)) as AppDatabase;
 
     if (item.action === 'approval_request') {

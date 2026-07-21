@@ -15,7 +15,7 @@ import {
   AppDatabase, Employee, Payment, Earning, Deduction, 
   OvertimeEntry, LateFineEntry, AttendanceMap, CompanySettings,
   AuditLogEntry, RecycleBinItem, ApprovalRequest, NotificationItem,
-  GeoFence, DeviceRegistration, SyncQueueItem, RouteHistory, LiveLocation
+  GeoFence, DeviceRegistration, SyncQueueItem, RouteHistory, LiveLocation, AttendanceReview
 } from './types';
 
 // User provided Firebase web app's configuration
