@@ -111,7 +111,7 @@ export default function App() {
 
       // 4. Under-hours Fine Evaluation: if Worked < Standard
       if (rec && (totalHrs < baseHours || rec.status === 'Absent')) {
-        const comp = currentDb.company || {};
+        const comp = currentDb.company || ({} as any);
         const empSettings = employee.fineSettings;
 
         const fineEnabled = empSettings ? empSettings.fineEnabled : (comp.attendanceFineEnabled !== false);

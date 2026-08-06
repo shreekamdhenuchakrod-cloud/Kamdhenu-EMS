@@ -828,7 +828,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
                   selectedEmpId && activeEmployee && (
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
                       <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
-                        <Icon name="explore" size={24} className="animate-spin" style={{ animationDuration: '4s' }} />
+                        <Icon name="explore" size={24} className="animate-spin" />
                       </div>
                       <span className="text-xs font-bold text-slate-500">{t('No Route Data Found', 'कोई मार्ग डेटा नहीं मिला')}</span>
                       <p className="text-[10px] text-slate-400 mt-1">{t('No tracking records logged on this date.', 'इस तारीख को कोई ट्रैकिंग रिकॉर्ड उपलब्ध नहीं है।')}</p>
@@ -853,7 +853,7 @@ export default function LiveTrackingView({ db, lang }: LiveTrackingViewProps) {
         )}
 
         {/* Map Arena Container */}
-        <div className="flex-1 bg-white border border-slate-200 rounded-2xl shadow-3xs relative overflow-hidden min-h-0 flex flex-col">
+        <div className="flex-1 bg-white border border-slate-200 rounded-2xl shadow-3xs relative overflow-hidden min-h-[60vh] md:min-h-0 flex flex-col">
           
           {/* Top Info overlay floating box */}
           {selectedEmpId && activeEmployee && (

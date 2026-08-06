@@ -236,7 +236,7 @@ export interface RouteHistory {
   stops: RouteStop[];
 }
 
-export type ReviewStatus = 'Pending Review' | 'Approved' | 'Rejected' | 'Waived' | 'Converted to Leave';
+export type ReviewStatus = 'Pending' | 'Approved' | 'Rejected' | 'Waived' | 'Converted to Leave' | 'Deducted' | 'Pending Review';
 
 export interface AttendanceReview {
   id: string; // _REV_employeeId_date

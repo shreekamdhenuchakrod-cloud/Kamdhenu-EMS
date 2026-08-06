@@ -477,7 +477,8 @@ export default function ApprovalPanel({
           req.category === 'GeoFence Attendance' ||
           req.category === 'Punch In' || 
           req.category === 'Punch Out' || 
-          req.category === 'Early Exit'
+          req.category === 'Early Exit' ||
+          req.category === 'Late Entry'
         ) {
           const key = `${req.employeeId}_${req.date}`;
           const existingRec = draft.attendance[key] || {};

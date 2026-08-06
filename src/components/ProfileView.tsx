@@ -25,7 +25,7 @@ import TimeWheelPicker from "./TimeWheelPicker";
 import InlineDurationPicker from "./InlineDurationPicker";
 import SalarySlipPDF, { downloadSalarySlipPDF } from "./SalarySlipPDF";
 import LocalSalaryDisplay from "./LocalSalaryDisplay";
-import { dbService } from "../services/db";
+
 import { optimizeImage } from "../utils/imageOptimizer";
 
 const formatHrsMins = (h: number): string => {
@@ -167,7 +167,7 @@ export default function ProfileView({
   } | null>(null);
 
   const openFineSettingsModal = () => {
-    const comp = db.company || {};
+    const comp = db.company || ({} as any);
     const fs = emp.fineSettings;
     setFineSettingsState({
       fineEnabled: fs ? fs.fineEnabled : (comp.attendanceFineEnabled !== false),
