@@ -1,5 +1,5 @@
 const BASE = '/Kamdhenu-EMS';
-const CACHE_NAME = 'kamdhenu-ems-v3';
+const CACHE_NAME = 'kamdhenu-ems-v4';
 const ASSETS_TO_CACHE = [
   BASE + '/',
   BASE + '/index.html',
