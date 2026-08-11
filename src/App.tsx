@@ -27,7 +27,6 @@ import RecycleBinView from './components/RecycleBinView';
 import AuditLogsView from './components/AuditLogsView';
 import ApprovalPanel from './components/ApprovalPanel';
 import GeoFenceManager from './components/GeoFenceManager';
-import LiveTrackingView from './components/LiveTrackingView';
 import NotificationDesk from './components/NotificationDesk';
 
 export default function App() {
@@ -915,21 +914,6 @@ export default function App() {
               )}
             </button>
 
-            {/* Live GPS Tracking */}
-            <button
-              onClick={() => {
-                setCurrentView('tracking');
-                setSelectedEmployeeId(null);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                currentView === 'tracking' 
-                  ? 'bg-blue-50/70 text-blue-600 font-bold border-l-4 border-blue-600 rounded-l-none' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon name="map" size={20} fill={currentView === 'tracking'} />
-              <span>{t('Live GPS Map', 'लाइव जीपीएस ट्रैकिंग')}</span>
-            </button>
 
             {/* GeoFence Management */}
             <button
@@ -1215,15 +1199,6 @@ export default function App() {
       </main>
 
       {/* Map Views - Full screen sibling outside main container to avoid Leaflet clipping */}
-      {currentView === 'tracking' && (
-        <div className="flex-1 w-full overflow-hidden" style={{ minHeight: 0 }}>
-          <LiveTrackingView 
-            db={db}
-            lang={lang}
-          />
-        </div>
-      )}
-
       {/* 9. GeoFence Manager desk */}
       {currentView === 'geofences' && (
         <div className="flex-1 w-full overflow-hidden" style={{ minHeight: 0 }}>

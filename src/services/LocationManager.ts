@@ -165,37 +165,7 @@ export class LocationManager {
       this.onLocationTickCallback(loc);
     }
 
-    // Determine if we should commit write to database (Throttling Check)
-    let shouldWrite = false;
-    
-    // Condition 1: Moved more than 10 meters (was 20m, reduced for smoother, more precise route lines)
-    if (this.lastWritePosition) {
-      const distFromLastWrite = getDistanceMeters(this.lastWritePosition.lat, this.lastWritePosition.lng, lat, lng);
-      if (distFromLastWrite > 10) {
-        shouldWrite = true;
-      }
-    } else {
-      shouldWrite = true; // First record
-    }
-
-    // Condition 2: GeoFence Transition
-    if (geofenceTransitionTriggered) {
-      shouldWrite = true;
-    }
-
-    // Condition 3: More than 60 seconds elapsed since last successful database write (heartbeat)
-    if (now - this.lastWriteTime > 60000) {
-      shouldWrite = true;
-    }
-
-    if (shouldWrite) {
-      this.commitLiveLocationToSync(loc);
-      this.lastWritePosition = { lat, lng };
-      this.lastWriteTime = now;
-    }
-
-    // Save position state
-    this.lastPosition = { lat, lng, timestamp: now };
+    // Removed live sync logic (Location is now only used for Geofence tracking locally)
   }
 
   public stopTracking() {
@@ -226,40 +196,7 @@ export class LocationManager {
       address: this.lastResolvedAddress || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`
     };
 
-    this.commitLiveLocationToSync(loc);
-    this.lastWritePosition = { lat, lng };
-    this.lastWriteTime = Date.now();
-  }
-
-  private commitLiveLocationToSync(loc: LiveLocation) {
-    SyncEngineService.enqueue('live_location', loc);
-
-    // Also append to RouteHistory
-    const dateStr = new Date().toISOString().split('T')[0];
-    const routeId = `${loc.employeeId}_${dateStr}`;
-    
-    const queue = SyncEngineService.getQueue();
-    const existingSyncRoute = queue.find(q => q.action === 'route_history' && q.payload.id === routeId);
-
-    const freshPathNode = {
-      lat: loc.lat,
-      lng: loc.lng,
-      timestamp: loc.timestamp
-    };
-
-    if (existingSyncRoute) {
-      const routePayload = existingSyncRoute.payload;
-      routePayload.path.push(freshPathNode);
-    } else {
-      const newRoute = {
-        id: routeId,
-        employeeId: loc.employeeId,
-        date: dateStr,
-        path: [freshPathNode],
-        stops: [] // filled dynamically during stop validations
-      };
-      SyncEngineService.enqueue('route_history', newRoute);
-    }
+    // Force update doesn't push to sync anymore, it's just used by UI 
   }
 }
 

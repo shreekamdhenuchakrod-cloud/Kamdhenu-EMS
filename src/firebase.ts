@@ -207,13 +207,15 @@ export async function saveDatabaseToFirebase(newDb: AppDatabase): Promise<void> 
       return;
     }
 
-    const batch = writeBatch(db);
+    let batch = writeBatch(db);
     let operationCount = 0;
 
-    const addOperation = () => {
+    const addOperation = async () => {
       operationCount++;
       if (operationCount >= 400) {
-        console.warn('Batch size reaching limits in single sync. Throttled.');
+        await batch.commit();
+        batch = writeBatch(db);
+        operationCount = 0;
       }
     };
 
@@ -228,12 +230,12 @@ export async function saveDatabaseToFirebase(newDb: AppDatabase): Promise<void> 
         }
         const cleaned = cleanUndefined(newDb.company);
         batch.set(doc(db, 'settings/company'), { ...cleaned, migrated: true }, { merge: true });
-        addOperation();
+        await addOperation();
       }
     }
 
     // Helper for standard entity diffs
-    const diffEntity = (newItems: any[] = [], oldItems: any[] = [], colName: string) => {
+    const diffEntity = async (newItems: any[] = [], oldItems: any[] = [], colName: string) => {
       const oldMap = new Map(oldItems.map(item => [item.id, item]));
       const newMap = new Map(newItems.map(item => [item.id, item]));
 
@@ -243,7 +245,7 @@ export async function saveDatabaseToFirebase(newDb: AppDatabase): Promise<void> 
         if (!oldItem || JSON.stringify(item) !== JSON.stringify(oldItem)) {
           const cleaned = cleanUndefined(item);
           batch.set(doc(db, colName, item.id), cleaned, { merge: true });
-          addOperation();
+          await addOperation();
         }
       }
 
@@ -251,45 +253,26 @@ export async function saveDatabaseToFirebase(newDb: AppDatabase): Promise<void> 
       for (const item of oldItems) {
         if (!newMap.has(item.id)) {
           batch.delete(doc(db, colName, item.id));
-          addOperation();
+          await addOperation();
         }
       }
     };
 
     // 2. Diff Collections
-    diffEntity(newDb.employees, lastSavedDb.employees, 'employees');
-    diffEntity(newDb.payments, lastSavedDb.payments, 'payments');
-    diffEntity(newDb.earnings, lastSavedDb.earnings, 'earnings');
-    diffEntity(newDb.deductions, lastSavedDb.deductions, 'deductions');
-    diffEntity(newDb.overtimeEntries, lastSavedDb.overtimeEntries, 'overtimeEntries');
-    diffEntity(newDb.lateFineEntries, lastSavedDb.lateFineEntries, 'lateFineEntries');
-    diffEntity(newDb.auditLogs, lastSavedDb.auditLogs, 'auditLogs');
-    diffEntity(newDb.recycleBin, lastSavedDb.recycleBin, 'recycleBin');
-    diffEntity(newDb.approvalRequests, lastSavedDb.approvalRequests, 'approvalRequests');
-    diffEntity(newDb.notifications, lastSavedDb.notifications, 'notifications');
-    diffEntity(newDb.geofences || [], lastSavedDb.geofences || [], 'geofences');
-    diffEntity(newDb.routeHistories || [], lastSavedDb.routeHistories || [], 'routeHistories');
-    diffEntity(newDb.devices || [], lastSavedDb.devices || [], 'devices');
-    diffEntity(newDb.offlineQueue || [], lastSavedDb.offlineQueue || [], 'offlineQueue');
-    diffEntity(newDb.attendanceReviews || [], lastSavedDb.attendanceReviews || [], 'attendanceReviews');
-
-    // 2.5 Diff Live Locations
-    const newLocs = newDb.liveLocations || {};
-    const oldLocs = lastSavedDb.liveLocations || {};
-    for (const key of Object.keys(newLocs)) {
-      const newVal = newLocs[key];
-      const oldVal = oldLocs[key];
-      if (!oldVal || JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        batch.set(doc(db, 'liveLocations', key), cleanUndefined(newVal), { merge: true });
-        addOperation();
-      }
-    }
-    for (const key of Object.keys(oldLocs)) {
-      if (!newLocs[key]) {
-        batch.delete(doc(db, 'liveLocations', key));
-        addOperation();
-      }
-    }
+    await diffEntity(newDb.employees, lastSavedDb.employees, 'employees');
+    await diffEntity(newDb.payments, lastSavedDb.payments, 'payments');
+    await diffEntity(newDb.earnings, lastSavedDb.earnings, 'earnings');
+    await diffEntity(newDb.deductions, lastSavedDb.deductions, 'deductions');
+    await diffEntity(newDb.overtimeEntries, lastSavedDb.overtimeEntries, 'overtimeEntries');
+    await diffEntity(newDb.lateFineEntries, lastSavedDb.lateFineEntries, 'lateFineEntries');
+    await diffEntity(newDb.auditLogs, lastSavedDb.auditLogs, 'auditLogs');
+    await diffEntity(newDb.recycleBin, lastSavedDb.recycleBin, 'recycleBin');
+    await diffEntity(newDb.approvalRequests, lastSavedDb.approvalRequests, 'approvalRequests');
+    await diffEntity(newDb.notifications, lastSavedDb.notifications, 'notifications');
+    await diffEntity(newDb.geofences || [], lastSavedDb.geofences || [], 'geofences');
+    await diffEntity(newDb.devices || [], lastSavedDb.devices || [], 'devices');
+    await diffEntity(newDb.offlineQueue || [], lastSavedDb.offlineQueue || [], 'offlineQueue');
+    await diffEntity(newDb.attendanceReviews || [], lastSavedDb.attendanceReviews || [], 'attendanceReviews');
 
     // 3. Diff Attendance Map
     const newAtt = newDb.attendance || {};
@@ -300,14 +283,14 @@ export async function saveDatabaseToFirebase(newDb: AppDatabase): Promise<void> 
       const oldVal = oldAtt[key];
       if (!oldVal || JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         batch.set(doc(db, 'attendance', key), cleanUndefined(newVal), { merge: true });
-        addOperation();
+        await addOperation();
       }
     }
 
     for (const key of Object.keys(oldAtt)) {
       if (!newAtt[key]) {
         batch.delete(doc(db, 'attendance', key));
-        addOperation();
+        await addOperation();
       }
     }
 
@@ -359,8 +342,6 @@ export function syncDatabaseFromFirebase(
     geofences: [],
     devices: [],
     offlineQueue: [],
-    routeHistories: [],
-    liveLocations: {},
     attendanceReviews: []
   };
 
@@ -374,22 +355,7 @@ export function syncDatabaseFromFirebase(
       const batch = writeBatch(db);
       let count = 0;
 
-      // 1. Delete route histories older than 5 days
-      const fiveDaysAgo = new Date();
-      fiveDaysAgo.setDate(today.getDate() - 5);
-      const routesSnap = await getDocs(collection(db, 'routeHistories'));
-      routesSnap.forEach(dDoc => {
-        const data = dDoc.data();
-        if (data.date) {
-          const dDate = new Date(data.date + 'T00:00:00');
-          if (dDate < fiveDaysAgo) {
-            batch.delete(dDoc.ref);
-            count++;
-          }
-        }
-      });
-
-      // 2. Selfie Purge: delete selfie images from attendance records older than 15 days
+      // 1. Selfie Purge: delete selfie images from attendance records older than 15 days
       const fifteenDaysAgo = new Date();
       fifteenDaysAgo.setDate(today.getDate() - 15);
       const attendanceSnap = await getDocs(collection(db, 'attendance'));
@@ -449,8 +415,8 @@ export function syncDatabaseFromFirebase(
 
   const triggerUpdate = (key: string) => {
     loadedKeys.add(key);
-    // Only fire update events to App.tsx when all 18 listeners have completed their initial fetch
-    if (loadedKeys.size >= 18) {
+    // Only fire update events to App.tsx when all 16 listeners have completed their initial fetch
+    if (loadedKeys.size >= 16) {
       const freshDb = { ...state };
       lastSavedDb = JSON.parse(JSON.stringify(freshDb));
       onUpdate(freshDb);
@@ -495,28 +461,9 @@ export function syncDatabaseFromFirebase(
   setupCollectionListener<GeoFence>('geofences', 'geofences', (data) => data as GeoFence);
   setupCollectionListener<DeviceRegistration>('devices', 'devices', (data) => data as DeviceRegistration);
   setupCollectionListener<SyncQueueItem>('offlineQueue', 'offlineQueue', (data) => data as SyncQueueItem);
-  setupCollectionListener<RouteHistory>('routeHistories', 'routeHistories', (data) => data as RouteHistory);
   setupCollectionListener<AttendanceReview>('attendanceReviews', 'attendanceReviews', (data) => data as AttendanceReview);
 
-  // Setup liveLocations listener (15th listener)
-  const unsubLocs = onSnapshot(
-    collection(db, 'liveLocations'),
-    (snap) => {
-      const map: Record<string, LiveLocation> = {};
-      snap.forEach((doc) => {
-        map[doc.id] = doc.data() as LiveLocation;
-      });
-      state.liveLocations = map;
-      triggerUpdate('liveLocations');
-    },
-    (error) => {
-      handleFirestoreError(error, 'liveLocations');
-      onError(error);
-    }
-  );
-  unsubscribes.push(unsubLocs);
-
-  // Setup attendance map listener (11th listener)
+  // Setup attendance map listener
   const unsubAtt = onSnapshot(
     collection(db, 'attendance'),
     (snap) => {

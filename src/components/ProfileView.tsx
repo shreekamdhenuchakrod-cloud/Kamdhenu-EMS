@@ -1145,7 +1145,10 @@ export default function ProfileView({
       const targetEmpComp = { ...empsList[targetEmpIdx] };
 
       targetEmpComp.name = editForm.name;
-      targetEmpComp.mobile = editForm.mobile;
+      if (targetEmpComp.mobile !== editForm.mobile) {
+        targetEmpComp.mobile = editForm.mobile;
+        targetEmpComp.loginPin = editForm.mobile.slice(-4);
+      }
       targetEmpComp.join = editForm.join;
       targetEmpComp.pic = editForm.pic;
       targetEmpComp.type = editForm.type;

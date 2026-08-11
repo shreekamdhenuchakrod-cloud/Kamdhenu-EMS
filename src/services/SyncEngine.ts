@@ -124,8 +124,8 @@ export class SyncEngine {
 
         if (item.retryCount >= this.maxRetries) {
           item.status = 'Failed';
-          // Notify admin and user
-          alert(`Sync Failure: Request "${item.action}" failed to upload after ${this.maxRetries} attempts. Details preserved in queue.`);
+          // Notify admin and user safely without blocking
+          console.error(`Sync Failure: Request "${item.action}" failed to upload after ${this.maxRetries} attempts. Details: ${item.failureReason}`);
         } else {
           failedItems.push(item);
         }
@@ -166,22 +166,6 @@ export class SyncEngine {
         list.push(item.payload);
       }
       fresh.notifications = list;
-    } else if (item.action === 'live_location') {
-      const loc = item.payload;
-      if (!fresh.liveLocations) {
-        fresh.liveLocations = {};
-      }
-      fresh.liveLocations[loc.employeeId] = loc;
-    } else if (item.action === 'route_history') {
-      const route = item.payload;
-      const list = fresh.routeHistories || [];
-      const idx = list.findIndex(r => r.id === route.id);
-      if (idx > -1) {
-        list[idx] = route;
-      } else {
-        list.push(route);
-      }
-      fresh.routeHistories = list;
     }
 
     return fresh;

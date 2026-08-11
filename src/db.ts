@@ -182,7 +182,7 @@ export function calcMonthMetrics(
   db: AppDatabase
 ): MonthBreakdown {
   const daysCount = getDaysInMonth(year, month);
-  const baseSalary = getRateForMonth(employee, year, month);
+  const baseSalary = Number(getRateForMonth(employee, year, month)) || 0;
   const hourlyRate = getHourlyRate(employee, baseSalary, daysCount);
 
   let present = 0;
@@ -205,13 +205,13 @@ export function calcMonthMetrics(
         sessions.forEach(s => {
           if (s.in && s.out) dayHrs += timeToHrs(s.in, s.out);
         });
-        const dayEarned = dayHrs * baseSalary;
-        earnedSalary += dayEarned;
+        const dayEarned = Number(dayHrs) * baseSalary;
+        earnedSalary += Number(dayEarned) || 0;
         if (dayHrs > 0) {
           present++;
           earningsRows.push({
             date: dateStr,
-            value: dayEarned,
+            value: Number(dayEarned) || 0,
             label: `${dayHrs.toFixed(2)} hrs worked @ ₹${baseSalary}/hr`
           });
         }
@@ -234,10 +234,10 @@ export function calcMonthMetrics(
         } else if (rec.status === 'Half Day') {
           halfDay++;
           const hdValue = baseSalary * 0.5;
-          earnedSalary += hdValue;
+          earnedSalary += Number(hdValue) || 0;
           earningsRows.push({
             date: dateStr,
-            value: hdValue,
+            value: Number(hdValue) || 0,
             label: `Half Day @ ₹${baseSalary}/day`
           });
         } else if (rec.status === 'Absent') {
@@ -287,8 +287,8 @@ export function calcMonthMetrics(
       const oDate = new Date(otEntry.date + 'T00:00:00');
       if (oDate.getFullYear() === year && oDate.getMonth() === month) {
         const amt = otEntry.calcType === 'HourlyRate' 
-          ? otEntry.hours * hourlyRate 
-          : otEntry.amount;
+          ? Number(otEntry.hours) * hourlyRate 
+          : Number(otEntry.amount) || 0;
         overtime += amt;
         overtimeRows.push({
           date: otEntry.date,
@@ -307,10 +307,11 @@ export function calcMonthMetrics(
     if (earn.employeeId === employee.id) {
       const eDate = new Date(earn.date + 'T00:00:00');
       if (eDate.getFullYear() === year && eDate.getMonth() === month) {
-        extraEarnings += earn.amount;
+        const eAmt = Number(earn.amount) || 0;
+        extraEarnings += eAmt;
         extraEarningsRows.push({
           date: earn.date,
-          amount: earn.amount,
+          amount: eAmt,
           desc: earn.description
         });
       }
@@ -326,10 +327,11 @@ export function calcMonthMetrics(
       if (dDate.getFullYear() === year && dDate.getMonth() === month) {
         const isExcluded = ded.status === 'Waived' || ded.status === 'Deleted';
         if (!isExcluded) {
-          deductions += ded.amount;
+          const dAmt = Number(ded.amount) || 0;
+          deductions += dAmt;
           deductionsRows.push({
             date: ded.date,
-            amount: ded.amount,
+            amount: dAmt,
             desc: ded.description
           });
         } else {
@@ -348,8 +350,8 @@ export function calcMonthMetrics(
       const fDate = new Date(fine.date + 'T00:00:00');
       if (fDate.getFullYear() === year && fDate.getMonth() === month) {
         const amt = fine.calcType === 'HourlyRate' 
-          ? fine.hours * hourlyRate 
-          : fine.amount;
+          ? Number(fine.hours) * hourlyRate 
+          : Number(fine.amount) || 0;
         deductions += amt;
         deductionsRows.push({
           date: fine.date,
@@ -367,10 +369,11 @@ export function calcMonthMetrics(
     if (pay.employeeId === employee.id) {
       const pDate = new Date(pay.date + 'T00:00:00');
       if (pDate.getFullYear() === year && pDate.getMonth() === month) {
-        payments += pay.amount;
+        const pAmt = Number(pay.amount) || 0;
+        payments += pAmt;
         paymentsRows.push({
           date: pay.date,
-          amount: pay.amount,
+          amount: pAmt,
           mode: pay.mode,
           desc: pay.description
         });
@@ -378,7 +381,7 @@ export function calcMonthMetrics(
     }
   });
 
-  const netPending = earnedSalary + overtime + extraEarnings - deductions - payments;
+  const netPending = Number(earnedSalary) + Number(overtime) + Number(extraEarnings) - Number(deductions) - Number(payments);
 
   return {
     rate: baseSalary,
@@ -461,16 +464,16 @@ export function calcPreviousDue(
   }
 
   if (startYear > year || (startYear === year && startMonth >= month)) {
-    return employee.carryForward || 0;
+    return Number(employee.carryForward) || 0;
   }
 
-  let accumulatedDue = employee.carryForward || 0;
+  let accumulatedDue = Number(employee.carryForward) || 0;
   let cYear = startYear;
   let cMonth = startMonth;
 
   while (cYear < year || (cYear === year && cMonth < month)) {
     const metrics = calcMonthMetrics(employee, cYear, cMonth, db);
-    accumulatedDue += metrics.netPending;
+    accumulatedDue += Number(metrics.netPending) || 0;
     cMonth++;
     if (cMonth > 11) {
       cMonth = 0;
@@ -502,8 +505,8 @@ export function calcEmployeeFinancials(
   const metrics = calcMonthMetrics(employee, year, month, db);
   const previousDue = calcPreviousDue(employee, year, month, db);
 
-  const totalPayable = previousDue + metrics.earnedSalary + metrics.overtime + metrics.extraEarnings - metrics.deductions;
-  const totalDue = totalPayable - metrics.payments;
+  const totalPayable = Number(previousDue) + Number(metrics.earnedSalary) + Number(metrics.overtime) + Number(metrics.extraEarnings) - Number(metrics.deductions);
+  const totalDue = Number(totalPayable) - Number(metrics.payments);
 
   return {
     previousDue,

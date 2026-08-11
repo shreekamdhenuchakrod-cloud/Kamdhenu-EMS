@@ -51,11 +51,15 @@ export default function LoginView({
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [pinError, setPinError] = useState('');
+  const [showAdminMaster, setShowAdminMaster] = useState(false);
+  const [adminMasterPwd, setAdminMasterPwd] = useState('');
 
   // Employee login states
   const [empMobile, setEmpMobile] = useState('');
   const [empPin, setEmpPin] = useState('');
   const [empError, setEmpError] = useState('');
+  const [showEmpMaster, setShowEmpMaster] = useState(false);
+  const [empMasterPwd, setEmpMasterPwd] = useState('');
 
   // Clear errors when toggling modes
   useEffect(() => {
@@ -135,15 +139,38 @@ export default function LoginView({
   // PIN Login Verification Handler
   const handlePinLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const attemptsKey = 'gaushala_admin_failed_attempts';
+    const attempts = parseInt(localStorage.getItem(attemptsKey) || '0', 10);
+
+    if (showAdminMaster) {
+      if (adminMasterPwd === 'KAMDHENU@2026') {
+        localStorage.removeItem(attemptsKey);
+        setShowAdminMaster(false);
+        setAdminMasterPwd('');
+        onVerifyPinSuccess();
+      } else {
+        setPinError(t('Incorrect Master Password.', 'गलत मास्टर पासवर्ड।'));
+      }
+      return;
+    }
+
     if (pin.length !== 4) {
       setPinError(t('PIN must be 4 digits', 'पिन 4 अंकों का होना चाहिए'));
       return;
     }
     
     if (pin === adminPin) {
+      localStorage.removeItem(attemptsKey);
       onVerifyPinSuccess();
     } else {
-      setPinError(t('Incorrect PIN. Please try again.', 'गलत पिन। कृपया पुनः प्रयास करें।'));
+      const newAttempts = attempts + 1;
+      localStorage.setItem(attemptsKey, String(newAttempts));
+      if (newAttempts >= 10) {
+        setShowAdminMaster(true);
+        setPinError(t('10 failed attempts reached. Master Password required.', '10 असफल प्रयास। मास्टर पासवर्ड आवश्यक है।'));
+      } else {
+        setPinError(t(`Incorrect PIN. ${10 - newAttempts} attempts left.`, `गलत पिन। ${10 - newAttempts} प्रयास शेष।`));
+      }
       setPin('');
     }
   };
@@ -173,15 +200,25 @@ export default function LoginView({
     const attemptsKey = `gaushala_failed_attempts_${empMobile}`;
     const attempts = parseInt(localStorage.getItem(attemptsKey) || '0', 10);
 
+    if (showEmpMaster) {
+      if (empMasterPwd === 'KAMDHENU@2026') {
+        localStorage.removeItem(attemptsKey);
+        setShowEmpMaster(false);
+        setEmpMasterPwd('');
+        onVerifyEmployeeSuccess(foundEmp.id);
+      } else {
+        setEmpError(t('Incorrect Master Password.', 'गलत मास्टर पासवर्ड।'));
+      }
+      return;
+    }
+
     const hasCustomPin = foundEmp.loginPin && foundEmp.loginPin !== empMobile.slice(-4);
     const defaultPin = empMobile.slice(-4);
 
     let isValid = false;
     if (hasCustomPin) {
-      // Custom PIN accounts can ONLY log in using their custom PIN (no default PIN fallback for security)
       isValid = empPin === foundEmp.loginPin;
     } else {
-      // No custom PIN set: only default works
       isValid = empPin === defaultPin;
     }
 
@@ -193,16 +230,11 @@ export default function LoginView({
       localStorage.setItem(attemptsKey, String(newAttempts));
       
       if (newAttempts >= 10) {
-        setEmpError(t(
-          'Incorrect login PIN. 10 failed attempts reached. Default login PIN (last 4 digits of mobile) is now unlocked.',
-          'गलत लॉगिन पिन। 10 असफल प्रयास पूरे हुए। डिफ़ॉल्ट पिन (मोबाइल के अंतिम 4 अंक) अब अनलॉक हो गया है।'
-        ));
+        setShowEmpMaster(true);
+        setEmpError(t('10 failed attempts reached. Master Password required.', '10 असफल प्रयास। मास्टर पासवर्ड आवश्यक है।'));
       } else {
         const left = 10 - newAttempts;
-        setEmpError(t(
-          `Incorrect login PIN. Attempts left before backup unlock: ${left}`,
-          `गलत लॉगिन पिन। बैकअप अनलॉक होने में शेष प्रयास: ${left}`
-        ));
+        setEmpError(t(`Incorrect login PIN. Attempts left: ${left}`, `गलत लॉगिन पिन। शेष प्रयास: ${left}`));
       }
       setEmpPin('');
     }
@@ -275,55 +307,76 @@ export default function LoginView({
             )}
 
             <form onSubmit={handleEmployeeLoginSubmit} className="space-y-4">
-              {/* Mobile Number */}
-              <div className="fld mb-0">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                  {t('Registered Mobile Number', 'रजिस्टर्ड मोबाइल नंबर')} <span className="text-red-500">*</span>
-                </label>
-                <div className="pw">
-                  <span className="pfx">+91</span>
+              {showEmpMaster ? (
+                <div className="fld mb-0">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    {t('Master Password', 'मास्टर पासवर्ड')} <span className="text-red-500">*</span>
+                  </label>
                   <input
-                    type="tel"
-                    value={empMobile}
-                    onChange={e => {
-                      setEmpMobile(e.target.value.replace(/\D/g, '').slice(0, 10));
+                    type="password"
+                    value={empMasterPwd}
+                    onChange={(e) => {
+                      setEmpMasterPwd(e.target.value);
                       setEmpError('');
                     }}
-                    placeholder={t('Enter 10-digit mobile number', '10-अंकीय नंबर डालें')}
-                    maxLength={10}
                     className="fi"
-                    inputMode="numeric"
+                    placeholder={t('Enter Master Password', 'मास्टर पासवर्ड दर्ज करें')}
+                    autoFocus
                   />
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Mobile Number */}
+                  <div className="fld mb-0">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                      {t('Registered Mobile Number', 'रजिस्टर्ड मोबाइल नंबर')} <span className="text-red-500">*</span>
+                    </label>
+                    <div className="pw">
+                      <span className="pfx">+91</span>
+                      <input
+                        type="tel"
+                        value={empMobile}
+                        onChange={e => {
+                          setEmpMobile(e.target.value.replace(/\D/g, '').slice(0, 10));
+                          setEmpError('');
+                        }}
+                        placeholder={t('Enter 10-digit mobile number', '10-अंकीय नंबर डालें')}
+                        maxLength={10}
+                        className="fi"
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </div>
 
-              {/* Login PIN */}
-              <div className="fld mb-0">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                  {t('Employee Login PIN', 'लॉगिन सुरक्षा पिन')} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="password"
-                  maxLength={6}
-                  value={empPin}
-                  onChange={e => {
-                    setEmpPin(e.target.value.replace(/\D/g, '').slice(0, 6));
-                    setEmpError('');
-                  }}
-                  placeholder="• • • •"
-                  className="w-full h-11 text-center text-lg font-extrabold tracking-widest border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none focus:ring-4 focus:ring-blue-500/8 transition"
-                  inputMode="numeric"
-                />
-                <span className="text-[9px] text-slate-400 mt-2 block font-medium leading-relaxed">
-                  {t('Default PIN: Last 4 digits of mobile number (unless updated by admin).', 'डिफ़ॉल्ट पिन: मोबाइल नंबर के अंतिम 4 अंक।')}
-                </span>
-              </div>
+                  {/* Login PIN */}
+                  <div className="fld mb-0">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                      {t('Employee Login PIN', 'लॉगिन सुरक्षा पिन')} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      maxLength={6}
+                      value={empPin}
+                      onChange={e => {
+                        setEmpPin(e.target.value.replace(/\D/g, '').slice(0, 6));
+                        setEmpError('');
+                      }}
+                      placeholder="• • • •"
+                      className="w-full h-11 text-center text-lg font-extrabold tracking-widest border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none focus:ring-4 focus:ring-blue-500/8 transition"
+                      inputMode="numeric"
+                    />
+                    <span className="text-[9px] text-slate-400 mt-2 block font-medium leading-relaxed">
+                      {t('Default PIN: Last 4 digits of mobile number (unless updated by admin).', 'डिफ़ॉल्ट पिन: मोबाइल नंबर के अंतिम 4 अंक।')}
+                    </span>
+                  </div>
+                </>
+              )}
 
               <button
                 type="submit"
                 className="w-full btn bbl text-white font-bold text-xs"
               >
-                <span>{t('Sign In to My Portal', 'पोर्टल में प्रवेश करें')}</span>
+                <span>{showEmpMaster ? t('Login with Master Password', 'मास्टर पासवर्ड से लॉगिन करें') : t('Sign In to My Portal', 'पोर्टल में प्रवेश करें')}</span>
               </button>
             </form>
           </div>
@@ -534,34 +587,53 @@ export default function LoginView({
                 )}
 
                 <form onSubmit={handlePinLoginSubmit} className="space-y-4">
-                  <div className="fld mb-0">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5 text-center">
-                      {t('Enter 4-Digit Administrator PIN', '४-अंकीय एडमिन सुरक्षा पिन दर्ज करें')}
-                    </label>
-                    <input
-                      type="password"
-                      maxLength={4}
-                      value={pin}
-                      onChange={e => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                        setPin(val);
-                        setPinError('');
-                        if (val.length === 4 && val === adminPin) {
-                          onVerifyPinSuccess();
-                        }
-                      }}
-                      placeholder="• • • •"
-                      className="w-36 h-12 mx-auto text-center text-lg font-extrabold tracking-widest border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none focus:ring-4 focus:ring-blue-500/8 transition block"
-                      inputMode="numeric"
-                      autoFocus
-                    />
-                  </div>
+                  {showAdminMaster ? (
+                    <div className="fld mb-0">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5 text-center">
+                        {t('Enter Master Password', 'मास्टर पासवर्ड दर्ज करें')}
+                      </label>
+                      <input
+                        type="password"
+                        value={adminMasterPwd}
+                        onChange={e => {
+                          setAdminMasterPwd(e.target.value);
+                          setPinError('');
+                        }}
+                        placeholder="Master Password"
+                        className="w-full h-12 mx-auto text-center text-lg font-extrabold tracking-widest border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none focus:ring-4 focus:ring-blue-500/8 transition block"
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <div className="fld mb-0">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5 text-center">
+                        {t('Enter 4-Digit Administrator PIN', '४-अंकीय एडमिन सुरक्षा पिन दर्ज करें')}
+                      </label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={pin}
+                        onChange={e => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                          setPin(val);
+                          setPinError('');
+                          if (val.length === 4 && val === adminPin) {
+                            onVerifyPinSuccess();
+                          }
+                        }}
+                        placeholder="• • • •"
+                        className="w-36 h-12 mx-auto text-center text-lg font-extrabold tracking-widest border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none focus:ring-4 focus:ring-blue-500/8 transition block"
+                        inputMode="numeric"
+                        autoFocus
+                      />
+                    </div>
+                  )}
 
                   <button
                     type="submit"
                     className="w-full btn bbl text-white font-bold text-xs"
                   >
-                    {t('Unlock Dashboard', 'डैशबोर्ड अनलॉक करें')}
+                    {showAdminMaster ? t('Unlock with Master', 'मास्टर से अनलॉक करें') : t('Unlock Dashboard', 'डैशबोर्ड अनलॉक करें')}
                   </button>
                 </form>
 

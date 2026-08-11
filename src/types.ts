@@ -220,22 +220,6 @@ export interface LiveLocation {
   address?: string;
 }
 
-export interface RouteStop {
-  lat: number;
-  lng: number;
-  startTime: string;
-  endTime: string;
-  duration: number; // minutes
-}
-
-export interface RouteHistory {
-  id: string; // employeeId_YYYY-MM-DD
-  employeeId: string;
-  date: string;
-  path: { lat: number; lng: number; timestamp: string }[];
-  stops: RouteStop[];
-}
-
 export type ReviewStatus = 'Pending' | 'Approved' | 'Rejected' | 'Waived' | 'Converted to Leave' | 'Deducted' | 'Pending Review';
 
 export interface AttendanceReview {
@@ -307,8 +291,6 @@ export interface AppDatabase {
   approvalRequests?: ApprovalRequest[];
   notifications?: NotificationItem[];
   geofences?: GeoFence[];
-  liveLocations?: Record<string, LiveLocation>;
-  routeHistories?: RouteHistory[];
   devices?: DeviceRegistration[];
   offlineQueue?: SyncQueueItem[];
   attendanceReviews?: AttendanceReview[];
