@@ -1081,9 +1081,9 @@ export default function App() {
         </header>
       )}
 
-      {/* Main Container Wrapper — hidden when tracking/geofences map view is active */}
+      {/* Main Container Wrapper — hidden when geofences map view is active */}
       <main className={`flex-1 w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto px-3 md:px-6 pt-4 pb-24 md:pb-8 md:py-8 overflow-x-hidden md:h-screen md:overflow-y-auto ${
-        currentView === 'tracking' || currentView === 'geofences' ? 'hidden' : ''
+        currentView === 'geofences' ? 'hidden' : ''
       }`}>
         
         {/* Firebase Error Warning Banner */}
@@ -1199,7 +1199,7 @@ export default function App() {
           />
         )}
 
-        {/* Note: LiveTrackingView and GeoFenceManager rendered OUTSIDE main to avoid overflow/max-w clipping */}
+        {/* Note: GeoFenceManager rendered OUTSIDE main to avoid overflow/max-w clipping */}
       </main>
 
       {/* Map Views - Full screen sibling outside main container to avoid Leaflet clipping */}

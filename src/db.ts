@@ -301,6 +301,7 @@ export function calcMonthMetrics(
       }
     }
   });
+  } // End of employee.type !== 'Hourly' check
 
   // Extra Earnings
   let extraEarnings = 0;
@@ -319,7 +320,6 @@ export function calcMonthMetrics(
       }
     }
   });
-  } // End of employee.type !== 'Hourly' check
 
   // Deductions + Late Fines
   let deductions = 0;

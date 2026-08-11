@@ -162,19 +162,6 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
             </div>
           </div>
 
-          {/* Live GPS Map Link */}
-          <div 
-            onClick={() => onNavigate('tracking')}
-            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-indigo-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
-          >
-            <div className="bg-indigo-50/70 text-indigo-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-100 transition-colors">
-              <Icon name="map" size={22} className="text-indigo-650" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-semibold text-xs text-slate-900 truncate">{t('Live GPS Map', 'लाइव जीपीएस ट्रैकिंग')}</div>
-              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Real-time staff routes', 'लाइव लोकेशन मैप')}</div>
-            </div>
-          </div>
         </div>
       </div>
 
