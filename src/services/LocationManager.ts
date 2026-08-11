@@ -89,8 +89,8 @@ export class LocationManager {
     const maxAllowedAccuracy = isStale ? 100 : 60;
 
     if (accuracy > maxAllowedAccuracy) {
-      console.warn(`[GPS Filter] Low accuracy ignored: ${accuracy.toFixed(1)}m (Max allowed: ${maxAllowedAccuracy}m)`);
-      return;
+      console.warn(`[GPS Filter] Low accuracy detected: ${accuracy.toFixed(1)}m (Target: ${maxAllowedAccuracy}m). Passing to UI for fallback/warning.`);
+      // Do not return here. The UI needs this to avoid infinite loading.
     }
 
     // 2. Velocity Jump Noise Filtering: Avoid teleportation jumps (e.g. GPS jumps when entering buildings)

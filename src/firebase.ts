@@ -1,10 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
   signOut 
 } from 'firebase/auth';
 import { 
@@ -43,27 +40,7 @@ enableMultiTabIndexedDbPersistence(db).catch((err) => {
   }
 });
 
-const googleProvider = new GoogleAuthProvider();
 
-export async function signInWithGoogle() {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
-  } catch (error) {
-    console.error("Google Sign-In Error:", error);
-    throw error;
-  }
-}
-
-export async function signUpWithEmail(email: string, pass: string) {
-  try {
-    const result = await createUserWithEmailAndPassword(auth, email, pass);
-    return result.user;
-  } catch (error) {
-    console.error("Email SignUp Error:", error);
-    throw error;
-  }
-}
 
 export async function loginWithEmail(email: string, pass: string) {
   try {

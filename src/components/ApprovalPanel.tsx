@@ -460,6 +460,36 @@ export default function ApprovalPanel({
 
   // Approve Request (Updates DB records atomically via transaction wrapper)
   const handleApprove = (req: ApprovalRequest) => {
+    // 1. Check for manual punch override
+    let wasManualOverride = false;
+    let oldOverrideTime = '';
+    
+    if (['Punch In', 'Punch Out', 'Early Exit', 'Late Entry'].includes(req.category)) {
+      const key = `${req.employeeId}_${req.date}`;
+      const existingRec = db.attendance[key] || {};
+      const sessions = existingRec.sessions || [];
+      if (sessions.length > 0) {
+        const lastSession = sessions[sessions.length - 1];
+        if (['Punch In', 'Late Entry'].includes(req.category) && lastSession.in && lastSession.in !== req.newValue) {
+          const confirmed = confirm(t(
+            `Do you want to replace the existing Punch-In time ${lastSession.in} with the requested time ${req.newValue} for ${req.employeeName}?`,
+            `क्या आप ${req.employeeName} द्वारा अनुरोधित ${req.newValue} के Punch-In समय से आपके द्वारा दर्ज ${lastSession.in} के समय को बदलना चाहते हैं?`
+          ));
+          if (!confirmed) return;
+          wasManualOverride = true;
+          oldOverrideTime = lastSession.in;
+        } else if (['Punch Out', 'Early Exit'].includes(req.category) && lastSession.out && lastSession.out !== req.newValue) {
+          const confirmed = confirm(t(
+            `Do you want to replace the existing Punch-Out time ${lastSession.out} with the requested time ${req.newValue} for ${req.employeeName}?`,
+            `क्या आप ${req.employeeName} द्वारा अनुरोधित ${req.newValue} के Punch-Out समय से आपके द्वारा दर्ज ${lastSession.out} के समय को बदलना चाहते हैं?`
+          ));
+          if (!confirmed) return;
+          wasManualOverride = true;
+          oldOverrideTime = lastSession.out;
+        }
+      }
+    }
+
     if (!confirm(t('Approve this request?', 'क्या आप इस रिक्वेस्ट को मंजूर करना चाहते हैं?'))) return;
 
     try {
@@ -594,10 +624,10 @@ export default function ApprovalPanel({
         const newAudit: AuditLogEntry = {
           id: `_AUD_${Date.now()}`,
           adminName: draft.company?.name || 'Admin',
-          action: `${req.category} Approved`,
+          action: wasManualOverride ? `Manual Time Overwritten (Req ID: ${req.id})` : `${req.category} Approved`,
           targetId: req.employeeId,
           targetName: req.employeeName,
-          oldValue: req.oldValue,
+          oldValue: wasManualOverride ? oldOverrideTime : req.oldValue,
           newValue: req.newValue.length > 100 ? req.newValue.substring(0, 100) + '...' : req.newValue,
           timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
           device: navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop Panel'

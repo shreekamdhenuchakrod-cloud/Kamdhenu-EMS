@@ -262,6 +262,10 @@ export default function App() {
       if (!user) {
         setIsPinVerified(false);
         sessionStorage.removeItem('gaushala_pin_verified');
+      } else {
+        // Prevent automatic Change Passcode/PIN screen on normal login
+        setIsPinVerified(true);
+        sessionStorage.setItem('gaushala_pin_verified', 'true');
       }
     });
     return () => unsubscribeAuth();

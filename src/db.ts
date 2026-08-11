@@ -282,7 +282,9 @@ export function calcMonthMetrics(
   // Overtimes
   let overtime = 0;
   const overtimeRows: Array<{ date: string; amount: number; hours: number; desc: string }> = [];
-  db.overtimeEntries.forEach(otEntry => {
+  
+  if (employee.type !== 'Hourly') {
+    db.overtimeEntries.forEach(otEntry => {
     if (otEntry.employeeId === employee.id) {
       const oDate = new Date(otEntry.date + 'T00:00:00');
       if (oDate.getFullYear() === year && oDate.getMonth() === month) {
@@ -317,6 +319,7 @@ export function calcMonthMetrics(
       }
     }
   });
+  } // End of employee.type !== 'Hourly' check
 
   // Deductions + Late Fines
   let deductions = 0;

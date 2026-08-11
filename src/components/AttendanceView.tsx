@@ -608,7 +608,8 @@ export default function AttendanceView({
 
                       {/* Overtime & Late Fine Buttons opening dedicated mockup records */}
                       <div className="flex gap-2 pt-2 border-t border-slate-200/50">
-                        <button
+                        {emp.type !== 'Hourly' && (
+                          <button
                           onClick={() => {
                             const existing = db.overtimeEntries.find(o => o.employeeId === emp.id && o.date === attDate);
                             setOtForm({
@@ -627,6 +628,7 @@ export default function AttendanceView({
                           <Icon name="schedule" size={14} />
                           <span>{t('+ Overtime', '+ ओवरटाइम')}</span>
                         </button>
+                        )}
                         <button
                           onClick={() => {
                             const existing = db.lateFineEntries.find(f => f.employeeId === emp.id && f.date === attDate);
@@ -752,7 +754,8 @@ export default function AttendanceView({
                   {/* Expanded Sub-drawer */}
                   {isEmpExpanded && (
                     <div className="bg-slate-50/60 p-3 rounded-2xl flex gap-2 border border-slate-100 animate-in slide-in-from-top-2 duration-200">
-                      <button
+                      {emp.type !== 'Hourly' && (
+                        <button
                         onClick={() => {
                           const existing = db.overtimeEntries.find(o => o.employeeId === emp.id && o.date === attDate);
                           setOtForm({
@@ -771,6 +774,7 @@ export default function AttendanceView({
                         <Icon name="schedule" size={14} />
                         <span>{t('+ Overtime', '+ overtime')}</span>
                       </button>
+                      )}
                       <button
                         onClick={() => {
                           const existing = db.lateFineEntries.find(f => f.employeeId === emp.id && f.date === attDate);
@@ -895,7 +899,8 @@ export default function AttendanceView({
                   {/* Expanded Sub-drawer */}
                   {isEmpExpanded && (
                     <div className="bg-slate-50/60 p-3 rounded-2xl flex gap-2 border border-slate-100 animate-in slide-in-from-top-2 duration-200">
-                      <button
+                      {emp.type !== 'Hourly' && (
+                        <button
                         onClick={() => {
                           const existing = db.overtimeEntries.find(o => o.employeeId === emp.id && o.date === attDate);
                           setOtForm({
@@ -914,6 +919,7 @@ export default function AttendanceView({
                         <Icon name="schedule" size={14} />
                         <span>{t('+ Overtime', '+ overtime')}</span>
                       </button>
+                      )}
                       <button
                         onClick={() => {
                           const existing = db.lateFineEntries.find(f => f.employeeId === emp.id && f.date === attDate);

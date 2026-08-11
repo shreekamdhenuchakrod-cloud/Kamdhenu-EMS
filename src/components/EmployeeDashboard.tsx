@@ -273,7 +273,7 @@ export default function EmployeeDashboard({
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const optimizedBase64 = await optimizeImage(file);
+        const optimizedBase64 = await optimizeImage(file, 0.6, 800);
         setPunchSelfie(optimizedBase64);
       } catch (err: any) {
         alert(t('Image optimization failed: ' + err.message, 'छवि अनुकूलन विफल रहा: ' + err.message));
