@@ -1009,10 +1009,10 @@ export default function ApprovalPanel({
       {/* HEADER SECTION */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-3xs">
+          <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-blue-100 flex items-center justify-center text-[#2563EB] shadow-3xs">
             <Icon name="verified_user" size={18} />
           </div>
-          <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+          <span className="text-xs font-black text-[#0F172A] uppercase tracking-wider">
             {isAdmin ? t('Manager Approval Panel', 'मैनेजर मंजूरी डेस्क') : t('My Correction Requests', 'मेरे सुधार रिक्वेस्ट')}
           </span>
         </div>
@@ -1022,7 +1022,7 @@ export default function ApprovalPanel({
         <div className="flex gap-2 items-center">
           <button
             onClick={() => window.location.reload()}
-            className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-100 active:scale-[0.97] transition cursor-pointer shrink-0"
+            className="w-9 h-9 rounded-xl bg-[#F7F9FC] border border-[#E2E8F0] text-[#64748B] flex items-center justify-center hover:bg-slate-100 active:scale-[0.97] transition cursor-pointer shrink-0"
             title={t('Refresh', 'रीफ्रेश')}
           >
             <Icon name="refresh" size={18} />
@@ -1034,7 +1034,7 @@ export default function ApprovalPanel({
                 setRequestType('attendance');
                 setEmpView('new_request');
               }}
-              className="h-9 px-4 bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-blue-500/10 shrink-0 whitespace-nowrap"
+              className="h-9 px-4 bg-[#2563EB] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-blue-500/10 shrink-0 whitespace-nowrap"
             >
               <Icon name="add" size={16} />
               <span>{t('New Request', 'नया अनुरोध')}</span>
@@ -1044,7 +1044,7 @@ export default function ApprovalPanel({
 
       {/* FILTER BAR */}
       {(isAdmin || (!isAdmin && empView === 'list')) && (
-        <div className="bg-white border border-slate-200/50 p-4 rounded-2xl shadow-3xs flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="bg-white border border-[#E2E8F0]/50 p-4 rounded-2xl shadow-3xs flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="text-[10px] text-slate-450 font-bold uppercase tracking-wider shrink-0">
             {t('Filter:', 'फ़िल्टर:')}
           </div>
@@ -1054,7 +1054,7 @@ export default function ApprovalPanel({
             <select
               value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
-              className="h-9 px-2.5 rounded-lg border border-slate-200 bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer flex-1 min-w-0 truncate"
+              className="h-9 px-2.5 rounded-lg border border-[#E2E8F0] bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer flex-1 min-w-0 truncate"
             >
               <option value="All">{t('All Categories', 'सभी श्रेणियां')}</option>
               {categories.map((c, idx) => (
@@ -1066,7 +1066,7 @@ export default function ApprovalPanel({
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value as any)}
-              className="h-9 px-2.5 rounded-lg border border-slate-200 bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer flex-1 min-w-0 truncate"
+              className="h-9 px-2.5 rounded-lg border border-[#E2E8F0] bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer flex-1 min-w-0 truncate"
             >
               <option value="Pending">{t('Pending Requests', 'लंबित अनुरोध')}</option>
               <option value="Approved">{t('Approved', 'स्वीकृत')}</option>
@@ -1079,18 +1079,18 @@ export default function ApprovalPanel({
 
       {/* --- EMPLOYEE FORM: CREATE REQUEST --- */}
       {!isAdmin && empView === 'new_request' && (
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-2xs animate-in slide-in-from-bottom duration-200">
-          <div className="text-xs font-black text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
+        <div className="bg-white border border-[#E2E8F0] rounded-3xl p-5 shadow-2xs animate-in slide-in-from-bottom duration-200">
+          <div className="text-xs font-black text-[#0F172A] uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
             {t('Create Correction Request', 'सुधार हेतु अनुरोध फॉर्म')}
           </div>
 
           {/* Request Type Toggle Selector */}
-          <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 p-1 mb-4 gap-1.5">
+          <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-[#E2E8F0] overflow-hidden bg-[#F7F9FC] p-1 mb-4 gap-1.5">
             <button
               type="button"
               onClick={() => setRequestType('attendance')}
               className={`h-9 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                requestType === 'attendance' ? 'bg-white text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
+                requestType === 'attendance' ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
               <Icon name="edit_calendar" size={14} />
@@ -1100,7 +1100,7 @@ export default function ApprovalPanel({
               type="button"
               onClick={() => setRequestType('payment')}
               className={`h-9 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                requestType === 'payment' ? 'bg-white text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
+                requestType === 'payment' ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
               <Icon name="payments" size={14} />
@@ -1110,7 +1110,7 @@ export default function ApprovalPanel({
               type="button"
               onClick={() => setRequestType('leave')}
               className={`h-9 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                requestType === 'leave' ? 'bg-white text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
+                requestType === 'leave' ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
               <Icon name="date_range" size={14} />
@@ -1120,7 +1120,7 @@ export default function ApprovalPanel({
               type="button"
               onClick={() => setRequestType('new_payment')}
               className={`h-9 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                requestType === 'new_payment' ? 'bg-white text-blue-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
+                requestType === 'new_payment' ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
               <Icon name="add_circle" size={14} />
@@ -1152,14 +1152,14 @@ export default function ApprovalPanel({
                     <button
                       type="button"
                       onClick={() => setCorrectionMode('sessions')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'sessions' ? 'bg-white text-blue-600 shadow-3xs' : 'text-slate-500 hover:text-slate-700'}`}
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'sessions' ? 'bg-white text-[#2563EB] shadow-3xs' : 'text-[#64748B] hover:text-[#0F172A]'}`}
                     >
                       {t('Punch Times', 'पंच समय')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setCorrectionMode('status')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'status' ? 'bg-white text-blue-600 shadow-3xs' : 'text-slate-500 hover:text-slate-700'}`}
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'status' ? 'bg-white text-[#2563EB] shadow-3xs' : 'text-[#64748B] hover:text-[#0F172A]'}`}
                     >
                       {t('Simple Status', 'हाजिरी स्थिति')}
                     </button>
@@ -1168,15 +1168,15 @@ export default function ApprovalPanel({
 
                 {/* HOURLY OR SESSIONS CORRECTION FORM */}
                 {(employeeType === 'Hourly' || correctionMode === 'sessions') && (
-                  <div className="space-y-4 border-t border-slate-100 pt-3">
+                  <div className="space-y-4 border-t border-[#E2E8F0] pt-3">
                     <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide block">
                       {t('Punch Times Sessions Correction', 'पंच समय सुधार विवरण')}
                     </div>
 
                     {punchSessions.map((session, idx) => (
-                      <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3 relative">
+                      <div key={idx} className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-3.5 space-y-3 relative">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black text-slate-500 uppercase">
+                          <span className="text-[10px] font-black text-[#64748B] uppercase">
                             {t(`Session ${idx + 1}`, `सत्र ${idx + 1}`)}
                           </span>
                           {punchSessions.length > 1 && (
@@ -1198,7 +1198,7 @@ export default function ApprovalPanel({
                                 type="checkbox"
                                 checked={session.inEnabled}
                                 onChange={e => handleSessionFieldChange(idx, 'inEnabled', e.target.checked)}
-                                className="rounded text-blue-600 focus:ring-blue-500"
+                                className="rounded text-[#2563EB] focus:ring-blue-500"
                               />
                               <span>{t('Punch In', 'पंच इन')}</span>
                             </label>
@@ -1207,10 +1207,10 @@ export default function ApprovalPanel({
                               type="button"
                               onClick={() => triggerTimePicker(idx, 'in', session.inTime)}
                               disabled={!session.inEnabled}
-                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-slate-50 cursor-pointer text-left font-sans text-slate-800"
+                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-[#F7F9FC] cursor-pointer text-left font-sans text-[#0F172A]"
                             >
                               <span>{session.inTime ? formatTimeForDisplay(session.inTime) : '—'}</span>
-                              <Icon name="schedule" size={14} className="text-slate-400" />
+                              <Icon name="schedule" size={14} className="text-[#94A3B8]" />
                             </button>
                           </div>
 
@@ -1221,7 +1221,7 @@ export default function ApprovalPanel({
                                 type="checkbox"
                                 checked={session.outEnabled}
                                 onChange={e => handleSessionFieldChange(idx, 'outEnabled', e.target.checked)}
-                                className="rounded text-blue-600 focus:ring-blue-500"
+                                className="rounded text-[#2563EB] focus:ring-blue-500"
                               />
                               <span>{t('Punch Out', 'पंच आउट')}</span>
                             </label>
@@ -1230,10 +1230,10 @@ export default function ApprovalPanel({
                               type="button"
                               onClick={() => triggerTimePicker(idx, 'out', session.outTime)}
                               disabled={!session.outEnabled}
-                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-slate-50 cursor-pointer text-left font-sans text-slate-800"
+                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-[#F7F9FC] cursor-pointer text-left font-sans text-[#0F172A]"
                             >
                               <span>{session.outTime ? formatTimeForDisplay(session.outTime) : '—'}</span>
-                              <Icon name="schedule" size={14} className="text-slate-400" />
+                              <Icon name="schedule" size={14} className="text-[#94A3B8]" />
                             </button>
                           </div>
                         </div>
@@ -1243,7 +1243,7 @@ export default function ApprovalPanel({
                     <button
                       type="button"
                       onClick={handleAddSessionRow}
-                      className="w-full h-9 border border-blue-200 text-blue-600 bg-white hover:bg-blue-50 border-dashed rounded-xl flex items-center justify-center font-bold text-xs gap-1 cursor-pointer"
+                      className="w-full h-9 border border-blue-200 text-[#2563EB] bg-white hover:bg-[#EFF6FF] border-dashed rounded-xl flex items-center justify-center font-bold text-xs gap-1 cursor-pointer"
                     >
                       <Icon name="add" size={16} />
                       <span>{t('Add Multiple Punch Session', 'नया पंच सत्र जोड़ें')}</span>
@@ -1291,13 +1291,13 @@ export default function ApprovalPanel({
 
             {/* PAYMENT EDIT REQUEST FORM */}
             {requestType === 'payment' && (
-              <div className="space-y-4 border-t border-slate-100 pt-3">
+              <div className="space-y-4 border-t border-[#E2E8F0] pt-3">
                 
                 {/* Select payment transaction to edit */}
                 <div className="fld">
                   <label>{t('Select Payment to Correct', 'संशोधित करने के लिए भुगतान चुनें')}</label>
                   {myPayments.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic p-3 border border-slate-150 rounded-xl bg-slate-50">
+                    <p className="text-xs text-[#94A3B8] italic p-3 border border-slate-150 rounded-xl bg-[#F7F9FC]">
                       {t('No payments recorded by administrator yet.', 'प्रशासक द्वारा अभी तक कोई भुगतान दर्ज नहीं किया गया है।')}
                     </p>
                   ) : (
@@ -1331,7 +1331,7 @@ export default function ApprovalPanel({
                 </div>
 
                 {selPaymentId && (
-                  <div className="space-y-4 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                  <div className="space-y-4 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-4">
                     <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide">
                       {t('New Corrected Values', 'नए संशोधित मान')}
                     </div>
@@ -1408,7 +1408,7 @@ export default function ApprovalPanel({
 
             {/* LEAVE REQUEST FORM */}
             {requestType === 'leave' && (
-              <div className="space-y-4 border-t border-slate-100 pt-3 animate-in fade-in duration-200">
+              <div className="space-y-4 border-t border-[#E2E8F0] pt-3 animate-in fade-in duration-200">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="fld mb-0">
                     <label>{t('Leave Start Date', 'छुट्टी शुरू होने की तारीख')}</label>
@@ -1443,7 +1443,7 @@ export default function ApprovalPanel({
 
             {/* NEW PAYMENT REQUEST FORM */}
             {requestType === 'new_payment' && (
-              <div className="space-y-4 border-t border-slate-100 pt-3 animate-in fade-in duration-200">
+              <div className="space-y-4 border-t border-[#E2E8F0] pt-3 animate-in fade-in duration-200">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="fld mb-0">
                     <label>{t('Request Date', 'अनुरोध की तारीख')}</label>
@@ -1533,8 +1533,8 @@ export default function ApprovalPanel({
 
       {/* --- EMPLOYEE FORM: EDIT REQUEST --- */}
       {!isAdmin && empView === 'edit_request' && editingRequest && (
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-2xs animate-in slide-in-from-bottom duration-200">
-          <div className="text-xs font-black text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
+        <div className="bg-white border border-[#E2E8F0] rounded-3xl p-5 shadow-2xs animate-in slide-in-from-bottom duration-200">
+          <div className="text-xs font-black text-[#0F172A] uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
             {t('Modify Correction Request', 'अनुरोध संपादित करें')}
           </div>
 
@@ -1560,14 +1560,14 @@ export default function ApprovalPanel({
                     <button
                       type="button"
                       onClick={() => setCorrectionMode('sessions')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'sessions' ? 'bg-white text-blue-600 shadow-3xs' : 'text-slate-500 hover:text-slate-700'}`}
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'sessions' ? 'bg-white text-[#2563EB] shadow-3xs' : 'text-[#64748B] hover:text-[#0F172A]'}`}
                     >
                       {t('Punch Times', 'पंच समय')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setCorrectionMode('status')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'status' ? 'bg-white text-blue-600 shadow-3xs' : 'text-slate-500 hover:text-slate-700'}`}
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'status' ? 'bg-white text-[#2563EB] shadow-3xs' : 'text-[#64748B] hover:text-[#0F172A]'}`}
                     >
                       {t('Simple Status', 'हाजिरी स्थिति')}
                     </button>
@@ -1576,15 +1576,15 @@ export default function ApprovalPanel({
 
                 {/* Hourly Edit / Sessions Edit */}
                 {(employeeType === 'Hourly' || correctionMode === 'sessions') && (
-                  <div className="space-y-4 border-t border-slate-100 pt-3">
+                  <div className="space-y-4 border-t border-[#E2E8F0] pt-3">
                     <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide block">
                       {t('Punch Times Sessions Correction', 'पंच समय सुधार विवरण')}
                     </div>
 
                     {punchSessions.map((session, idx) => (
-                      <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3 relative">
+                      <div key={idx} className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-3.5 space-y-3 relative">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black text-slate-500 uppercase">
+                          <span className="text-[10px] font-black text-[#64748B] uppercase">
                             {t(`Session ${idx + 1}`, `सत्र ${idx + 1}`)}
                           </span>
                           {punchSessions.length > 1 && (
@@ -1606,7 +1606,7 @@ export default function ApprovalPanel({
                                 type="checkbox"
                                 checked={session.inEnabled}
                                 onChange={e => handleSessionFieldChange(idx, 'inEnabled', e.target.checked)}
-                                className="rounded text-blue-600 focus:ring-blue-500"
+                                className="rounded text-[#2563EB] focus:ring-blue-500"
                               />
                               <span>{t('Punch In', 'पंच इन')}</span>
                             </label>
@@ -1615,10 +1615,10 @@ export default function ApprovalPanel({
                               type="button"
                               onClick={() => triggerTimePicker(idx, 'in', session.inTime)}
                               disabled={!session.inEnabled}
-                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-slate-50 cursor-pointer text-left font-sans text-slate-800"
+                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-[#F7F9FC] cursor-pointer text-left font-sans text-[#0F172A]"
                             >
                               <span>{session.inTime ? formatTimeForDisplay(session.inTime) : '—'}</span>
-                              <Icon name="schedule" size={14} className="text-slate-400" />
+                              <Icon name="schedule" size={14} className="text-[#94A3B8]" />
                             </button>
                           </div>
 
@@ -1629,7 +1629,7 @@ export default function ApprovalPanel({
                                 type="checkbox"
                                 checked={session.outEnabled}
                                 onChange={e => handleSessionFieldChange(idx, 'outEnabled', e.target.checked)}
-                                className="rounded text-blue-600 focus:ring-blue-500"
+                                className="rounded text-[#2563EB] focus:ring-blue-500"
                               />
                               <span>{t('Punch Out', 'पंच आउट')}</span>
                             </label>
@@ -1638,10 +1638,10 @@ export default function ApprovalPanel({
                               type="button"
                               onClick={() => triggerTimePicker(idx, 'out', session.outTime)}
                               disabled={!session.outEnabled}
-                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-slate-50 cursor-pointer text-left font-sans text-slate-800"
+                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-[#F7F9FC] cursor-pointer text-left font-sans text-[#0F172A]"
                             >
                               <span>{session.outTime ? formatTimeForDisplay(session.outTime) : '—'}</span>
-                              <Icon name="schedule" size={14} className="text-slate-400" />
+                              <Icon name="schedule" size={14} className="text-[#94A3B8]" />
                             </button>
                           </div>
                         </div>
@@ -1651,7 +1651,7 @@ export default function ApprovalPanel({
                     <button
                       type="button"
                       onClick={handleAddSessionRow}
-                      className="w-full h-9 border border-blue-200 text-blue-600 bg-white hover:bg-blue-50 border-dashed rounded-xl flex items-center justify-center font-bold text-xs gap-1 cursor-pointer"
+                      className="w-full h-9 border border-blue-200 text-[#2563EB] bg-white hover:bg-[#EFF6FF] border-dashed rounded-xl flex items-center justify-center font-bold text-xs gap-1 cursor-pointer"
                     >
                       <Icon name="add" size={16} />
                       <span>{t('Add Multiple Punch Session', 'नया पंच सत्र जोड़ें')}</span>
@@ -1688,7 +1688,7 @@ export default function ApprovalPanel({
                       className="h-9 border border-slate-250 rounded-lg px-3 text-sm font-bold w-full bg-white flex items-center justify-between cursor-pointer"
                     >
                       <span>{overtimeDuration}</span>
-                      <Icon name="schedule" size={16} className="text-slate-400" />
+                      <Icon name="schedule" size={16} className="text-[#94A3B8]" />
                     </button>
                   </div>
                 )}
@@ -1696,7 +1696,7 @@ export default function ApprovalPanel({
             )}
 
             {requestType === 'payment' && (
-              <div className="space-y-4 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+              <div className="space-y-4 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-4">
                 <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide">
                   {t('Edit Payment Values', 'संशोधित भुगतान विवरण')}
                 </div>
@@ -1802,12 +1802,12 @@ export default function ApprovalPanel({
       {((!isAdmin && empView === 'list') || isAdmin) && (
         <div className="space-y-3">
           {filteredList.length === 0 ? (
-            <div className="text-center py-10 bg-white border border-slate-150 rounded-2xl text-xs text-slate-400 font-semibold uppercase tracking-wider">
+            <div className="text-center py-10 bg-white border border-slate-150 rounded-2xl text-xs text-[#94A3B8] font-semibold uppercase tracking-wider">
               {t('No correction requests found', 'कोई सुधार अनुरोध नहीं मिला')}
             </div>
           ) : (
             filteredList.map((req) => (
-              <div key={req.id} className="bg-white border border-slate-200/70 rounded-2xl p-4 shadow-3xs space-y-3 relative overflow-hidden">
+              <div key={req.id} className="bg-white border border-[#E2E8F0]/70 rounded-2xl p-4 shadow-3xs space-y-3 relative overflow-hidden">
                 {/* Status indicator strip */}
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${
                   req.status === 'Pending' ? 'bg-amber-400' :
@@ -1824,17 +1824,17 @@ export default function ApprovalPanel({
                           e.stopPropagation();
                           if (req.employeePic) setLightboxSrc(req.employeePic);
                         }}
-                        className={`w-8 h-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 shadow-inner transition-all cursor-zoom-in hover:border-blue-400 hover:scale-105 active:scale-95`}
+                        className={`w-8 h-8 rounded-full bg-[#F7F9FC] border border-[#E2E8F0] overflow-hidden flex items-center justify-center shrink-0 shadow-inner transition-all cursor-zoom-in hover:border-blue-400 hover:scale-105 active:scale-95`}
                       >
                         {req.employeePic ? (
                           <img src={req.employeePic} alt={req.employeeName} className="w-full h-full object-cover" />
                         ) : (
-                          <Icon name="person" size={18} className="text-slate-400" />
+                          <Icon name="person" size={18} className="text-[#94A3B8]" />
                         )}
                       </div>
                     )}
                     <div>
-                      {isAdmin && <div className="text-xs font-extrabold text-slate-900">{req.employeeName}</div>}
+                      {isAdmin && <div className="text-xs font-extrabold text-[#0F172A]">{req.employeeName}</div>}
                       <div className="text-[10px] text-slate-450 font-bold uppercase tracking-wider flex items-center gap-1.5 flex-wrap">
                         <span>{t(req.category, getCategoryHi(req.category))} · {req.date}</span>
                         {req.gpsAccuracy !== undefined && (
@@ -1867,19 +1867,19 @@ export default function ApprovalPanel({
 
                 {/* Request details (Old vs New value) */}
                 <div className="relative text-xs grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 space-y-0.5 flex flex-col justify-center">
-                    <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Old Value', 'पुराना मान')}</span>
-                    <span className="font-semibold text-slate-500 line-through truncate">{renderNewValueText(req.oldValue || '-')}</span>
+                  <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-2.5 space-y-0.5 flex flex-col justify-center">
+                    <span className="text-[8px] uppercase tracking-wider text-[#94A3B8] font-bold block">{t('Old Value', 'पुराना मान')}</span>
+                    <span className="font-semibold text-[#64748B] line-through truncate">{renderNewValueText(req.oldValue || '-')}</span>
                   </div>
-                  <div className="bg-blue-50/30 border border-blue-100/50 rounded-xl p-2.5 space-y-0.5 flex flex-col justify-center">
+                  <div className="bg-[#EFF6FF]/30 border border-blue-100/50 rounded-xl p-2.5 space-y-0.5 flex flex-col justify-center">
                     <span className="text-[8px] uppercase tracking-wider text-blue-500 font-bold block">{t('Requested Value', 'अनुरोधित मान')}</span>
                     <span className="font-black text-blue-700 truncate">{renderNewValueText(req.newValue)}</span>
                   </div>
                 </div>
 
                 {/* Reason */}
-                <div className="text-[10px] text-slate-500 font-semibold leading-relaxed">
-                  <span className="text-slate-400 font-bold">{t('Reason:', 'कारण:')}</span> {req.reason}
+                <div className="text-[10px] text-[#64748B] font-semibold leading-relaxed">
+                  <span className="text-[#94A3B8] font-bold">{t('Reason:', 'कारण:')}</span> {req.reason}
                 </div>
 
                 {/* Rejection remarks if rejected */}
@@ -1891,7 +1891,7 @@ export default function ApprovalPanel({
 
                 {/* Action panel */}
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t border-slate-50 pt-3">
-                  <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
+                  <span className="text-[8px] text-[#94A3B8] font-bold uppercase tracking-wider">
                     {t('Submitted:', 'भेजा गया:')} {formatLocalTimestamp(req.timestamp)}
                   </span>
 
@@ -1901,7 +1901,7 @@ export default function ApprovalPanel({
                       <>
                         <button
                           onClick={() => setSelectedRequestDetails(req)}
-                          className="flex-1 sm:flex-none h-8 px-2 border border-blue-200 text-blue-650 hover:bg-blue-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97] whitespace-nowrap"
+                          className="flex-1 sm:flex-none h-8 px-2 border border-blue-200 text-blue-650 hover:bg-[#EFF6FF] rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97] whitespace-nowrap"
                         >
                           {t('Review', 'विवरण देखें')}
                         </button>
@@ -1924,7 +1924,7 @@ export default function ApprovalPanel({
                     {isAdmin && req.status !== 'Pending' && (
                       <button
                         onClick={() => handleDeleteRequest(req.id)}
-                        className="h-8 w-8 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-colors"
+                        className="h-8 w-8 rounded-lg border border-[#E2E8F0] text-[#94A3B8] hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-colors"
                         title={t('Delete Record', 'रिकॉर्ड हटाएं')}
                       >
                         <Icon name="delete" size={16} />
@@ -1936,7 +1936,7 @@ export default function ApprovalPanel({
                       <>
                         <button
                           onClick={() => loadEditRequest(req)}
-                          className="flex-1 sm:flex-none h-8 px-3 border border-slate-200 text-slate-655 hover:bg-slate-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors whitespace-nowrap"
+                          className="flex-1 sm:flex-none h-8 px-3 border border-[#E2E8F0] text-slate-655 hover:bg-[#F7F9FC] rounded-lg text-[10px] font-bold cursor-pointer transition-colors whitespace-nowrap"
                         >
                           {t('Edit', 'संपादित करें')}
                         </button>
@@ -1953,8 +1953,8 @@ export default function ApprovalPanel({
 
                 {/* Reject Input popup banner */}
                 {isAdmin && rejectingRequestId === req.id && (
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mt-3 space-y-3 animate-in fade-in duration-200">
-                    <div className="text-[10px] font-black text-slate-700 uppercase tracking-wide">
+                  <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-3 mt-3 space-y-3 animate-in fade-in duration-200">
+                    <div className="text-[10px] font-black text-[#0F172A] uppercase tracking-wide">
                       {t('Provide Rejection Remarks', 'अस्वीकृति का कारण दर्ज करें')}
                     </div>
                     <input
@@ -1962,7 +1962,7 @@ export default function ApprovalPanel({
                       value={rejectionReason}
                       onChange={e => setRejectionReason(e.target.value)}
                       placeholder={t('e.g. Incorrect date / invalid claim', 'जैसे: गलत तारीख / अनुचित दावा')}
-                      className="w-full h-9 border border-slate-200 rounded-lg px-3 text-xs outline-none bg-white focus:border-blue-500"
+                      className="w-full h-9 border border-[#E2E8F0] rounded-lg px-3 text-xs outline-none bg-white focus:border-blue-500"
                     />
                     <div className="flex gap-2">
                       <button
@@ -1994,11 +1994,11 @@ export default function ApprovalPanel({
       {selectedRequestDetails && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
           <div className="bg-white rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-4 overflow-y-auto max-h-[90vh] animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">{t('Detailed Request Review', 'विस्तृत अनुरोध समीक्षा')}</h3>
+            <div className="flex justify-between items-center border-b border-[#E2E8F0] pb-3">
+              <h3 className="text-sm font-black text-[#0F172A] uppercase tracking-wider">{t('Detailed Request Review', 'विस्तृत अनुरोध समीक्षा')}</h3>
               <button 
                 onClick={() => { setSelectedRequestDetails(null); setRejectionReason(''); }}
-                className="text-slate-400 hover:text-slate-655 cursor-pointer"
+                className="text-[#94A3B8] hover:text-slate-655 cursor-pointer"
               >
                 <Icon name="close" size={20} />
               </button>
@@ -2007,10 +2007,10 @@ export default function ApprovalPanel({
             {/* Modal Body */}
             <div className="space-y-4 text-xs">
               {/* Employee Bio with large selfie */}
-              <div className="flex items-center gap-4 bg-slate-50 border border-slate-150 p-3 rounded-2xl">
+              <div className="flex items-center gap-4 bg-[#F7F9FC] border border-slate-150 p-3 rounded-2xl">
                 {/* Selfie – tap to expand */}
                 <div
-                  className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100 shrink-0 cursor-pointer shadow-md hover:shadow-lg hover:scale-105 transition-all relative"
+                  className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#E2E8F0] bg-slate-100 shrink-0 cursor-pointer shadow-md hover:shadow-lg hover:scale-105 transition-all relative"
                   onClick={() => selectedRequestDetails.employeePic && setLightboxSrc(selectedRequestDetails.employeePic)}
                   title={selectedRequestDetails.employeePic ? 'Click to enlarge selfie' : ''}
                 >
@@ -2022,19 +2022,19 @@ export default function ApprovalPanel({
                       </div>
                     </>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-400 text-2xl">
+                    <div className="w-full h-full flex items-center justify-center font-bold text-[#94A3B8] text-2xl">
                       {selectedRequestDetails.employeeName.charAt(0)}
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-black text-slate-800 text-sm truncate">{selectedRequestDetails.employeeName}</div>
+                  <div className="font-black text-[#0F172A] text-sm truncate">{selectedRequestDetails.employeeName}</div>
                   <div className="text-[10px] text-slate-450 font-bold uppercase">{selectedRequestDetails.employeeId}</div>
-                  <div className="text-[10px] text-slate-500 font-bold">{db.employees.find(e => e.id === selectedRequestDetails.employeeId)?.type || 'Daily'}</div>
+                  <div className="text-[10px] text-[#64748B] font-bold">{db.employees.find(e => e.id === selectedRequestDetails.employeeId)?.type || 'Daily'}</div>
                   {selectedRequestDetails.employeePic && (
                     <button
                       onClick={() => setLightboxSrc(selectedRequestDetails.employeePic!)}
-                      className="mt-1 text-[9px] font-bold text-blue-600 hover:underline cursor-pointer flex items-center gap-1"
+                      className="mt-1 text-[9px] font-bold text-[#2563EB] hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <Icon name="zoom_in" size={11} /> {t('View Selfie Full Size', 'सेल्फी बड़ी करें')}
                     </button>
@@ -2045,18 +2045,18 @@ export default function ApprovalPanel({
               {/* Request Parameters */}
               <div className="grid grid-cols-2 gap-4 border border-slate-150 p-3 rounded-2xl bg-white">
                 <div>
-                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Category / Type', 'श्रेणी / प्रकार')}</span>
-                  <span className="font-extrabold text-slate-800 text-[11px]">{selectedRequestDetails.category}</span>
+                  <span className="text-[8px] uppercase tracking-wider text-[#94A3B8] font-bold block">{t('Category / Type', 'श्रेणी / प्रकार')}</span>
+                  <span className="font-extrabold text-[#0F172A] text-[11px]">{selectedRequestDetails.category}</span>
                 </div>
                 <div>
-                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Request Date', 'दिनांक')}</span>
-                  <span className="font-bold text-slate-700">{selectedRequestDetails.date}</span>
+                  <span className="text-[8px] uppercase tracking-wider text-[#94A3B8] font-bold block">{t('Request Date', 'दिनांक')}</span>
+                  <span className="font-bold text-[#0F172A]">{selectedRequestDetails.date}</span>
                 </div>
-                <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 space-y-0.5">
-                  <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold block">{t('Old Value', 'पुराना मान')}</span>
-                  <span className="font-semibold text-slate-500 line-through">{renderNewValueText(selectedRequestDetails.oldValue || '—')}</span>
+                <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-2.5 space-y-0.5">
+                  <span className="text-[8px] uppercase tracking-wider text-[#94A3B8] font-bold block">{t('Old Value', 'पुराना मान')}</span>
+                  <span className="font-semibold text-[#64748B] line-through">{renderNewValueText(selectedRequestDetails.oldValue || '—')}</span>
                 </div>
-                <div className="bg-blue-50/30 border border-blue-100/50 rounded-xl p-2.5 space-y-0.5">
+                <div className="bg-[#EFF6FF]/30 border border-blue-100/50 rounded-xl p-2.5 space-y-0.5">
                   <span className="text-[8px] uppercase tracking-wider text-blue-500 font-bold block">{t('Requested Value', 'अनुरोधित मान')}</span>
                   <span className="font-black text-blue-700">{renderNewValueText(selectedRequestDetails.newValue)}</span>
                 </div>
@@ -2081,20 +2081,20 @@ export default function ApprovalPanel({
                       <div className="space-y-2">
                         <div className="grid grid-cols-2 gap-3 text-[10px] font-semibold text-slate-650">
                           <div>
-                            <span className="text-[8px] text-slate-400 block">{t('Assigned GeoFence', 'असाइन किया गया जियोफेंस')}</span>
-                            <span className="font-black text-slate-700">{assignedFence ? assignedFence.name : '—'}</span>
+                            <span className="text-[8px] text-[#94A3B8] block">{t('Assigned GeoFence', 'असाइन किया गया जियोफेंस')}</span>
+                            <span className="font-black text-[#0F172A]">{assignedFence ? assignedFence.name : '—'}</span>
                           </div>
                           <div>
-                            <span className="text-[8px] text-slate-400 block">{t('Distance to Center', 'केन्द्र से दूरी')}</span>
-                            <span className="font-black text-slate-700">{distance !== null ? `${Math.round(distance)} meters` : '—'}</span>
+                            <span className="text-[8px] text-[#94A3B8] block">{t('Distance to Center', 'केन्द्र से दूरी')}</span>
+                            <span className="font-black text-[#0F172A]">{distance !== null ? `${Math.round(distance)} meters` : '—'}</span>
                           </div>
                           <div className="col-span-2">
-                            <span className="text-[8px] text-slate-400 block">{t('Coordinates', 'स्थान निर्देशांक')}</span>
-                            <span className="font-mono text-slate-700 font-bold">{selectedRequestDetails.gpsLat?.toFixed(6)}, {selectedRequestDetails.gpsLng?.toFixed(6)}</span>
+                            <span className="text-[8px] text-[#94A3B8] block">{t('Coordinates', 'स्थान निर्देशांक')}</span>
+                            <span className="font-mono text-[#0F172A] font-bold">{selectedRequestDetails.gpsLat?.toFixed(6)}, {selectedRequestDetails.gpsLng?.toFixed(6)}</span>
                           </div>
                           <div className="col-span-2">
-                            <span className="text-[8px] text-slate-400 block">{t('Resolved GPS Address', 'जीपीएस द्वारा पता')}</span>
-                            <span className="text-slate-700 leading-normal block font-sans">{selectedRequestDetails.gpsAddress}</span>
+                            <span className="text-[8px] text-[#94A3B8] block">{t('Resolved GPS Address', 'जीपीएस द्वारा पता')}</span>
+                            <span className="text-[#0F172A] leading-normal block font-sans">{selectedRequestDetails.gpsAddress}</span>
                           </div>
                         </div>
 
@@ -2123,22 +2123,22 @@ export default function ApprovalPanel({
                 <div className="text-[9px] uppercase tracking-wider text-slate-450 font-black">⚙️ {t('Device Info & Diagnostics', 'डिवाइस विवरण एवं डायग्नोस्टिक्स')}</div>
                 <div className="grid grid-cols-2 gap-3 text-[10px] font-semibold text-slate-655">
                   <div>
-                    <span className="text-[8px] text-slate-400 block">{t('Device Model / OS', 'डिवाइस मॉडल / ओएस')}</span>
-                    <span className="text-slate-700">{selectedRequestDetails.deviceModel || '—'} ({selectedRequestDetails.osVersion || '—'})</span>
+                    <span className="text-[8px] text-[#94A3B8] block">{t('Device Model / OS', 'डिवाइस मॉडल / ओएस')}</span>
+                    <span className="text-[#0F172A]">{selectedRequestDetails.deviceModel || '—'} ({selectedRequestDetails.osVersion || '—'})</span>
                   </div>
                   <div>
-                    <span className="text-[8px] text-slate-400 block">{t('Device UUID Locked', 'लॉक्ड डिवाइस UUID')}</span>
-                    <span className="font-mono text-slate-700 truncate block max-w-[180px]" title={selectedRequestDetails.deviceId}>{selectedRequestDetails.deviceId || '—'}</span>
+                    <span className="text-[8px] text-[#94A3B8] block">{t('Device UUID Locked', 'लॉक्ड डिवाइस UUID')}</span>
+                    <span className="font-mono text-[#0F172A] truncate block max-w-[180px]" title={selectedRequestDetails.deviceId}>{selectedRequestDetails.deviceId || '—'}</span>
                   </div>
                   <div>
-                    <span className="text-[8px] text-slate-400 block">{t('GPS Accuracy & Provider', 'जीपीएस सटीकता')}</span>
+                    <span className="text-[8px] text-[#94A3B8] block">{t('GPS Accuracy & Provider', 'जीपीएस सटीकता')}</span>
                     <span className={`font-bold ${selectedRequestDetails.gpsAccuracy && selectedRequestDetails.gpsAccuracy <= 30 ? 'text-emerald-600' : 'text-amber-600'}`}>
                       {selectedRequestDetails.gpsAccuracy ? `${selectedRequestDetails.gpsAccuracy.toFixed(0)}m` : '—'} ({selectedRequestDetails.gpsProvider || '—'})
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] text-slate-400 block">{t('Diagnostic Context', 'अतिरिक्त संदर्भ')}</span>
-                    <span className="text-slate-700">
+                    <span className="text-[8px] text-[#94A3B8] block">{t('Diagnostic Context', 'अतिरिक्त संदर्भ')}</span>
+                    <span className="text-[#0F172A]">
                       {t('Timestamp:', 'समय:')} {formatLocalTimestamp(selectedRequestDetails.timestamp)}
                     </span>
                   </div>
@@ -2155,34 +2155,34 @@ export default function ApprovalPanel({
                 const yesterdayStatus = yesterdayAtt ? yesterdayAtt.status : 'No Record';
 
                 return (
-                  <div className="bg-slate-50 border border-slate-150 p-3 rounded-2xl grid grid-cols-2 gap-2 text-[10px] font-bold">
+                  <div className="bg-[#F7F9FC] border border-slate-150 p-3 rounded-2xl grid grid-cols-2 gap-2 text-[10px] font-bold">
                     <div>
-                      <span className="text-[8px] text-slate-400 block uppercase">{t('Yesterday Attendance', 'कल की उपस्थिति')}</span>
-                      <span className="text-slate-700">{yesterdayStatus}</span>
+                      <span className="text-[8px] text-[#94A3B8] block uppercase">{t('Yesterday Attendance', 'कल की उपस्थिति')}</span>
+                      <span className="text-[#0F172A]">{yesterdayStatus}</span>
                     </div>
                     <div>
-                      <span className="text-[8px] text-slate-400 block uppercase">{t('Reason for Submission', 'आवेदन का कारण')}</span>
-                      <span className="text-slate-700">{selectedRequestDetails.reason}</span>
+                      <span className="text-[8px] text-[#94A3B8] block uppercase">{t('Reason for Submission', 'आवेदन का कारण')}</span>
+                      <span className="text-[#0F172A]">{selectedRequestDetails.reason}</span>
                     </div>
                   </div>
                 );
               })()}
 
               {/* Remarks/Correction inputs */}
-              <div className="space-y-1.5 border-t border-slate-100 pt-3">
+              <div className="space-y-1.5 border-t border-[#E2E8F0] pt-3">
                 <label className="text-[10px] font-black text-slate-550 uppercase block">{t('Admin Correction Remarks', 'अस्वीकृति या सुधार निर्देश टिप्पणी')}</label>
                 <input
                   type="text"
                   value={rejectionReason}
                   onChange={e => setRejectionReason(e.target.value)}
                   placeholder={t('Enter instruction notes or rejection reasons', 'टिप्पणी दर्ज करें (अस्वीकार या सुधार के लिए आवश्यक)')}
-                  className="w-full h-10 border border-slate-200 rounded-xl px-3 outline-none bg-slate-50 focus:border-blue-500 text-xs font-semibold"
+                  className="w-full h-10 border border-[#E2E8F0] rounded-xl px-3 outline-none bg-[#F7F9FC] focus:border-blue-500 text-xs font-semibold"
                 />
               </div>
             </div>
 
             {/* Modal Actions */}
-            <div className="flex gap-2 border-t border-slate-100 pt-4 flex-wrap">
+            <div className="flex gap-2 border-t border-[#E2E8F0] pt-4 flex-wrap">
               <button
                 onClick={() => handleApprove(selectedRequestDetails)}
                 className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md shadow-emerald-500/10 active:scale-95 transition-all"

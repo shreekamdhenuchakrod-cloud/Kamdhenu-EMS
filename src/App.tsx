@@ -814,10 +814,10 @@ export default function App() {
   const pendingApprovalsCount = (db.approvalRequests || []).filter(r => r.status === 'Pending').length;
 
   return (
-    <div className="min-h-screen h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-800 overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="min-h-screen h-screen bg-[#F7F9FC] flex font-sans text-[#0F172A] overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       
       {/* Premium Desktop Sidebar Navigation */}
-      <aside className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200/50 shrink-0 h-screen sticky top-0 p-6 justify-between shadow-2xs">
+      <aside className="hidden md:flex flex-col w-72 bg-white border-r border-[#E2E8F0] shrink-0 h-screen sticky top-0 p-6 justify-between shadow-sm">
         <div className="space-y-6">
           {/* Logo and Branding Banner */}
           <div className="flex items-center gap-3 px-1 py-1">
@@ -825,511 +825,316 @@ export default function App() {
               <img 
                 src={db.company.logo} 
                 alt="Logo" 
-                className="w-10 h-10 rounded-xl object-cover border border-slate-100 shadow-xs" 
+                className="w-10 h-10 rounded-xl object-cover border border-[#E2E8F0] shadow-sm" 
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-blue-50/70 text-blue-600 flex items-center justify-center border border-blue-100 shadow-xs">
-                <Icon name="agriculture" size={24} className="text-blue-600" />
+              <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center border border-blue-100 shadow-sm">
+                <Icon name="agriculture" size={24} />
               </div>
             )}
             <div>
-              <h1 className="text-sm font-bold text-slate-900 tracking-tight leading-none">
+              <h1 className="text-sm font-bold text-[#0F172A] tracking-tight leading-none">
                 {lang === 'en' ? (db.company?.name || 'Shree Kamdhenu') : (db.company?.name || 'श्री कामधेनु')}
               </h1>
-              <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider block mt-1.5">
+              <span className="text-[10px] text-[#2563EB] font-bold uppercase tracking-wider block mt-1.5">
                 {t('EMS Administration', 'प्रशासनिक बहीखाता')}
               </span>
             </div>
           </div>
 
-          <hr className="border-slate-100/80" />
+          <hr className="border-[#E2E8F0]" />
 
           {/* Navigation Items */}
           <nav className="space-y-1">
-            {/* Dashboard Navigation */}
-            <button
-              onClick={() => {
-                setCurrentView('dashboard');
-                setSelectedEmployeeId(null);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                currentView === 'dashboard' 
-                  ? 'bg-blue-50/70 text-blue-600 font-bold border-l-4 border-blue-600 rounded-l-none' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon name="dashboard" size={20} fill={currentView === 'dashboard'} />
-              <span>{t('Dashboard Overview', 'डैशबोर्ड अवलोकन')}</span>
+            <button onClick={() => { setCurrentView('dashboard'); setSelectedEmployeeId(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all cursor-pointer ${currentView === 'dashboard' ? 'bg-[#2563EB] text-white shadow-md' : 'text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]'}`}>
+              <Icon name="dashboard" size={20} />
+              <span className="text-sm font-bold tracking-wide">{t('Dashboard', 'डैशबोर्ड')}</span>
             </button>
 
-            {/* Staff Directory Navigation */}
-            <button
-              onClick={() => {
-                setCurrentView('pv-staff');
-                setSelectedEmployeeId(null);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                currentView === 'pv-staff' || currentView === 'profile-detail' 
-                  ? 'bg-blue-50/70 text-blue-600 font-bold border-l-4 border-blue-600 rounded-l-none' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon name="badge" size={20} fill={currentView === 'pv-staff' || currentView === 'profile-detail'} />
-              <span>{t('Staff Directory', 'कर्मचारी सूची')}</span>
+            <button onClick={() => { setCurrentView('pv-staff'); setSelectedEmployeeId(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all cursor-pointer ${currentView === 'pv-staff' || currentView === 'profile-detail' || currentView === 'add-staff' ? 'bg-[#2563EB] text-white shadow-md' : 'text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]'}`}>
+              <Icon name="people" size={20} />
+              <span className="text-sm font-bold tracking-wide">{t('Staff Directory', 'कर्मचारी सूची')}</span>
             </button>
 
-            {/* Mark Attendance Navigation */}
-            <button
-              onClick={() => {
-                setCurrentView('pv-att');
-                setSelectedEmployeeId(null);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                currentView === 'pv-att' 
-                  ? 'bg-blue-50/70 text-blue-600 font-bold border-l-4 border-blue-600 rounded-l-none' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon name="edit_calendar" size={20} fill={currentView === 'pv-att'} />
-              <span>{t('Daily Attendance', 'दैनिक हाजिरी भरें')}</span>
+            <button onClick={() => { setCurrentView('pv-att'); setSelectedEmployeeId(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all cursor-pointer ${currentView === 'pv-att' ? 'bg-[#2563EB] text-white shadow-md' : 'text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]'}`}>
+              <Icon name="event_available" size={20} />
+              <span className="text-sm font-bold tracking-wide">{t('Daily Attendance', 'दैनिक हाजिरी')}</span>
             </button>
 
-            {/* Live Approval Requests Navigation */}
-            <button
-              onClick={() => {
-                setCurrentView('approvals');
-                setSelectedEmployeeId(null);
-              }}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                currentView === 'approvals' 
-                  ? 'bg-blue-50/70 text-blue-600 font-bold border-l-4 border-blue-600 rounded-l-none' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
+            <button onClick={() => { setCurrentView('approvals'); setSelectedEmployeeId(null); }} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all cursor-pointer ${currentView === 'approvals' ? 'bg-[#2563EB] text-white shadow-md' : 'text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]'}`}>
               <div className="flex items-center gap-3">
-                <Icon name="verified_user" size={20} fill={currentView === 'approvals'} />
-                <span>{t('Approval Desk', 'मंजूरी डेस्क')}</span>
+                <Icon name="fact_check" size={20} />
+                <span className="text-sm font-bold tracking-wide">{t('Approval Desk', 'अनुमोदन कक्ष')}</span>
               </div>
-              {pendingApprovalsCount > 0 && (
-                <span className="bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shrink-0">
-                  {pendingApprovalsCount}
+              {((db.approvalRequests || []).filter(r => r.status === 'Pending').length) > 0 && (
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${currentView === 'approvals' ? 'bg-white text-[#2563EB]' : 'bg-amber-100 text-amber-700'}`}>
+                  {((db.approvalRequests || []).filter(r => r.status === 'Pending').length)}
                 </span>
               )}
             </button>
 
-
-            {/* GeoFence Management */}
-            <button
-              onClick={() => {
-                setCurrentView('geofences');
-                setSelectedEmployeeId(null);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                currentView === 'geofences' 
-                  ? 'bg-blue-50/70 text-blue-600 font-bold border-l-4 border-blue-600 rounded-l-none' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon name="radar" size={20} fill={currentView === 'geofences'} />
-              <span>{t('GeoFence Center', 'जियोफेंस केंद्र')}</span>
+            <button onClick={() => { setCurrentView('geofences'); setSelectedEmployeeId(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all cursor-pointer ${currentView === 'geofences' ? 'bg-[#2563EB] text-white shadow-md' : 'text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]'}`}>
+              <Icon name="location_on" size={20} />
+              <span className="text-sm font-bold tracking-wide">{t('GeoFence Center', 'जियो-फेंस केंद्र')}</span>
             </button>
 
-            {/* Settings & Reports Navigation */}
-            <button
-              onClick={() => {
-                setCurrentView('pv-rep');
-                setSelectedEmployeeId(null);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                currentView === 'pv-rep' 
-                  ? 'bg-blue-50/70 text-blue-600 font-bold border-l-4 border-blue-600 rounded-l-none' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon name="settings" size={20} fill={currentView === 'pv-rep'} />
-              <span>{t('System Settings', 'सिस्टम सेटिंग्स')}</span>
+            <button onClick={() => { setCurrentView('settings'); setSelectedEmployeeId(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all cursor-pointer ${currentView === 'settings' ? 'bg-[#2563EB] text-white shadow-md' : 'text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]'}`}>
+              <Icon name="settings" size={20} />
+              <span className="text-sm font-bold tracking-wide">{t('System Settings', 'सिस्टम सेटिंग्स')}</span>
             </button>
           </nav>
         </div>
 
-        {/* Sidebar Footer Details */}
-        <div className="space-y-4">
-          {/* Real-time Cloud status panel */}
-          <div className="p-3 bg-slate-50/80 border border-slate-100 rounded-xl space-y-2 text-[10px] font-semibold text-slate-500">
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">{t('Sync Status', 'सिंक की स्थिति')}</span>
-              <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                syncStatus === 'synced' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                syncStatus === 'connecting' ? 'bg-amber-50 text-amber-700 border border-amber-100 animate-pulse' :
-                'bg-rose-50 text-rose-700 border border-rose-100'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  syncStatus === 'synced' ? 'bg-emerald-500' :
-                  syncStatus === 'connecting' ? 'bg-amber-500 animate-pulse' :
-                  'bg-rose-500'
-                }`} />
-                {syncStatus === 'synced' ? t('Synced', 'सुरक्षित') :
-                 syncStatus === 'connecting' ? t('Syncing...', 'सिंक...') :
-                 t('Offline', 'ऑफ़लाइन')}
-              </span>
+        {/* Bottom Sidebar Section */}
+        <div className="space-y-4 pt-4 border-t border-[#E2E8F0]">
+          {/* Sync Status Card */}
+          <div className="bg-[#F7F9FC] border border-[#E2E8F0] p-3 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer hover:bg-slate-100" onClick={() => setShowTroubleshoot(true)}>
+            <div className="flex items-center gap-2">
+              <Icon name="cloud_sync" size={16} className="text-[#64748B]" />
+              <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">{t('Sync Status', 'सिंक स्थिति')}</span>
             </div>
-            {syncStatus === 'error' && (
-              <button 
-                onClick={() => setShowTroubleshoot(true)}
-                className="w-full text-center text-rose-600 hover:underline text-[9px] mt-1 cursor-pointer block font-bold"
-              >
-                {t('⚠️ View Firestore Fix Guide', '⚠️ समाधान गाइड देखें')}
-              </button>
-            )}
+            {syncStatus === 'synced' && <span className="bg-[#ECFDF5] text-[#10B981] border border-emerald-100 text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-1"><span className="w-1.5 h-1.5 bg-[#10B981] rounded-full animate-pulse" /> SYNCED</span>}
+            {syncStatus === 'connecting' && <span className="bg-amber-50 text-amber-700 border border-amber-100 text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">WAITING</span>}
+            {syncStatus === 'error' && <span className="bg-rose-50 text-rose-700 border border-rose-100 text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">ERROR</span>}
           </div>
 
-          {/* Bilingual Quick Toggle */}
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-            <span>{t('Language:', 'भाषा:')}</span>
-            <div className="flex rounded-lg border border-slate-200 overflow-hidden bg-slate-50 p-0.5">
-              <button
-                onClick={() => setLang('en')}
-                className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-all ${
-                  lang === 'en' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLang('hi')}
-                className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-all ${
-                  lang === 'hi' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                हिं
-              </button>
-            </div>
-          </div>
-
-          {deferredPrompt && (
-            <button
-              onClick={handleInstallApp}
-              className="w-full h-11 btn bbl text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer"
-            >
-              <Icon name="download" size={16} />
-              <span>{t('Download PC/Mobile App', 'ऐप डाउनलोड करें')}</span>
+          <div className="flex items-center gap-2">
+            <select value={lang} onChange={(e) => setLang(e.target.value as 'en' | 'hi')} className="flex-1 h-10 px-3 rounded-xl border border-[#E2E8F0] bg-[#F7F9FC] font-bold text-[11px] text-[#0F172A] focus:outline-none focus:border-[#2563EB] cursor-pointer">
+              <option value="en">English (EN)</option>
+              <option value="hi">हिंदी (HI)</option>
+            </select>
+            
+            <button onClick={handleLogout} className="flex-1 h-10 border border-rose-100 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <Icon name="logout" size={14} />
+              {t('Logout', 'लॉगआउट')}
             </button>
-          )}
-
-          <button
-            onClick={handleLogout}
-            className="w-full h-11 border border-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-red-50/50 active:scale-[0.97] transition-all cursor-pointer"
-          >
-            <Icon name="logout" size={16} />
-            <span>{t('Logout Admin Desk', 'लॉगआउट करें')}</span>
-          </button>
+          </div>
         </div>
       </aside>
 
-      {/* Visual Navigation Top Header (Visible only on Mobile) */}
-      {currentView !== 'profile-detail' && (
-        <header className="md:hidden sticky top-0 bg-white/95 border-b border-slate-100 z-50 backdrop-blur-md px-4 py-3 shadow-2xs">
-          <div className="max-w-md mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              {db.company?.logo ? (
-                <img 
-                  src={db.company.logo} 
-                  alt="Logo" 
-                  className="w-8 h-8 rounded-lg object-cover" 
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 shadow-3xs">
-                  <Icon name="agriculture" size={18} className="text-blue-600" />
-                </div>
-              )}
-              <div>
-                <h1 className="text-xs font-bold text-slate-900 tracking-tight leading-none">
-                  {lang === 'en' ? (db.company?.name || 'Shree Kamdhenu') : (db.company?.name || 'श्री कामधेनु')}
-                </h1>
-                <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider block mt-1">
-                  {t('Employee Management System', 'कर्मचारी प्रबंधन प्रणाली')}
-                </span>
+      {/* Main Content Area (Dynamic Views) */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+        
+        {/* Mobile Top Header (Hidden on Desktop) */}
+        <header className="md:hidden sticky top-0 bg-white/95 border-b border-[#E2E8F0] z-40 backdrop-blur-md px-4 py-3 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            {db.company?.logo ? (
+              <img src={db.company.logo} alt="Logo" className="w-8 h-8 rounded-xl object-cover border border-[#E2E8F0] shadow-sm" />
+            ) : (
+              <div className="w-8 h-8 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center border border-blue-100 shadow-sm">
+                <Icon name="agriculture" size={18} />
               </div>
+            )}
+            <div>
+              <h1 className="text-xs font-black text-[#0F172A] tracking-tight leading-none">
+                {lang === 'en' ? (db.company?.name || 'Shree Kamdhenu') : (db.company?.name || 'श्री कामधेनु')}
+              </h1>
+              <span className="text-[9px] text-[#2563EB] font-bold uppercase tracking-wider block mt-0.5">
+                Admin App
+              </span>
             </div>
-
-            <div className="flex items-center gap-3">
-              {/* Admin Notification Desk */}
-              <NotificationDesk 
-                db={db}
-                onUpdateDb={handleUpdateDatabaseDirectly}
-                userId="admin"
-                lang={lang}
-              />
-              
-              {/* Cloud Sync Status Badge */}
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-100">
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  syncStatus === 'synced' ? 'bg-emerald-500' :
-                  syncStatus === 'connecting' ? 'bg-amber-500 animate-pulse' :
-                  'bg-rose-500'
-                }`} />
-                <span className="text-[9px] font-bold text-slate-500 tracking-tight">
-                  {syncStatus === 'synced' ? t('Synced', 'सिंक') :
-                   syncStatus === 'connecting' ? t('Syncing...', 'सिंक...') :
-                   t('Offline', 'ऑफ़लाइन')}
-                </span>
-              </div>
-            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <NotificationDesk db={db} onUpdateDb={setDb} userId="admin" lang={lang} />
+            <button onClick={() => setShowTroubleshoot(true)} className="w-8 h-8 rounded-full border border-[#E2E8F0] bg-white text-[10px] font-bold text-[#64748B] flex items-center justify-center cursor-pointer relative">
+              <Icon name="cloud_sync" size={16} />
+              {syncStatus !== 'synced' && <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-amber-500 border border-white"></span>}
+            </button>
           </div>
         </header>
-      )}
 
-      {/* Main Container Wrapper — hidden when geofences map view is active */}
-      <main className={`flex-1 w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto px-3 md:px-6 pt-4 pb-24 md:pb-8 md:py-8 overflow-x-hidden md:h-screen md:overflow-y-auto ${
-        currentView === 'geofences' ? 'hidden' : ''
-      }`}>
-        
-        {/* Firebase Error Warning Banner */}
-        {syncStatus === 'error' && (
-          <div className="mb-5 bg-rose-50 border border-rose-100 rounded-2xl p-4 flex items-start gap-3 shadow-2xs animate-in fade-in duration-200">
-            <div className="p-1.5 bg-rose-100 text-rose-700 rounded-lg shrink-0 mt-0.5">
-              <Icon name="warning" size={18} fill={true} />
-            </div>
-            <div className="space-y-1">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-rose-800">
-                {t('Cloud Sync Interrupted', 'क्लाउड सिंक रुका हुआ है')}
-              </h4>
-              <p className="text-[10px] text-rose-700 font-semibold leading-relaxed">
-                {t('Error Details:', 'त्रुटि विवरण:')} <span className="font-mono bg-rose-100/60 px-1.5 py-0.5 rounded border border-rose-200 text-[9px] font-bold text-rose-900">{syncError || 'Unknown connection error'}</span>
-              </p>
-              <button
-                onClick={() => setShowTroubleshoot(true)}
-                className="inline-flex items-center gap-1.5 mt-2 text-[10px] font-bold text-rose-800 bg-rose-100 hover:bg-rose-200/70 px-3 py-1.5 rounded-lg border border-rose-200 transition-colors uppercase tracking-wider cursor-pointer"
-              >
-                <Icon name="sync_problem" size={13} />
-                {t('View 2-Min Fix', '२-मिनट हल देखें')}
-              </button>
-            </div>
-          </div>
-        )}
+        <div className="flex-1 overflow-y-auto w-full pb-20 md:pb-0 scroll-smooth">
+          {/* Dashboard View */}
+          {currentView === 'dashboard' && (
+            <DashboardView 
+              db={db} 
+              lang={lang} 
+              onNavigate={(view: string, empId?: string) => {
+                setCurrentView(view);
+                if (empId) setSelectedEmployeeId(empId);
+              }} 
+            />
+          )}
 
-        {/* Dynamic Navigation Routers */}
+          {/* Staff List View */}
+          {currentView === 'pv-staff' && (
+            <StaffListView 
+              db={db} 
+              lang={lang} 
+              onNavigate={(view: string, empId?: string) => {
+                setCurrentView(view);
+                if (empId) setSelectedEmployeeId(empId);
+              }} 
+            />
+          )}
 
-        {/* 1. Dashboard Landing View */}
-        {currentView === 'dashboard' && (
-          <DashboardView 
-            db={db} 
-            onNavigate={setCurrentView} 
-            lang={lang} 
-          />
-        )}
+          {/* Add Staff View */}
+          {currentView === 'add-staff' && (
+            <AddStaffView 
+              onSave={handleOnboardSave} 
+              onCancel={() => setCurrentView('pv-staff')} 
+              lang={lang} 
+            />
+          )}
 
-        {/* 2. Staff Directory lists */}
-        {currentView === 'pv-staff' && (
-          <StaffListView
-            db={db}
-            onNavigate={setCurrentView}
-            onSelectEmployee={(id) => {
-              setSelectedEmployeeId(id);
-              setCurrentView('profile-detail');
-            }}
-            onRestoreEmployee={handleRestoreStaff}
-            lang={lang}
-          />
-        )}
-
-        {/* 3. Daily Attendance Markup Register lists */}
-        {currentView === 'pv-att' && (
-          <AttendanceView
-            db={db}
-            onUpdateAttendance={(updatedAtt) => setDb({ ...db, attendance: updatedAtt })}
-            onUpdateDb={handleUpdateDatabaseDirectly}
-            lang={lang}
-            onGoBack={() => setCurrentView('dashboard')}
-          />
-        )}
-
-        {/* 4. Onboard Add Employee stepper */}
-        {currentView === 'pv-add' && (
-          <AddStaffView
-            onSave={handleOnboardSave}
-            onGoBack={() => setCurrentView('dashboard')}
-            lang={lang}
-          />
-        )}
-
-        {/* 5. Detailed workers statistics sheets profile (With Delete and Status Actions) */}
-        {currentView === 'profile-detail' && selectedEmployeeId && (
-          <div className="animate-in fade-in duration-200">
+          {/* Employee Detail Profile View */}
+          {currentView === 'profile-detail' && selectedEmployeeId && (
             <ProfileView
               employeeId={selectedEmployeeId}
               db={db}
               lang={lang}
-              onUpdateDb={handleUpdateDatabaseDirectly}
-              onGoBack={() => {
+              onUpdateDb={setDb}
+              onBack={() => {
                 setCurrentView('pv-staff');
                 setSelectedEmployeeId(null);
               }}
-              onDeleteEmployeeFully={handleDeleteStaffFully}
-              onChangeStatusToLeft={handleChangeStatusToLeft}
+              onSoftDelete={handleDeleteStaffFully}
+              onStatusLeft={handleChangeStatusToLeft}
+              onRestore={handleRestoreStaff}
             />
-          </div>
-        )}
+          )}
 
-        {/* 6. Settings and Configuration view */}
-        {currentView === 'pv-rep' && (
-          <SettingsView
-            db={db}
-            onUpdateDb={handleUpdateDatabaseDirectly}
-            lang={lang}
-            onToggleLang={() => setLang(l => l === 'en' ? 'hi' : 'en')}
-            onLogout={handleLogout}
-            syncStatus={syncStatus}
-            deferredPrompt={deferredPrompt}
-            onInstallApp={handleInstallApp}
-            onOpenRecycleBin={() => setShowRecycleBin(true)}
-            onOpenAuditLogs={() => setShowAuditLogs(true)}
-          />
-        )}
+          {/* Attendance Module View */}
+          {currentView === 'pv-att' && (
+            <AttendanceView 
+              db={db} 
+              onUpdateDb={setDb} 
+              lang={lang} 
+            />
+          )}
 
-        {/* 7. Live Approval Requests Desk */}
-        {currentView === 'approvals' && (
-          <ApprovalPanel 
-            db={db}
-            lang={lang}
-            isAdmin={true}
-            onUpdateDb={handleUpdateDatabaseDirectly}
-          />
-        )}
+          {/* Approvals Request Desk */}
+          {currentView === 'approvals' && (
+            <ApprovalPanel 
+              db={db} 
+              onUpdateDb={setDb} 
+              lang={lang} 
+              isAdmin={true} 
+            />
+          )}
 
-        {/* Note: GeoFenceManager rendered OUTSIDE main to avoid overflow/max-w clipping */}
-      </main>
+          {/* GeoFence Manager */}
+          {currentView === 'geofences' && (
+            <GeoFenceManager 
+              db={db} 
+              onUpdateDb={setDb} 
+              lang={lang} 
+            />
+          )}
 
-      {/* Map Views - Full screen sibling outside main container to avoid Leaflet clipping */}
-      {/* 9. GeoFence Manager desk */}
-      {currentView === 'geofences' && (
-        <div className="flex-1 w-full overflow-hidden" style={{ minHeight: 0 }}>
-          <GeoFenceManager 
-            db={db}
-            onUpdateDb={handleUpdateDatabaseDirectly}
-            lang={lang}
-          />
-        </div>
-      )}
+          {/* System Settings Panel */}
+          {currentView === 'settings' && (
+            <SettingsView 
+              db={db} 
+              onUpdateDb={setDb} 
+              lang={lang} 
+              onNavigate={setCurrentView} 
+              onLogout={handleLogout}
+              setLang={setLang}
+            />
+          )}
 
-      {/* --- Sticky Floating Bottom Navigation Rail (Mobile Only) --- */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-150 py-2.5 px-3 shadow-lg z-50 rounded-2xl max-w-md mx-auto transition-transform duration-200">
-        <div className="grid grid-cols-5 gap-1 text-center items-center justify-center">
+          {/* Recycle Bin Recovery */}
+          {currentView === 'recycle-bin' && (
+            <RecycleBinView 
+              db={db} 
+              onUpdateDb={setDb} 
+              lang={lang} 
+              onBack={() => setCurrentView('settings')} 
+            />
+          )}
+
+          {/* Audit Logs Trail */}
+          {currentView === 'audit-logs' && (
+            <AuditLogsView 
+              db={db} 
+              lang={lang} 
+              onBack={() => setCurrentView('settings')} 
+            />
+          )}
           
-          {/* Dashboard */}
-          <button
-            onClick={() => {
-              setCurrentView('dashboard');
-              setSelectedEmployeeId(null);
-            }}
-            className={`flex flex-col items-center justify-center py-1.5 rounded-xl cursor-pointer transition-all duration-200 ${
-              currentView === 'dashboard' 
-                ? 'text-blue-600 bg-blue-50/60 font-bold scale-102' 
-                 : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Icon name="dashboard" size={18} fill={currentView === 'dashboard'} />
-            <span className="text-[8px] tracking-tight mt-1">{t('Home', 'होम')}</span>
-          </button>
+          {/* Mobile "More" Menu Panel */}
+          {currentView === 'mobile-more' && (
+            <div className="p-4 space-y-4 animate-in fade-in duration-200">
+              <h2 className="text-xl font-black text-[#0F172A] tracking-tight mb-4">{t('Menu', 'मेनू')}</h2>
+              
+              <div className="bg-white border border-[#E2E8F0] rounded-3xl shadow-sm overflow-hidden">
+                <div onClick={() => setCurrentView('geofences')} className="p-4 flex items-center justify-between border-b border-slate-100 active:bg-slate-50 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center">
+                      <Icon name="location_on" size={20} />
+                    </div>
+                    <span className="text-sm font-bold text-[#0F172A]">{t('GeoFence Center', 'जियो-फेंस केंद्र')}</span>
+                  </div>
+                  <Icon name="chevron_right" size={20} className="text-[#64748B]" />
+                </div>
+                
+                <div onClick={() => setCurrentView('settings')} className="p-4 flex items-center justify-between border-b border-slate-100 active:bg-slate-50 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center">
+                      <Icon name="settings" size={20} />
+                    </div>
+                    <span className="text-sm font-bold text-[#0F172A]">{t('System Settings', 'सिस्टम सेटिंग्स')}</span>
+                  </div>
+                  <Icon name="chevron_right" size={20} className="text-[#64748B]" />
+                </div>
+              </div>
 
-          {/* Directory */}
-          <button
-            onClick={() => {
-              setCurrentView('pv-staff');
-              setSelectedEmployeeId(null);
-            }}
-            className={`flex flex-col items-center justify-center py-1.5 rounded-xl cursor-pointer transition-all duration-200 ${
-              currentView === 'pv-staff' || currentView === 'profile-detail' 
-                ? 'text-blue-600 bg-blue-50/60 font-bold scale-102' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Icon name="badge" size={18} fill={currentView === 'pv-staff' || currentView === 'profile-detail'} />
-            <span className="text-[8px] tracking-tight mt-1">{t('Staff', 'कर्मचारी')}</span>
-          </button>
+              <div className="bg-white border border-[#E2E8F0] rounded-3xl p-4 shadow-sm space-y-4 mt-6">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-bold text-[#64748B]">{t('Language', 'भाषा')}</span>
+                  <select value={lang} onChange={(e) => setLang(e.target.value as 'en' | 'hi')} className="h-10 px-4 rounded-xl border border-[#E2E8F0] bg-[#F7F9FC] font-bold text-[#0F172A] focus:outline-none focus:border-[#2563EB] cursor-pointer">
+                    <option value="en">English (EN)</option>
+                    <option value="hi">हिंदी (HI)</option>
+                  </select>
+                </div>
+              </div>
 
-          {/* Attendance Mark */}
-          <button
-            onClick={() => {
-              setCurrentView('pv-att');
-              setSelectedEmployeeId(null);
-            }}
-            className={`flex flex-col items-center justify-center py-1.5 rounded-xl cursor-pointer transition-all duration-200 ${
-              currentView === 'pv-att' 
-                ? 'text-blue-600 bg-blue-50/60 font-bold scale-102' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Icon name="edit_calendar" size={18} fill={currentView === 'pv-att'} />
-            <span className="text-[8px] tracking-tight mt-1">{t('Mark', 'हाजिरी')}</span>
-          </button>
-
-          {/* Approvals Desk */}
-          <button
-            onClick={() => {
-              setCurrentView('approvals');
-              setSelectedEmployeeId(null);
-            }}
-            className={`flex flex-col items-center justify-center py-1.5 rounded-xl cursor-pointer transition-all duration-200 relative ${
-              currentView === 'approvals' 
-                ? 'text-blue-600 bg-blue-50/60 font-bold scale-102' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Icon name="verified_user" size={18} fill={currentView === 'approvals'} />
-            <span className="text-[8px] tracking-tight mt-1">{t('Approvals', 'मंजूरी')}</span>
-            {pendingApprovalsCount > 0 && (
-              <span className="absolute top-0 right-1.5 bg-amber-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                {pendingApprovalsCount}
-              </span>
-            )}
-          </button>
-
-          {/* Settings & Configuration Tab */}
-          <button
-            onClick={() => {
-              setCurrentView('pv-rep');
-              setSelectedEmployeeId(null);
-            }}
-            className={`flex flex-col items-center justify-center py-1.5 rounded-xl cursor-pointer transition-all duration-200 ${
-              currentView === 'pv-rep' 
-                ? 'text-blue-600 bg-blue-50/60 font-bold scale-102' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Icon name="settings" size={18} fill={currentView === 'pv-rep'} />
-            <span className="text-[8px] tracking-tight mt-1">{t('Settings', 'सेटिंग्स')}</span>
-          </button>
-
+              <button onClick={handleLogout} className="w-full h-14 mt-6 border-2 border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-2xl text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] cursor-pointer">
+                <Icon name="logout" size={20} />
+                {t('Logout Admin Desk', 'लॉगआउट')}
+              </button>
+            </div>
+          )}
         </div>
-      </nav>
 
-      {/* --- RECYCLE BIN OVERLAY --- */}
-      {showRecycleBin && (
-        <RecycleBinView
-          db={db}
-          lang={lang}
-          onClose={() => setShowRecycleBin(false)}
-          onRestore={handleRestoreRecycleItem}
-          onPermanentDelete={handlePermanentDeleteRecycleItem}
-        />
-      )}
+        {/* Mobile Bottom Navigation (Hidden on Desktop) */}
+        <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-[#E2E8F0] px-2 py-2 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 pb-safe">
+          <button onClick={() => { setCurrentView('dashboard'); setSelectedEmployeeId(null); }} className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${currentView === 'dashboard' ? 'text-[#2563EB]' : 'text-[#64748B] active:bg-slate-50'}`}>
+            <Icon name="home" size={24} />
+            <span className="text-[10px] font-bold">{t('Home', 'होम')}</span>
+          </button>
+          <button onClick={() => { setCurrentView('pv-staff'); setSelectedEmployeeId(null); }} className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${currentView === 'pv-staff' || currentView === 'add-staff' || currentView === 'profile-detail' ? 'text-[#2563EB]' : 'text-[#64748B] active:bg-slate-50'}`}>
+            <Icon name="people" size={24} />
+            <span className="text-[10px] font-bold">{t('Staff', 'स्टाफ')}</span>
+          </button>
+          <button onClick={() => { setCurrentView('pv-att'); setSelectedEmployeeId(null); }} className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${currentView === 'pv-att' ? 'text-[#2563EB]' : 'text-[#64748B] active:bg-slate-50'}`}>
+            <Icon name="calendar_month" size={24} />
+            <span className="text-[10px] font-bold">{t('Attend', 'हाजिरी')}</span>
+          </button>
+          <button onClick={() => { setCurrentView('approvals'); setSelectedEmployeeId(null); }} className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all relative ${currentView === 'approvals' ? 'text-[#2563EB]' : 'text-[#64748B] active:bg-slate-50'}`}>
+            <Icon name="send" size={24} />
+            <span className="text-[10px] font-bold">{t('Approvals', 'अप्रूवल')}</span>
+            {((db.approvalRequests || []).filter(r => r.status === 'Pending').length) > 0 && <span className="absolute top-1 right-2 w-3 h-3 rounded-full bg-amber-500 border-2 border-white"></span>}
+          </button>
+          <button onClick={() => setCurrentView('mobile-more')} className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${currentView === 'mobile-more' || currentView === 'geofences' || currentView === 'settings' ? 'text-[#2563EB]' : 'text-[#64748B] active:bg-slate-50'}`}>
+            <Icon name="grid_view" size={24} />
+            <span className="text-[10px] font-bold">{t('More', 'अधिक')}</span>
+          </button>
+        </nav>
 
-      {/* --- AUDIT LOGS OVERLAY --- */}
-      {showAuditLogs && (
-        <AuditLogsView
-          db={db}
-          lang={lang}
-          onClose={() => setShowAuditLogs(false)}
-        />
-      )}
-
-      {showTroubleshoot && (
-        <FirebaseTroubleshoot lang={lang} onClose={() => setShowTroubleshoot(false)} />
-      )}
-
+        {/* Global Firebase Connection Troubleshoot Modal */}
+        {showTroubleshoot && (
+          <FirebaseTroubleshoot 
+            db={db}
+            syncStatus={syncStatus}
+            syncError={syncError}
+            onClose={() => setShowTroubleshoot(false)} 
+            lang={lang} 
+          />
+        )}
+      </main>
     </div>
   );
 }

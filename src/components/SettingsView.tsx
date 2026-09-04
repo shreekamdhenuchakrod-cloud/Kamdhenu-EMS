@@ -346,36 +346,36 @@ export default function SettingsView({
       )}
 
       {/* Hero Overview Header */}
-      <div className="bg-white border border-slate-100 p-6 rounded-2xl shadow-xs relative overflow-hidden flex items-center justify-between">
+      <div className="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-xs relative overflow-hidden flex items-center justify-between">
         <div className="min-w-0">
-          <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-50 text-slate-500 px-2.5 py-1 rounded-md inline-block leading-none border border-slate-100 font-sans">
+          <span className="text-[10px] uppercase font-bold tracking-wider bg-[#F7F9FC] text-[#64748B] px-2.5 py-1 rounded-md inline-block leading-none border border-[#E2E8F0] font-sans">
             {t('Administration Desk', 'प्रशासनिक नियंत्रक डेस्क')}
           </span>
-          <h2 className="text-lg font-black text-slate-900 mt-3 tracking-tight leading-none">
+          <h2 className="text-lg font-black text-[#0F172A] mt-3 tracking-tight leading-none">
             {company.name || 'Shree Kamdhenu'}
           </h2>
-          <p className="text-[11px] text-slate-400 font-semibold mt-2 uppercase tracking-wider leading-none">
+          <p className="text-[11px] text-[#94A3B8] font-semibold mt-2 uppercase tracking-wider leading-none">
             {t('Shree Kamdhenu EMS · Settings', 'श्री कामधेनु ईएमएस · सेटिंग्स')}
           </p>
         </div>
-        <div className="w-12 h-12 rounded-xl bg-blue-50/50 border border-blue-100/50 flex items-center justify-center text-blue-600 shrink-0 shadow-xs">
+        <div className="w-12 h-12 rounded-xl bg-[#EFF6FF]/50 border border-blue-100/50 flex items-center justify-center text-[#2563EB] shrink-0 shadow-xs">
           <Icon name="settings" size={24} />
         </div>
       </div>
 
       {/* SECTION: SYSTEM PREFERENCES (Language Switch & Logout) */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 flex items-center gap-2">
-          <Icon name="desktop_windows" size={18} className="text-blue-600" />
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs">
+        <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
+          <Icon name="desktop_windows" size={18} className="text-[#2563EB]" />
           <span>{t('System Preferences', 'सिस्टम प्राथमिकताएँ')}</span>
         </h3>
 
         <div className="space-y-3">
           {/* Language selection Row */}
-          <div className="flex items-center justify-between p-3.5 bg-slate-50/50 rounded-xl border border-slate-100">
+          <div className="flex items-center justify-between p-3.5 bg-[#F7F9FC]/50 rounded-xl border border-[#E2E8F0]">
             <div>
-              <span className="text-xs font-bold text-slate-800 block">{t('App Language', 'ऐप की भाषा')}</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1 block leading-none">{lang === 'en' ? 'ENGLISH (ACTIVE)' : 'हिन्दी (सक्रिय)'}</span>
+              <span className="text-xs font-bold text-[#0F172A] block">{t('App Language', 'ऐप की भाषा')}</span>
+              <span className="text-[9px] font-bold text-[#94A3B8] uppercase tracking-wider mt-1 block leading-none">{lang === 'en' ? 'ENGLISH (ACTIVE)' : 'हिन्दी (सक्रिय)'}</span>
             </div>
             <button
               onClick={onToggleLang}
@@ -388,8 +388,8 @@ export default function SettingsView({
           {/* Secure Logout Row */}
           <div className="flex items-center justify-between p-3.5 bg-rose-50/10 rounded-xl border border-rose-100/40">
             <div>
-              <span className="text-xs font-bold text-slate-800 block">{t('Admin Authentication', 'प्रशासन लॉक सुरक्षा')}</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1 block leading-none">{t('Lock accessibility', 'प्रवेश सुरक्षा लागू करें')}</span>
+              <span className="text-xs font-bold text-[#0F172A] block">{t('Admin Authentication', 'प्रशासन लॉक सुरक्षा')}</span>
+              <span className="text-[9px] font-bold text-[#94A3B8] uppercase tracking-wider mt-1 block leading-none">{t('Lock accessibility', 'प्रवेश सुरक्षा लागू करें')}</span>
             </div>
             <button
               onClick={onLogout}
@@ -403,17 +403,17 @@ export default function SettingsView({
 
       {/* PWA INSTALLATION PANEL */}
       {deferredPrompt && (
-        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs animate-in slide-in-from-top-2 duration-200">
-          <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 flex items-center gap-2">
-            <Icon name="download" size={18} className="text-blue-600" />
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs animate-in slide-in-from-top-2 duration-200">
+          <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
+            <Icon name="download" size={18} className="text-[#2563EB]" />
             <span>{t('Desktop/Mobile Application', 'डेस्कटॉप/मोबाइल एप्लीकेशन')}</span>
           </h3>
-          <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-[#EFF6FF]/50 rounded-xl p-4 border border-blue-100/50 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
-              <span className="text-xs font-bold text-slate-800 block">
+              <span className="text-xs font-bold text-[#0F172A] block">
                 {t('Install Kamdhenu EMS', 'कामधेनु ईएमएस इनस्टॉल करें')}
               </span>
-              <span className="text-[10px] text-slate-400 mt-1 block leading-normal font-medium">
+              <span className="text-[10px] text-[#94A3B8] mt-1 block leading-normal font-medium">
                 {t('Download the offline-first app onto your home screen for rapid access and native PWA window layout.', 'तेज़ पहुंच और स्थानीय विंडो लेआउट के लिए ऑफ़लाइन-फ़र्स्ट ऐप को अपनी होम स्क्रीन पर डाउनलोड करें।')}
               </span>
             </div>
@@ -429,14 +429,14 @@ export default function SettingsView({
       )}
 
       {/* SECTION 2: COMPANY LOGO PANEL */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 flex items-center gap-2">
-          <Icon name="image" size={18} className="text-blue-600" />
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs">
+        <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
+          <Icon name="image" size={18} className="text-[#2563EB]" />
           <span>{t('Company Logo', 'संस्था लोगो')}</span>
         </h3>
 
         <div className="flex items-center gap-4 py-1">
-          <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-[#F7F9FC] border border-[#E2E8F0] flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
             {company.logo ? (
               <img 
                 src={company.logo} 
@@ -450,11 +450,11 @@ export default function SettingsView({
           </div>
 
           <div className="flex-1 space-y-2">
-            <h4 className="text-[9px] font-bold uppercase text-slate-400 tracking-wider leading-none">{t('Launcher Icon Emblem', 'गौशाला पहचान चिन्ह')}</h4>
+            <h4 className="text-[9px] font-bold uppercase text-[#94A3B8] tracking-wider leading-none">{t('Launcher Icon Emblem', 'गौशाला पहचान चिन्ह')}</h4>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => document.getElementById('logo-file-picker')?.click()}
-                className="h-8.5 px-3 rounded-xl btn bou font-bold text-[10px] flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 transition-colors"
+                className="h-8.5 px-3 rounded-xl btn bou font-bold text-[10px] flex items-center gap-1.5 cursor-pointer hover:bg-[#F7F9FC] transition-colors"
               >
                 <Icon name="upload" size={12} />
                 <span>{t('Upload Logo', 'अपलोड लोगो')}</span>
@@ -481,18 +481,18 @@ export default function SettingsView({
       </div>
 
       {/* SECTION 1: COMPANY INFORMATION (Company Name only) */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 flex items-center gap-2">
-          <Icon name="corporate_fare" size={18} className="text-blue-600" />
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs">
+        <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
+          <Icon name="corporate_fare" size={18} className="text-[#2563EB]" />
           <span>{t('Company Profile', 'मुख्य संस्था विवरण')}</span>
         </h3>
 
         <div className="space-y-4">
           <div className="fld mb-0">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">{t('Company Name', 'संस्था / गौशाला का नाम')}</label>
+            <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1.5">{t('Company Name', 'संस्था / गौशाला का नाम')}</label>
             <input 
               type="text" 
-              className="fi font-sans font-semibold text-slate-800" 
+              className="fi font-sans font-semibold text-[#0F172A]" 
               value={compName} 
               onChange={(e) => setCompName(e.target.value)} 
               placeholder={t('Enter Business Name', 'व्यवसाय का नाम डालें')}
@@ -510,15 +510,15 @@ export default function SettingsView({
       </div>
 
       {/* SECTION: FIREBASE CLOUD SYNC */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 flex items-center gap-2">
-          <Icon name="cloud" size={18} className="text-blue-600" />
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs">
+        <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
+          <Icon name="cloud" size={18} className="text-[#2563EB]" />
           <span>{t('Firebase Cloud Sync', 'फायरबेस क्लाउड सिंक')}</span>
         </h3>
 
-        <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-100 space-y-3 text-xs">
+        <div className="bg-[#F7F9FC]/50 rounded-xl p-4 border border-[#E2E8F0] space-y-3 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-slate-500 uppercase text-[9px] tracking-wide">
+            <span className="font-bold text-[#64748B] uppercase text-[9px] tracking-wide">
               {t('Sync Status', 'सिंक स्थिति')}:
             </span>
             <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 border ${
@@ -537,27 +537,27 @@ export default function SettingsView({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[10px] pt-2 border-t border-slate-100 font-semibold text-slate-500 leading-relaxed">
+          <div className="grid grid-cols-2 gap-2 text-[10px] pt-2 border-t border-[#E2E8F0] font-semibold text-[#64748B] leading-relaxed">
             <div>
-              <span className="block text-[8px] font-black text-slate-400 uppercase tracking-wider">{t('Project ID', 'प्रोजेक्ट आईडी')}</span>
-              <span className="font-mono text-slate-800">shree-kamdhenu-ems</span>
+              <span className="block text-[8px] font-black text-[#94A3B8] uppercase tracking-wider">{t('Project ID', 'प्रोजेक्ट आईडी')}</span>
+              <span className="font-mono text-[#0F172A]">shree-kamdhenu-ems</span>
             </div>
             <div>
-              <span className="block text-[8px] font-black text-slate-400 uppercase tracking-wider">{t('Firestore Path', 'फायरस्टोर पाथ')}</span>
-              <span className="font-mono text-slate-800">gaushala_configs/main</span>
+              <span className="block text-[8px] font-black text-[#94A3B8] uppercase tracking-wider">{t('Firestore Path', 'फायरस्टोर पाथ')}</span>
+              <span className="font-mono text-[#0F172A]">gaushala_configs/main</span>
             </div>
           </div>
 
-          <p className="text-[10px] text-slate-400 leading-normal pt-2.5 border-t border-slate-100">
+          <p className="text-[10px] text-[#94A3B8] leading-normal pt-2.5 border-t border-[#E2E8F0]">
             {t('All employee lists, punch sessions, and ledger changes are securely synced and persistent in real-time across your staff members\' devices.', 'सभी कर्मचारी सूची, दैनिक उपस्थिति और बहीखाता विवरण वास्तविक समय में सुरक्षित रूप से सिंक और बैकअप किए जाते हैं।')}
           </p>
         </div>
       </div>
 
       {/* SECTION: CHANGE PASSWORD */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 flex items-center gap-2">
-          <Icon name="vpn_key" size={18} className="text-blue-600" />
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs">
+        <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
+          <Icon name="vpn_key" size={18} className="text-[#2563EB]" />
           <span>{t('Change Password', 'पासवर्ड बदलें')}</span>
         </h3>
 
@@ -570,7 +570,7 @@ export default function SettingsView({
 
           <div className="space-y-3">
             <div className="fld mb-0">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">{t('Current Password', 'वर्तमान पासवर्ड')}</label>
+              <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">{t('Current Password', 'वर्तमान पासवर्ड')}</label>
               <input 
                 type="password" 
                 className="fi" 
@@ -581,7 +581,7 @@ export default function SettingsView({
             </div>
 
             <div className="fld mb-0">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">{t('New Password', 'नया पासवर्ड')}</label>
+              <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">{t('New Password', 'नया पासवर्ड')}</label>
               <input 
                 type="password" 
                 className="fi" 
@@ -592,7 +592,7 @@ export default function SettingsView({
             </div>
 
             <div className="fld mb-0">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">{t('Confirm New Password', 'नए पासवर्ड की पुष्टि करें')}</label>
+              <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">{t('Confirm New Password', 'नए पासवर्ड की पुष्टि करें')}</label>
               <input 
                 type="password" 
                 className="fi" 
@@ -614,9 +614,9 @@ export default function SettingsView({
       </div>
       
       {/* SECTION: PAID BY MANAGEMENT */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 flex items-center gap-2">
-          <Icon name="account_balance_wallet" size={18} className="text-blue-600" />
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs">
+        <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
+          <Icon name="account_balance_wallet" size={18} className="text-[#2563EB]" />
           <span>{t('Manage Paid By Options', 'भुगतानकर्ता (Paid By) सूची')}</span>
         </h3>
 
@@ -653,8 +653,8 @@ export default function SettingsView({
 
           <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
             {(company.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl p-3">
-                <span className="text-xs font-bold text-slate-800">{name}</span>
+              <div key={idx} className="flex items-center justify-between bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-3">
+                <span className="text-xs font-bold text-[#0F172A]">{name}</span>
                 <button
                   onClick={() => {
                     const paidByList = company.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale'];
@@ -682,29 +682,29 @@ export default function SettingsView({
 
 
       {/* SECTION 8: REPORTS & REPORTING (CSV & Data backups) */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-4">
-        <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-2">
-          <Icon name="database" size={18} className="text-blue-600" />
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs space-y-4">
+        <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider flex items-center gap-2">
+          <Icon name="database" size={18} className="text-[#2563EB]" />
           <span>{t('Reports & Data backups', 'रिपोर्ट एवं बैकअप बंडल')}</span>
         </h3>
 
         {/* Generate CSV */}
-        <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-100">
+        <div className="bg-[#F7F9FC]/50 rounded-xl p-4 border border-[#E2E8F0]">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">{t('Download CSV Ledger', 'मासिक बहीखाता (CSV)')}</span>
+            <span className="text-[10px] font-bold text-[#0F172A] uppercase tracking-wider">{t('Download CSV Ledger', 'मासिक बहीखाता (CSV)')}</span>
             <div className="flex items-center gap-2 text-xs">
               <button 
                 onClick={() => handleMonthShift(-1)}
-                className="w-7 h-7 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-bold cursor-pointer active:scale-90 transition shadow-3xs"
+                className="w-7 h-7 rounded-xl bg-white border border-[#E2E8F0] hover:bg-slate-100 flex items-center justify-center font-bold cursor-pointer active:scale-90 transition shadow-3xs"
               >
                 <Icon name="chevron_left" size={14} />
               </button>
-              <span className="font-bold text-slate-800 px-1 uppercase shrink-0 font-sans">
+              <span className="font-bold text-[#0F172A] px-1 uppercase shrink-0 font-sans">
                 {MN[navMonth]} {navYear}
               </span>
               <button 
                 onClick={() => handleMonthShift(1)}
-                className="w-7 h-7 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-bold cursor-pointer active:scale-90 transition shadow-3xs"
+                className="w-7 h-7 rounded-xl bg-white border border-[#E2E8F0] hover:bg-slate-100 flex items-center justify-center font-bold cursor-pointer active:scale-90 transition shadow-3xs"
               >
                 <Icon name="chevron_right" size={14} />
               </button>
@@ -725,7 +725,7 @@ export default function SettingsView({
             onClick={handleDownloadBackupUrl}
             className="h-10 btn bou font-bold text-xs"
           >
-            <Icon name="download" size={14} className="text-blue-600 mr-1.5" />
+            <Icon name="download" size={14} className="text-[#2563EB] mr-1.5" />
             <span>{t('Export JSON Backup', 'डेटा का बैकअप सहेजें')}</span>
           </button>
 
@@ -742,15 +742,15 @@ export default function SettingsView({
         <div className="grid grid-cols-2 gap-2.5 pt-1.5">
           <button
             onClick={() => onOpenAuditLogs && onOpenAuditLogs()}
-            className="h-10 border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
+            className="h-10 border border-[#E2E8F0] text-[#0F172A] bg-white hover:bg-[#F7F9FC] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
           >
-            <Icon name="history" size={14} className="text-blue-600" />
+            <Icon name="history" size={14} className="text-[#2563EB]" />
             <span>{t('View Audit Logs', 'ऑडिट लॉग्स देखें')}</span>
           </button>
 
           <button
             onClick={() => onOpenRecycleBin && onOpenRecycleBin()}
-            className="h-10 border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
+            className="h-10 border border-[#E2E8F0] text-[#0F172A] bg-white hover:bg-[#F7F9FC] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
           >
             <Icon name="delete_sweep" size={14} className="text-rose-500" />
             <span>{t('Recycle Bin', 'रीसायकल बिन')}</span>
@@ -767,15 +767,15 @@ export default function SettingsView({
 
       {/* SECURITY GATED AREA FOR DANGER ZONE */}
       {!isDangerZoneRevealed ? (
-        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 shadow-3xs text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-slate-100/50 flex items-center justify-center mx-auto border border-slate-100">
-            <Icon name="lock" className="w-5 h-5 text-slate-400" />
+        <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-6 shadow-3xs text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-slate-100/50 flex items-center justify-center mx-auto border border-[#E2E8F0]">
+            <Icon name="lock" className="w-5 h-5 text-[#94A3B8]" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">
               {t('Administrative Security Lock', 'प्रशासनिक सुरक्षा लॉक')}
             </h3>
-            <p className="text-[10px] text-slate-400 leading-relaxed mt-1.5 max-w-xs mx-auto font-medium">
+            <p className="text-[10px] text-[#94A3B8] leading-relaxed mt-1.5 max-w-xs mx-auto font-medium">
               {t('To protect corporate payroll, attendance and configurations, enter your Security PIN.', 'वेतन, उपस्थिति और मुख्य डेटाबेस को मिटाने हेतु सुरक्षा पिन दर्ज करें।')}
             </p>
           </div>
@@ -786,7 +786,7 @@ export default function SettingsView({
               setSecurityPin('');
               setShowPinModal(true);
             }}
-            className="px-5 py-3 bg-blue-50 border border-blue-105 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs inline-flex items-center gap-2 transition active:scale-[0.97] cursor-pointer"
+            className="px-5 py-3 bg-[#EFF6FF] border border-blue-105 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs inline-flex items-center gap-2 transition active:scale-[0.97] cursor-pointer"
           >
             <Icon name="lock" size={14} />
             <span>{t('Unlock Danger Zone', 'खतरनाक क्षेत्र अनलॉक करें')}</span>
@@ -865,14 +865,14 @@ export default function SettingsView({
           <div className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl pb-6 shadow-2xl animate-in slide-in-from-bottom duration-300 text-center space-y-4">
             <div className="m-hnd mt-3 mb-1 sm:hidden" />
             <div className="px-6 pt-4 space-y-4">
-              <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto border border-blue-100 shadow-3xs">
+              <div className="w-12 h-12 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center mx-auto border border-blue-100 shadow-3xs">
                 <Icon name="lock" size={20} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                <h4 className="text-sm font-bold text-[#0F172A] uppercase tracking-wider">
                   {t('Enter Security PIN', 'सुरक्षा पिन दर्ज करें')}
                 </h4>
-                <p className="text-[10px] text-slate-400 leading-relaxed mt-1.5 font-semibold">
+                <p className="text-[10px] text-[#94A3B8] leading-relaxed mt-1.5 font-semibold">
                   {t('Enter your 4-digit administrator security PIN to confirm access.', 'जारी रखने के लिए अपना 4-अंकीय एडमिन सुरक्षा पिन दर्ज करें।')}
                 </p>
               </div>
@@ -884,7 +884,7 @@ export default function SettingsView({
                   value={securityPin}
                   onChange={(e) => setSecurityPin(e.target.value.replace(/\D/g, ''))}
                   placeholder="• • • •"
-                  className="w-32 h-12 text-center text-xl font-extrabold tracking-widest border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none focus:ring-4 focus:ring-blue-500/8 transition"
+                  className="w-32 h-12 text-center text-xl font-extrabold tracking-widest border border-[#E2E8F0] rounded-xl bg-[#F7F9FC] focus:bg-white focus:border-blue-500 outline-none focus:ring-4 focus:ring-blue-500/8 transition"
                 />
                 {pinError && (
                   <p className="text-[10px] text-red-600 font-bold leading-none">{pinError}</p>
@@ -921,10 +921,10 @@ export default function SettingsView({
               <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
                 <Icon name="warning" size={24} />
               </div>
-              <h4 className="text-sm font-black text-slate-900 text-center uppercase tracking-wide">
+              <h4 className="text-sm font-black text-[#0F172A] text-center uppercase tracking-wide">
                 {confirmModal.title}
               </h4>
-              <p className="text-xs text-slate-500 text-center leading-relaxed font-semibold">
+              <p className="text-xs text-[#64748B] text-center leading-relaxed font-semibold">
                 {confirmModal.message}
               </p>
               <div className="flex gap-3 text-xs pt-2">

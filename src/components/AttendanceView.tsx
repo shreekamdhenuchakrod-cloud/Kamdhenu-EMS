@@ -370,25 +370,25 @@ export default function AttendanceView({
         <div className="flex items-center gap-3">
           <button
             onClick={onGoBack}
-            className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-205 text-slate-550 flex items-center justify-center hover:bg-slate-100 active:scale-[0.97] transition cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-[#F7F9FC] border border-slate-205 text-slate-550 flex items-center justify-center hover:bg-slate-100 active:scale-[0.97] transition cursor-pointer"
           >
             <Icon name="arrow_back" size={16} />
           </button>
-          <h2 className="text-sm font-bold text-slate-900 leading-none">{t('Attendance', 'उपस्थिति')}</h2>
+          <h2 className="text-sm font-bold text-[#0F172A] leading-none">{t('Attendance', 'उपस्थिति')}</h2>
         </div>
         <button
           onClick={() => {
             setAttDate(new Date().toISOString().split('T')[0]);
             setExpandedId(null);
           }}
-          className="text-xs font-semibold text-blue-600 hover:text-blue-750 transition cursor-pointer"
+          className="text-xs font-semibold text-[#2563EB] hover:text-blue-750 transition cursor-pointer"
         >
           {t('Today', 'आज')}
         </button>
       </div>
 
       {/* Date Navigation Block with fixed full card opacity click overlay */}
-      <div className="relative bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs mb-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 transition-all duration-200">
+      <div className="relative bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs mb-4 flex items-center justify-between cursor-pointer hover:bg-[#F7F9FC]/50 transition-all duration-200">
         
         {/* Invisible absolute overlay datepicker matching container dimensions perfectly */}
         <input
@@ -410,12 +410,12 @@ export default function AttendanceView({
         />
 
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50/70 border border-blue-150 flex items-center justify-center text-blue-605 shrink-0 shadow-3xs">
+          <div className="w-10 h-10 rounded-xl bg-[#EFF6FF]/70 border border-blue-150 flex items-center justify-center text-blue-605 shrink-0 shadow-3xs">
             <Icon name="calendar_today" size={18} />
           </div>
           <div>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block leading-none">{t('Active Date', 'पंचांग तिथि')}</span>
-            <span className="text-xs font-bold text-slate-900 block mt-1.5 leading-none font-sans">
+            <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider block leading-none">{t('Active Date', 'पंचांग तिथि')}</span>
+            <span className="text-xs font-bold text-[#0F172A] block mt-1.5 leading-none font-sans">
               {attDate === new Date().toISOString().split('T')[0] ? t('Today', 'आज') : formatHeaderDate(attDate)}
             </span>
           </div>
@@ -429,7 +429,7 @@ export default function AttendanceView({
               e.preventDefault();
               handleDayShift(-1);
             }}
-            className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-205 text-slate-600 flex items-center justify-center hover:bg-slate-100 active:scale-[0.95] transition cursor-pointer"
+            className="w-8 h-8 rounded-lg bg-[#F7F9FC] border border-slate-205 text-[#64748B] flex items-center justify-center hover:bg-slate-100 active:scale-[0.95] transition cursor-pointer"
           >
             <Icon name="chevron_left" size={16} />
           </button>
@@ -441,7 +441,7 @@ export default function AttendanceView({
             }}
             disabled={attDate === new Date().toISOString().split('T')[0]}
             className={`w-8 h-8 rounded-lg text-slate-650 flex items-center justify-center border border-slate-205 active:scale-[0.95] transition cursor-pointer ${
-              attDate === new Date().toISOString().split('T')[0] ? 'opacity-30 cursor-not-allowed bg-slate-100' : 'bg-slate-50 hover:bg-slate-100'
+              attDate === new Date().toISOString().split('T')[0] ? 'opacity-30 cursor-not-allowed bg-slate-100' : 'bg-[#F7F9FC] hover:bg-slate-100'
             }`}
           >
             <Icon name="chevron_right" size={16} />
@@ -459,9 +459,9 @@ export default function AttendanceView({
           <span className="text-[9px] text-rose-700/85 font-black uppercase tracking-wider block leading-none">{t('Absent', 'अनुपस्थित')}</span>
           <span className="text-sm font-black text-rose-700 mt-1 block leading-none font-mono">{statsAbsent}</span>
         </div>
-        <div className="bg-slate-50 border border-slate-200/50 rounded-xl p-3 flex flex-col justify-between h-[64px] shadow-3xs">
-          <span className="text-[9px] text-slate-500 font-black uppercase tracking-wider block leading-none">{t('Unmarked', 'बाकी')}</span>
-          <span className="text-sm font-black text-slate-600 mt-1 block leading-none font-mono">{statsUnmarked}</span>
+        <div className="bg-[#F7F9FC] border border-[#E2E8F0]/50 rounded-xl p-3 flex flex-col justify-between h-[64px] shadow-3xs">
+          <span className="text-[9px] text-[#64748B] font-black uppercase tracking-wider block leading-none">{t('Unmarked', 'बाकी')}</span>
+          <span className="text-sm font-black text-[#64748B] mt-1 block leading-none font-mono">{statsUnmarked}</span>
         </div>
       </div>
 
@@ -471,7 +471,7 @@ export default function AttendanceView({
         {/* Hourly Category Block */}
         {hourlyEmployees.length > 0 && (
           <div className="space-y-2">
-            <div className="text-[9px] font-black text-slate-400 tracking-widest uppercase pl-1">
+            <div className="text-[9px] font-black text-[#94A3B8] tracking-widest uppercase pl-1">
               HOURLY ({hourlyEmployees.length})
             </div>
             {hourlyEmployees.map(emp => {
@@ -486,7 +486,7 @@ export default function AttendanceView({
                 <div key={emp.id} className="bg-white border border-slate-150 rounded-2xl p-4 space-y-4 shadow-2xs hover:border-slate-250 transition-all duration-200">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50/70 border border-blue-150 flex items-center justify-center font-bold text-blue-600 text-sm uppercase overflow-hidden shrink-0 shadow-3xs">
+                      <div className="w-10 h-10 rounded-xl bg-[#EFF6FF]/70 border border-blue-150 flex items-center justify-center font-bold text-[#2563EB] text-sm uppercase overflow-hidden shrink-0 shadow-3xs">
                         {emp.pic ? (
                           <img referrerPolicy="no-referrer" src={emp.pic} alt={emp.name} className="w-full h-full object-cover" />
                         ) : (
@@ -494,10 +494,10 @@ export default function AttendanceView({
                         )}
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900 leading-tight">{emp.name}</div>
+                        <div className="text-xs font-bold text-[#0F172A] leading-tight">{emp.name}</div>
                       </div>
                     </div>
-                    <div className="text-right text-[11px] font-bold text-slate-700 font-mono">
+                    <div className="text-right text-[11px] font-bold text-[#0F172A] font-mono">
                       {(() => {
                         const empOt = db.overtimeEntries.find(o => o.employeeId === emp.id && o.date === attDate);
                         const otHrs = empOt ? empOt.hours : 0;
@@ -523,7 +523,7 @@ export default function AttendanceView({
                       className={`h-10 rounded-xl text-xs font-bold border flex-1 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.97] ${
                         session_0.in
                           ? 'bg-emerald-600 border-emerald-600 text-white font-semibold shadow-3xs'
-                          : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50 hover:border-slate-350'
+                          : 'bg-white border-[#E2E8F0] text-slate-650 hover:bg-[#F7F9FC] hover:border-slate-350'
                       }`}
                     >
                       <span>{session_0.in ? formatTimeForDisplay(session_0.in) : t('Punch In', 'पंच इन')}</span>
@@ -533,7 +533,7 @@ export default function AttendanceView({
                       className={`h-10 rounded-xl text-xs font-bold border flex-1 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.97] ${
                         session_0.out
                           ? 'bg-slate-900 border-slate-900 text-white font-semibold shadow-3xs'
-                          : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50 hover:border-slate-350'
+                          : 'bg-white border-[#E2E8F0] text-slate-650 hover:bg-[#F7F9FC] hover:border-slate-350'
                       }`}
                     >
                       <span>{session_0.out ? formatTimeForDisplay(session_0.out) : t('Punch Out', 'पंच आउट')}</span>
@@ -541,7 +541,7 @@ export default function AttendanceView({
 
                     <button
                       onClick={() => handleClearRecord(emp.id)}
-                      className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:bg-rose-50 hover:border-red-100 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
+                      className="w-10 h-10 rounded-xl border border-[#E2E8F0] bg-white text-[#94A3B8] hover:text-red-500 hover:bg-rose-50 hover:border-red-100 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
                       title={t('Clear Attendance Record', 'उपस्थिति हटाएं')}
                     >
                       <Icon name="delete" size={16} />
@@ -550,7 +550,7 @@ export default function AttendanceView({
                     <button
                       onClick={() => setExpandedId(isEmpExpanded ? null : emp.id)}
                       className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 cursor-pointer transition-all active:scale-[0.95] ${
-                        isEmpExpanded ? 'bg-blue-600 border-blue-600 text-white rotate-180' : 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100/50'
+                        isEmpExpanded ? 'bg-[#2563EB] border-[#2563EB] text-white rotate-180' : 'bg-[#EFF6FF] border-blue-200 text-[#2563EB] hover:bg-blue-100/50'
                       }`}
                     >
                       <Icon name="keyboard_arrow_down" size={16} />
@@ -559,10 +559,10 @@ export default function AttendanceView({
 
                   {/* Expanded Sub-drawer: Extra punch slots & OT/Fine Buttons */}
                   {isEmpExpanded && (
-                    <div className="bg-slate-50/60 p-3 rounded-2xl space-y-3 border border-slate-100/80 animate-in slide-in-from-top-2 duration-200">
+                    <div className="bg-[#F7F9FC]/60 p-3 rounded-2xl space-y-3 border border-[#E2E8F0]/80 animate-in slide-in-from-top-2 duration-200">
                       <button
                         onClick={() => addPunchSessionRow(emp.id)}
-                        className="w-full h-9 border border-blue-200 text-blue-600 bg-white hover:bg-blue-50/50 border-dashed rounded-xl flex items-center justify-center font-semibold text-xs cursor-pointer gap-1.5 transition-all active:scale-[0.98]"
+                        className="w-full h-9 border border-blue-200 text-[#2563EB] bg-white hover:bg-[#EFF6FF]/50 border-dashed rounded-xl flex items-center justify-center font-semibold text-xs cursor-pointer gap-1.5 transition-all active:scale-[0.98]"
                       >
                         <Icon name="add" size={14} />
                         <span>{t('Add Punch Section', 'नया पंच-इन स्लॉट जोड़ें')}</span>
@@ -570,18 +570,18 @@ export default function AttendanceView({
 
                       {/* Display subsequent shift slots */}
                       {sessions.length > 1 && (
-                        <div className="space-y-2 pt-2 border-t border-slate-200/60">
+                        <div className="space-y-2 pt-2 border-t border-[#E2E8F0]/60">
                           {sessions.slice(1).map((s, rawIdx) => {
                             const sIdx = rawIdx + 1;
                             return (
-                              <div key={sIdx} className="flex items-center gap-2 bg-white p-1.5 border border-slate-200 rounded-xl">
-                                <div className="w-6 h-6 rounded-lg bg-slate-100 text-slate-500 font-bold text-xs flex items-center justify-center">
+                              <div key={sIdx} className="flex items-center gap-2 bg-white p-1.5 border border-[#E2E8F0] rounded-xl">
+                                <div className="w-6 h-6 rounded-lg bg-slate-100 text-[#64748B] font-bold text-xs flex items-center justify-center">
                                   {sIdx + 1}
                                 </div>
                                 <button
                                   onClick={() => triggerTimePicker(emp.id, sIdx, 'in', s.in)}
                                   className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
-                                    s.in ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-200 text-slate-600'
+                                    s.in ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-[#E2E8F0] text-[#64748B]'
                                   }`}
                                 >
                                   <span>{s.in ? formatTimeForDisplay(s.in) : t('In Time', 'पंच इन')}</span>
@@ -589,14 +589,14 @@ export default function AttendanceView({
                                 <button
                                   onClick={() => triggerTimePicker(emp.id, sIdx, 'out', s.out)}
                                   className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
-                                    s.out ? 'bg-slate-800 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-550'
+                                    s.out ? 'bg-slate-800 border-slate-800 text-white' : 'bg-white border-[#E2E8F0] text-slate-550'
                                   }`}
                                 >
                                   <span>{s.out ? formatTimeForDisplay(s.out) : t('Out Time', 'पंच आउट')}</span>
                                 </button>
                                 <button
                                   onClick={() => removePunchSessionRow(emp.id, sIdx)}
-                                  className="w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:bg-rose-50 flex items-center justify-center shrink-0 transition"
+                                  className="w-9 h-9 rounded-lg border border-[#E2E8F0] bg-white text-[#94A3B8] hover:text-red-500 hover:bg-rose-50 flex items-center justify-center shrink-0 transition"
                                 >
                                   <Icon name="delete" size={14} />
                                 </button>
@@ -607,7 +607,7 @@ export default function AttendanceView({
                       )}
 
                       {/* Overtime & Late Fine Buttons opening dedicated mockup records */}
-                      <div className="flex gap-2 pt-2 border-t border-slate-200/50">
+                      <div className="flex gap-2 pt-2 border-t border-[#E2E8F0]/50">
                         {emp.type !== 'Hourly' && (
                           <button
                           onClick={() => {
@@ -623,7 +623,7 @@ export default function AttendanceView({
                               description: existing ? existing.description : 'Overtime'
                             });
                           }}
-                          className="flex-1 h-9 rounded-xl border border-blue-200 text-blue-605 bg-blue-50/50 hover:bg-blue-100/50 font-bold text-xs flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
+                          className="flex-1 h-9 rounded-xl border border-blue-200 text-blue-605 bg-[#EFF6FF]/50 hover:bg-blue-100/50 font-bold text-xs flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
                         >
                           <Icon name="schedule" size={14} />
                           <span>{t('+ Overtime', '+ ओवरटाइम')}</span>
@@ -660,7 +660,7 @@ export default function AttendanceView({
         {/* Daily Category Block */}
         {dailyEmployees.length > 0 && (
           <div className="space-y-2">
-            <div className="text-[9px] font-black text-slate-400 tracking-widest uppercase pl-1">
+            <div className="text-[9px] font-black text-[#94A3B8] tracking-widest uppercase pl-1">
               DAILY ({dailyEmployees.length})
             </div>
             {dailyEmployees.map(emp => {
@@ -671,7 +671,7 @@ export default function AttendanceView({
                 <div key={emp.id} className="bg-white border border-slate-150 rounded-2xl p-4 space-y-4 shadow-2xs hover:border-slate-250 transition-all duration-200">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50/70 border border-blue-150 flex items-center justify-center font-bold text-blue-600 text-sm uppercase overflow-hidden shrink-0 shadow-3xs">
+                      <div className="w-10 h-10 rounded-xl bg-[#EFF6FF]/70 border border-blue-150 flex items-center justify-center font-bold text-[#2563EB] text-sm uppercase overflow-hidden shrink-0 shadow-3xs">
                         {emp.pic ? (
                           <img referrerPolicy="no-referrer" src={emp.pic} alt={emp.name} className="w-full h-full object-cover" />
                         ) : (
@@ -679,7 +679,7 @@ export default function AttendanceView({
                         )}
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900 leading-tight">{emp.name}</div>
+                        <div className="text-xs font-bold text-[#0F172A] leading-tight">{emp.name}</div>
                       </div>
                     </div>
                     <div className="text-right font-mono">
@@ -701,7 +701,7 @@ export default function AttendanceView({
                             rec.status === 'Present' ? 'text-emerald-700' :
                             rec.status === 'Half Day' ? 'text-amber-700' :
                             rec.status === 'Absent' ? 'text-rose-700' :
-                            'text-slate-400'
+                            'text-[#94A3B8]'
                           }`}>
                             {statusText}{otStr}{fineStr} {(otHrs > 0 || fineHrs > 0) ? 'Hrs' : ''}
                           </div>
@@ -716,7 +716,7 @@ export default function AttendanceView({
                       const isSel = rec.status === (style === 'Half Day' ? 'Half Day' : style);
                       const displayTitle = style === 'Present' ? t('Present', 'उपस्थित') : style === 'Half Day' ? t('HD', 'आधा दिन') : t('Absent', 'अनुपस्थित');
                       
-                      let selectStyle = 'bg-white border-slate-205 text-slate-650 hover:bg-slate-50 hover:border-slate-350';
+                      let selectStyle = 'bg-white border-slate-205 text-slate-650 hover:bg-[#F7F9FC] hover:border-slate-350';
                       if (isSel) {
                         if (style === 'Present') selectStyle = 'bg-emerald-50 border-emerald-500 text-emerald-700 font-bold shadow-3xs';
                         else if (style === 'Half Day') selectStyle = 'bg-amber-50 border-amber-500 text-amber-700 font-bold shadow-3xs';
@@ -736,7 +736,7 @@ export default function AttendanceView({
 
                     <button
                       onClick={() => handleClearRecord(emp.id)}
-                      className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
+                      className="w-10 h-10 rounded-xl border border-[#E2E8F0] bg-white text-[#94A3B8] hover:text-red-500 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
                     >
                       <Icon name="delete" size={16} />
                     </button>
@@ -744,7 +744,7 @@ export default function AttendanceView({
                     <button
                       onClick={() => setExpandedId(isEmpExpanded ? null : emp.id)}
                       className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 cursor-pointer transition-all active:scale-[0.95] ${
-                        isEmpExpanded ? 'bg-blue-600 border-blue-600 text-white rotate-180' : 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100/50'
+                        isEmpExpanded ? 'bg-[#2563EB] border-[#2563EB] text-white rotate-180' : 'bg-[#EFF6FF] border-blue-200 text-[#2563EB] hover:bg-blue-100/50'
                       }`}
                     >
                       <Icon name="keyboard_arrow_down" size={16} />
@@ -753,7 +753,7 @@ export default function AttendanceView({
 
                   {/* Expanded Sub-drawer */}
                   {isEmpExpanded && (
-                    <div className="bg-slate-50/60 p-3 rounded-2xl flex gap-2 border border-slate-100 animate-in slide-in-from-top-2 duration-200">
+                    <div className="bg-[#F7F9FC]/60 p-3 rounded-2xl flex gap-2 border border-[#E2E8F0] animate-in slide-in-from-top-2 duration-200">
                       {emp.type !== 'Hourly' && (
                         <button
                         onClick={() => {
@@ -769,7 +769,7 @@ export default function AttendanceView({
                             description: existing ? existing.description : 'Overtime'
                           });
                         }}
-                        className="flex-1 h-9 rounded-xl border border-blue-200 text-blue-605 bg-blue-50/50 hover:bg-blue-100/50 font-bold text-xs flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
+                        className="flex-1 h-9 rounded-xl border border-blue-200 text-blue-605 bg-[#EFF6FF]/50 hover:bg-blue-100/50 font-bold text-xs flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
                       >
                         <Icon name="schedule" size={14} />
                         <span>{t('+ Overtime', '+ overtime')}</span>
@@ -805,7 +805,7 @@ export default function AttendanceView({
         {/* Monthly Category Block */}
         {monthlyEmployees.length > 0 && (
           <div className="space-y-2">
-            <div className="text-[9px] font-black text-slate-400 tracking-widest uppercase pl-1">
+            <div className="text-[9px] font-black text-[#94A3B8] tracking-widest uppercase pl-1">
               MONTHLY ({monthlyEmployees.length})
             </div>
             {monthlyEmployees.map(emp => {
@@ -816,7 +816,7 @@ export default function AttendanceView({
                 <div key={emp.id} className="bg-white border border-slate-150 rounded-2xl p-4 space-y-4 shadow-2xs hover:border-slate-250 transition-all duration-200">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50/70 border border-blue-150 flex items-center justify-center font-bold text-blue-600 text-sm uppercase overflow-hidden shrink-0 shadow-3xs">
+                      <div className="w-10 h-10 rounded-xl bg-[#EFF6FF]/70 border border-blue-150 flex items-center justify-center font-bold text-[#2563EB] text-sm uppercase overflow-hidden shrink-0 shadow-3xs">
                         {emp.pic ? (
                           <img referrerPolicy="no-referrer" src={emp.pic} alt={emp.name} className="w-full h-full object-cover" />
                         ) : (
@@ -824,7 +824,7 @@ export default function AttendanceView({
                         )}
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900 leading-tight">{emp.name}</div>
+                        <div className="text-xs font-bold text-[#0F172A] leading-tight">{emp.name}</div>
                       </div>
                     </div>
                     <div className="text-right font-mono">
@@ -846,7 +846,7 @@ export default function AttendanceView({
                             rec.status === 'Present' ? 'text-emerald-700' :
                             rec.status === 'Half Day' ? 'text-amber-700' :
                             rec.status === 'Absent' ? 'text-rose-700' :
-                            'text-slate-400'
+                            'text-[#94A3B8]'
                           }`}>
                             {statusText}{otStr}{fineStr} {(otHrs > 0 || fineHrs > 0) ? 'Hrs' : ''}
                           </div>
@@ -861,7 +861,7 @@ export default function AttendanceView({
                       const isSel = rec.status === (style === 'Half Day' ? 'Half Day' : style);
                       const displayTitle = style === 'Present' ? t('Present', 'उपस्थित') : style === 'Half Day' ? t('HD', 'आधा दिन') : t('Absent', 'अनुपस्थित');
                       
-                      let selectStyle = 'bg-white border-slate-205 text-slate-650 hover:bg-slate-50 hover:border-slate-350';
+                      let selectStyle = 'bg-white border-slate-205 text-slate-650 hover:bg-[#F7F9FC] hover:border-slate-350';
                       if (isSel) {
                         if (style === 'Present') selectStyle = 'bg-emerald-50 border-emerald-500 text-emerald-700 font-bold shadow-3xs';
                         else if (style === 'Half Day') selectStyle = 'bg-amber-50 border-amber-500 text-amber-700 font-bold shadow-3xs';
@@ -881,7 +881,7 @@ export default function AttendanceView({
 
                     <button
                       onClick={() => handleClearRecord(emp.id)}
-                      className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
+                      className="w-10 h-10 rounded-xl border border-[#E2E8F0] bg-white text-[#94A3B8] hover:text-red-500 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
                     >
                       <Icon name="delete" size={16} />
                     </button>
@@ -889,7 +889,7 @@ export default function AttendanceView({
                     <button
                       onClick={() => setExpandedId(isEmpExpanded ? null : emp.id)}
                       className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 cursor-pointer transition-all active:scale-[0.95] ${
-                        isEmpExpanded ? 'bg-blue-600 border-blue-600 text-white rotate-180' : 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100/50'
+                        isEmpExpanded ? 'bg-[#2563EB] border-[#2563EB] text-white rotate-180' : 'bg-[#EFF6FF] border-blue-200 text-[#2563EB] hover:bg-blue-100/50'
                       }`}
                     >
                       <Icon name="keyboard_arrow_down" size={16} />
@@ -898,7 +898,7 @@ export default function AttendanceView({
 
                   {/* Expanded Sub-drawer */}
                   {isEmpExpanded && (
-                    <div className="bg-slate-50/60 p-3 rounded-2xl flex gap-2 border border-slate-100 animate-in slide-in-from-top-2 duration-200">
+                    <div className="bg-[#F7F9FC]/60 p-3 rounded-2xl flex gap-2 border border-[#E2E8F0] animate-in slide-in-from-top-2 duration-200">
                       {emp.type !== 'Hourly' && (
                         <button
                         onClick={() => {
@@ -914,7 +914,7 @@ export default function AttendanceView({
                             description: existing ? existing.description : 'Overtime'
                           });
                         }}
-                        className="flex-1 h-9 rounded-xl border border-blue-200 text-blue-605 bg-blue-50/50 hover:bg-blue-100/50 font-bold text-xs flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
+                        className="flex-1 h-9 rounded-xl border border-blue-200 text-blue-605 bg-[#EFF6FF]/50 hover:bg-blue-100/50 font-bold text-xs flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
                       >
                         <Icon name="schedule" size={14} />
                         <span>{t('+ Overtime', '+ overtime')}</span>
@@ -968,32 +968,32 @@ export default function AttendanceView({
 
         return (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-            <div className="bg-white/95 border border-slate-100 rounded-3xl w-full max-w-[340px] p-5 shadow-2xl relative space-y-4 max-h-[95vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+            <div className="bg-white/95 border border-[#E2E8F0] rounded-3xl w-full max-w-[340px] p-5 shadow-2xl relative space-y-4 max-h-[95vh] overflow-y-auto animate-in zoom-in-95 duration-200">
               
               {/* Header */}
-              <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                <span className="text-xs font-bold text-slate-900 tracking-wider uppercase">
+              <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
+                <span className="text-xs font-bold text-[#0F172A] tracking-wider uppercase">
                   {t('OVERTIME (OT) RECORD', 'ओवरटाइम (OT) रिकॉर्ड')}
                 </span>
                 <button
                   onClick={() => setOtForm(null)}
-                  className="text-slate-400 hover:text-slate-600 font-bold text-sm transition cursor-pointer"
+                  className="text-[#94A3B8] hover:text-[#64748B] font-bold text-sm transition cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
 
               {/* Employee Name indicator */}
-              <div className="bg-slate-50 border border-slate-200/50 rounded-xl px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('STAFF', 'कर्मचारी')}</span>
-                <span className="text-xs font-bold text-slate-900">{otForm.employeeName}</span>
+              <div className="bg-[#F7F9FC] border border-[#E2E8F0]/50 rounded-xl px-3.5 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">{t('STAFF', 'कर्मचारी')}</span>
+                <span className="text-xs font-bold text-[#0F172A]">{otForm.employeeName}</span>
               </div>
 
               {/* Date picker */}
               <div className="space-y-1.5 relative">
-                <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('DATE *', 'तारीख *')}</label>
-                <div className="relative border border-slate-200 rounded-xl px-3 h-10 bg-slate-50/50 flex justify-between items-center cursor-pointer">
-                  <span className="text-xs font-bold text-slate-900 font-sans">{otForm.date}</span>
+                <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('DATE *', 'तारीख *')}</label>
+                <div className="relative border border-[#E2E8F0] rounded-xl px-3 h-10 bg-[#F7F9FC]/50 flex justify-between items-center cursor-pointer">
+                  <span className="text-xs font-bold text-[#0F172A] font-sans">{otForm.date}</span>
                   <Icon name="calendar_today" size={14} className="text-slate-450" />
                   <input
                     type="date"
@@ -1006,7 +1006,7 @@ export default function AttendanceView({
 
               {/* Duration picker inline */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('OVERTIME DURATION *', 'ओवरटाइम अवधि *')}</label>
+                <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('OVERTIME DURATION *', 'ओवरटाइम अवधि *')}</label>
                 <InlineDurationPicker 
                   hours={otH}
                   minutes={otM}
@@ -1019,15 +1019,15 @@ export default function AttendanceView({
 
               {/* Calculation Type Toggle */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('CALCULATION TYPE *', 'गणना प्रकार *')}</label>
+                <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('CALCULATION TYPE *', 'गणना प्रकार *')}</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setOtForm({ ...otForm, calcType: 'HourlyRate' })}
                     className={`h-9 rounded-xl text-xs font-semibold border flex items-center justify-center transition-all cursor-pointer ${
                       otForm.calcType === 'HourlyRate'
-                        ? 'bg-blue-600 border-blue-600 text-white shadow-3xs'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-[#2563EB] border-[#2563EB] text-white shadow-3xs'
+                        : 'bg-white border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F9FC]'
                     }`}
                   >
                     {t('Hourly Rate', 'घंटा दर')}
@@ -1037,8 +1037,8 @@ export default function AttendanceView({
                     onClick={() => setOtForm({ ...otForm, calcType: 'CustomAmount' })}
                     className={`h-9 rounded-xl text-xs font-semibold border flex items-center justify-center transition-all cursor-pointer ${
                       otForm.calcType === 'CustomAmount'
-                        ? 'bg-blue-600 border-blue-600 text-white shadow-3xs'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-[#2563EB] border-[#2563EB] text-white shadow-3xs'
+                        : 'bg-white border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F9FC]'
                     }`}
                   >
                     {t('Custom Cash', 'कस्टम नगद')}
@@ -1049,38 +1049,38 @@ export default function AttendanceView({
               {/* Custom Cash Amount field */}
               {otForm.calcType === 'CustomAmount' && (
                 <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-150">
-                  <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('CUSTOM AMOUNT (₹) *', 'कस्टम राशि (₹) *')}</label>
+                  <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('CUSTOM AMOUNT (₹) *', 'कस्टम राशि (₹) *')}</label>
                   <input
                     type="number"
                     value={otForm.amount}
                     onChange={(e) => setOtForm({ ...otForm, amount: e.target.value })}
                     placeholder="e.g. 500"
-                    className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 bg-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/8 transition-all font-sans"
+                    className="w-full h-10 px-3 border border-[#E2E8F0] rounded-xl text-xs font-medium text-[#0F172A] bg-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/8 transition-all font-sans"
                   />
                 </div>
               )}
 
               {/* Description Form Group */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('DESCRIPTION', 'विवरण')}</label>
+                <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('DESCRIPTION', 'विवरण')}</label>
                 <input
                   type="text"
                   value={otForm.description}
                   onChange={(e) => setOtForm({ ...otForm, description: e.target.value })}
                   placeholder="e.g. Extra evening shift"
-                  className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 bg-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/8 transition-all font-sans"
+                  className="w-full h-10 px-3 border border-[#E2E8F0] rounded-xl text-xs font-medium text-[#0F172A] bg-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/8 transition-all font-sans"
                 />
               </div>
 
               {/* Live Preview Card */}
-              <div className="bg-blue-50/45 border border-blue-100/60 rounded-2xl p-3 space-y-1.5 my-1">
+              <div className="bg-[#EFF6FF]/45 border border-blue-100/60 rounded-2xl p-3 space-y-1.5 my-1">
                 <div className="flex justify-between items-center text-[10px] font-black text-blue-805 tracking-wider">
                   <span>{t('LIVE PREVIEW', 'लाइव समीक्षा')}</span>
                   <span>₹{otHourlyRate.toFixed(2)}/hr</span>
                 </div>
-                <div className="flex justify-between items-center text-[11px] text-slate-600">
+                <div className="flex justify-between items-center text-[11px] text-[#64748B]">
                   <span>{t('Overtime Duration :', 'ओवरटाइम अवधि :')}</span>
-                  <span className="font-semibold text-slate-800 font-sans">{otH}h {otM}m</span>
+                  <span className="font-semibold text-[#0F172A] font-sans">{otH}h {otM}m</span>
                 </div>
                 <div className="h-[0.5px] bg-blue-100/50 my-1"></div>
                 <div className="flex justify-between items-center text-[11px] font-bold pt-0.5">
@@ -1093,13 +1093,13 @@ export default function AttendanceView({
               <div className="flex gap-2.5 pt-1 text-xs font-semibold">
                 <button
                   onClick={() => setOtForm(null)}
-                  className="flex-grow h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 font-bold active:scale-[0.97] transition-all cursor-pointer"
+                  className="flex-grow h-10 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F7F9FC] text-slate-650 font-bold active:scale-[0.97] transition-all cursor-pointer"
                 >
                   {t('Cancel', 'रद्द करें')}
                 </button>
                 <button
                   onClick={handleSaveOt}
-                  className="flex-grow h-10 rounded-xl bg-blue-600 hover:bg-blue-750 text-white font-bold active:scale-[0.97] transition-all cursor-pointer shadow-xs"
+                  className="flex-grow h-10 rounded-xl bg-[#2563EB] hover:bg-blue-750 text-white font-bold active:scale-[0.97] transition-all cursor-pointer shadow-xs"
                 >
                   {t('Save', 'सुरक्षित करें')}
                 </button>
@@ -1123,32 +1123,32 @@ export default function AttendanceView({
 
         return (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-            <div className="bg-white/95 border border-slate-100 rounded-3xl w-full max-w-[340px] p-5 shadow-2xl relative space-y-4 max-h-[95vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+            <div className="bg-white/95 border border-[#E2E8F0] rounded-3xl w-full max-w-[340px] p-5 shadow-2xl relative space-y-4 max-h-[95vh] overflow-y-auto animate-in zoom-in-95 duration-200">
               
               {/* Header */}
-              <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
                 <span className="text-xs font-bold text-rose-800 tracking-wider uppercase">
                   {t('LATE FINE RECORD', 'लेट फाइन रिकॉर्ड')}
                 </span>
                 <button
                   onClick={() => setFineForm(null)}
-                  className="text-slate-400 hover:text-slate-600 font-bold text-sm transition cursor-pointer"
+                  className="text-[#94A3B8] hover:text-[#64748B] font-bold text-sm transition cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
 
               {/* Employee Name Indicator */}
-              <div className="bg-slate-50 border border-slate-200/50 rounded-xl px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('STAFF', 'कर्मचारी')}</span>
-                <span className="text-xs font-bold text-slate-900">{fineForm.employeeName}</span>
+              <div className="bg-[#F7F9FC] border border-[#E2E8F0]/50 rounded-xl px-3.5 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">{t('STAFF', 'कर्मचारी')}</span>
+                <span className="text-xs font-bold text-[#0F172A]">{fineForm.employeeName}</span>
               </div>
 
               {/* Date picker */}
               <div className="space-y-1.5 relative">
-                <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('DATE *', 'तारीख *')}</label>
-                <div className="relative border border-slate-200 rounded-xl px-3 h-10 bg-slate-50/50 flex justify-between items-center cursor-pointer">
-                  <span className="text-xs font-bold text-slate-900 font-sans">{fineForm.date}</span>
+                <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('DATE *', 'तारीख *')}</label>
+                <div className="relative border border-[#E2E8F0] rounded-xl px-3 h-10 bg-[#F7F9FC]/50 flex justify-between items-center cursor-pointer">
+                  <span className="text-xs font-bold text-[#0F172A] font-sans">{fineForm.date}</span>
                   <Icon name="calendar_today" size={14} className="text-slate-450" />
                   <input
                     type="date"
@@ -1161,7 +1161,7 @@ export default function AttendanceView({
 
               {/* Late Hours Picker */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('LATE DURATION *', 'देरी अवधि *')}</label>
+                <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('LATE DURATION *', 'देरी अवधि *')}</label>
                 <InlineDurationPicker 
                   hours={lfH}
                   minutes={lfM}
@@ -1174,7 +1174,7 @@ export default function AttendanceView({
 
               {/* Calculation Type Toggle */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('CALCULATION TYPE *', 'गणना प्रकार *')}</label>
+                <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('CALCULATION TYPE *', 'गणना प्रकार *')}</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -1182,7 +1182,7 @@ export default function AttendanceView({
                     className={`h-9 rounded-xl text-xs font-semibold border flex items-center justify-center transition-all cursor-pointer ${
                       fineForm.calcType === 'HourlyRate'
                         ? 'bg-rose-600 border-rose-600 text-white shadow-3xs'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                        : 'bg-white border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F9FC]'
                     }`}
                   >
                     {t('Hourly Rate', 'घंटा दर')}
@@ -1193,7 +1193,7 @@ export default function AttendanceView({
                     className={`h-9 rounded-xl text-xs font-semibold border flex items-center justify-center transition-all cursor-pointer ${
                       fineForm.calcType === 'CustomAmount'
                         ? 'bg-rose-600 border-rose-600 text-white shadow-3xs'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                        : 'bg-white border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F9FC]'
                     }`}
                   >
                     {t('Custom Cash', 'कस्टम नगद')}
@@ -1204,26 +1204,26 @@ export default function AttendanceView({
               {/* Custom Cash Amount field */}
               {fineForm.calcType === 'CustomAmount' && (
                 <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-150">
-                  <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('CUSTOM AMOUNT (₹) *', 'कस्टम राशि (₹) *')}</label>
+                  <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('CUSTOM AMOUNT (₹) *', 'कस्टम राशि (₹) *')}</label>
                   <input
                     type="number"
                     value={fineForm.amount}
                     onChange={(e) => setFineForm({ ...fineForm, amount: e.target.value })}
                     placeholder="e.g. 100"
-                    className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 bg-white outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/8 transition-all font-sans"
+                    className="w-full h-10 px-3 border border-[#E2E8F0] rounded-xl text-xs font-medium text-[#0F172A] bg-white outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/8 transition-all font-sans"
                   />
                 </div>
               )}
 
               {/* Description Form Group */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">{t('DESCRIPTION', 'विवरण')}</label>
+                <label className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase">{t('DESCRIPTION', 'विवरण')}</label>
                 <input
                   type="text"
                   value={fineForm.description}
                   onChange={(e) => setFineForm({ ...fineForm, description: e.target.value })}
                   placeholder="e.g. Late arrival"
-                  className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 bg-white outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/8 transition-all font-sans"
+                  className="w-full h-10 px-3 border border-[#E2E8F0] rounded-xl text-xs font-medium text-[#0F172A] bg-white outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/8 transition-all font-sans"
                 />
               </div>
 
@@ -1233,9 +1233,9 @@ export default function AttendanceView({
                   <span>{t('LIVE PREVIEW', 'लाइव समीक्षा')}</span>
                   <span>₹{lfHourlyRate.toFixed(2)}/hr</span>
                 </div>
-                <div className="flex justify-between items-center text-[11px] text-slate-600">
+                <div className="flex justify-between items-center text-[11px] text-[#64748B]">
                   <span>{t('Late Duration :', 'देरी अवधि :')}</span>
-                  <span className="font-semibold text-slate-800 font-sans">{lfH}h {lfM}m</span>
+                  <span className="font-semibold text-[#0F172A] font-sans">{lfH}h {lfM}m</span>
                 </div>
                 <div className="h-[0.5px] bg-rose-100/50 my-1"></div>
                 <div className="flex justify-between items-center text-[11px] font-bold pt-0.5">
@@ -1248,7 +1248,7 @@ export default function AttendanceView({
               <div className="flex gap-2 pt-1 text-xs">
                 <button
                   onClick={() => setFineForm(null)}
-                  className="flex-1 h-9 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-bold active:scale-[0.98] transition-all cursor-pointer"
+                  className="flex-1 h-9 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F7F9FC] text-[#64748B] font-bold active:scale-[0.98] transition-all cursor-pointer"
                 >
                   {t('Cancel', 'रद्द करें')}
                 </button>

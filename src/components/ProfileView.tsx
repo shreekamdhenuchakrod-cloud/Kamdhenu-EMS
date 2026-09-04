@@ -1078,7 +1078,7 @@ export default function ProfileView({
       label: t("Earned This Month", "इस महीने की वास्तविक कमाई"),
       value: earnedThisMonth,
       prefix: "",
-      valueClass: "text-slate-800",
+      valueClass: "text-[#0F172A]",
     },
     {
       label: t("Previous Month Due", "पिछले महीने का बकाया देय"),
@@ -1097,7 +1097,7 @@ export default function ProfileView({
       label: t("This Month Overtime", "इस महीने का ओवरटाइम (+)"),
       value: thisMonthOvertime,
       prefix: "+ ",
-      valueClass: "text-blue-600",
+      valueClass: "text-[#2563EB]",
     },
     {
       label: t("Extra Earnings", "अतिरिक्त कमाई / पारितोषिक (+)"),
@@ -1230,22 +1230,22 @@ export default function ProfileView({
 
   if (isEditingEmployee) {
     return (
-      <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs space-y-4 animate-in fade-in duration-300">
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-xs space-y-4 animate-in fade-in duration-300">
         <div className="flex items-center gap-2 mb-2">
           <Icon
             name="arrow_back"
             onClick={() => setIsEditingEmployee(false)}
-            className="text-slate-400 cursor-pointer"
+            className="text-[#94A3B8] cursor-pointer"
             size={18}
           />
-          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+          <h3 className="text-sm font-bold text-[#0F172A] uppercase tracking-wider">
             {t("Edit Employee Account", "कर्मचारी प्रोफाइल संपादन")}
           </h3>
         </div>
 
         <div className="space-y-3">
           <div className="fld">
-            <label className="text-xs font-bold text-slate-500 mb-1 block">
+            <label className="text-xs font-bold text-[#64748B] mb-1 block">
               {t("Full Name", "पूरा नाम")}
             </label>
             <input
@@ -1260,7 +1260,7 @@ export default function ProfileView({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="fld">
-              <label className="text-xs font-bold text-slate-500 mb-1 block">
+              <label className="text-xs font-bold text-[#64748B] mb-1 block">
                 {t("Mobile Number", "मोबाइल फोन")}
               </label>
               <input
@@ -1273,7 +1273,7 @@ export default function ProfileView({
               />
             </div>
             <div className="fld">
-              <label className="text-xs font-bold text-slate-500 mb-1 block">
+              <label className="text-xs font-bold text-[#64748B] mb-1 block">
                 {t("Joining Date", "भर्ती तिथि")}
               </label>
               <input
@@ -1288,13 +1288,13 @@ export default function ProfileView({
           </div>
 
           <div className="fld">
-            <label className="text-xs font-bold text-slate-500 mb-1 block">
+            <label className="text-xs font-bold text-[#64748B] mb-1 block">
               {t(
                 "Profile Photo / Avatar",
                 "कर्मचारी प्रोफाइल फोटो (अपलोड करें)",
               )}
             </label>
-            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div className="flex items-center gap-3 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-2.5">
               <div className="w-12 h-12 rounded-xl border border-slate-350 bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-3xs">
                 {editForm.pic ? (
                   <img
@@ -1304,7 +1304,7 @@ export default function ProfileView({
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <Icon name="person" size={24} className="text-slate-400" />
+                  <Icon name="person" size={24} className="text-[#94A3B8]" />
                 )}
               </div>
               <div className="flex-1">
@@ -1330,7 +1330,7 @@ export default function ProfileView({
                   onClick={() =>
                     document.getElementById("profile-pic-uploader-el")?.click()
                   }
-                  className="h-8 px-3 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 text-[10px] font-bold hover:bg-blue-100 transition shadow-2xs cursor-pointer inline-flex items-center gap-1"
+                  className="h-8 px-3 rounded-lg border border-blue-200 bg-[#EFF6FF] text-[#2563EB] text-[10px] font-bold hover:bg-blue-100 transition shadow-2xs cursor-pointer inline-flex items-center gap-1"
                 >
                   <Icon name="upload" size={12} />
                   <span>{t("Upload Image", "फोटो चुनें")}</span>
@@ -1362,11 +1362,11 @@ export default function ProfileView({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="fld">
-              <label className="text-xs font-bold text-slate-500 mb-1 block">
+              <label className="text-xs font-bold text-[#64748B] mb-1 block">
                 {t("Payment Term Type", "वेतन भुगतान प्रकार")}
               </label>
               <select
-                className="fi bg-white h-11 border border-slate-200 rounded-xl px-3 w-full animate-none"
+                className="fi bg-white h-11 border border-[#E2E8F0] rounded-xl px-3 w-full animate-none"
                 value={editForm.type}
                 onChange={(e) =>
                   setEditForm({ ...editForm, type: e.target.value as any })
@@ -1378,7 +1378,7 @@ export default function ProfileView({
               </select>
             </div>
             <div className="fld">
-              <label className="text-xs font-bold text-slate-500 mb-1 block">
+              <label className="text-xs font-bold text-[#64748B] mb-1 block">
                 {t("Active Rate (₹)", "भुगतान दर (₹)")}
               </label>
               <input
@@ -1394,7 +1394,7 @@ export default function ProfileView({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="fld">
-              <label className="text-xs font-bold text-slate-500 mb-1 block">
+              <label className="text-xs font-bold text-[#64748B] mb-1 block">
                 {t("Base Work Hours", "साधारण कार्य समय (घंटे)")}
               </label>
               <input
@@ -1407,11 +1407,11 @@ export default function ProfileView({
               />
             </div>
             <div className="fld">
-              <label className="text-xs font-bold text-slate-500 mb-1 block">
+              <label className="text-xs font-bold text-[#64748B] mb-1 block">
                 {t("Active Roster Status", "खाता संचालन स्थिति")}
               </label>
               <select
-                className="fi bg-white h-11 border border-slate-200 rounded-xl px-3 w-full font-bold animate-none"
+                className="fi bg-white h-11 border border-[#E2E8F0] rounded-xl px-3 w-full font-bold animate-none"
                 value={editForm.status}
                 onChange={(e) =>
                   setEditForm({ ...editForm, status: e.target.value as any })
@@ -1428,13 +1428,13 @@ export default function ProfileView({
         <div className="flex gap-2.5 pt-4 text-xs font-bold">
           <button
             onClick={() => setIsEditingEmployee(false)}
-            className="flex-1 h-11 border border-slate-200 text-slate-650 rounded-xl cursor-pointer active:scale-[0.98]"
+            className="flex-1 h-11 border border-[#E2E8F0] text-slate-650 rounded-xl cursor-pointer active:scale-[0.98]"
           >
             {t("Cancel", "रद्द करें")}
           </button>
           <button
             onClick={handleEditEmployeeSubmit}
-            className="flex-1 h-11 bg-blue-600 text-white rounded-xl cursor-pointer active:scale-[0.98] hover:bg-blue-700 transition-all font-black"
+            className="flex-1 h-11 bg-[#2563EB] text-white rounded-xl cursor-pointer active:scale-[0.98] hover:bg-blue-700 transition-all font-black"
           >
             {t("Save Changes", "विवरण सहेजें")}
           </button>
@@ -1450,11 +1450,11 @@ export default function ProfileView({
         <div className="flex items-center gap-3">
           <button
             onClick={onGoBack}
-            className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-205 text-slate-550 flex items-center justify-center hover:bg-slate-100 active:scale-[0.97] transition-all cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-[#F7F9FC] border border-slate-205 text-slate-550 flex items-center justify-center hover:bg-slate-100 active:scale-[0.97] transition-all cursor-pointer"
           >
             <Icon name="arrow_back" size={16} />
           </button>
-          <div className="w-10 h-10 bg-blue-50/70 border border-blue-150 rounded-xl flex items-center justify-center font-bold text-blue-605 text-sm uppercase overflow-hidden shrink-0 shadow-3xs">
+          <div className="w-10 h-10 bg-[#EFF6FF]/70 border border-blue-150 rounded-xl flex items-center justify-center font-bold text-blue-605 text-sm uppercase overflow-hidden shrink-0 shadow-3xs">
             {emp.pic ? (
               <img
                 src={emp.pic}
@@ -1467,10 +1467,10 @@ export default function ProfileView({
             )}
           </div>
           <div className="min-w-0">
-            <h2 className="text-xs font-bold text-slate-900 leading-none truncate">
+            <h2 className="text-xs font-bold text-[#0F172A] leading-none truncate">
               {emp.name}
             </h2>
-            <p className="text-[10px] text-slate-400 font-bold uppercase mt-1.5 tracking-wider leading-none">
+            <p className="text-[10px] text-[#94A3B8] font-bold uppercase mt-1.5 tracking-wider leading-none">
               {emp.type} · +91 {emp.mobile}
             </p>
           </div>
@@ -1479,21 +1479,21 @@ export default function ProfileView({
         <div className="relative">
           <button
             onClick={() => setShowActionDropdown((prev) => !prev)}
-            className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-205 text-slate-550 flex items-center justify-center hover:bg-slate-100 active:scale-[0.98] transition-all cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-[#F7F9FC] border border-slate-205 text-slate-550 flex items-center justify-center hover:bg-slate-100 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Icon name="more_vert" size={18} />
           </button>
 
           {showActionDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-md z-[100] py-1.5 text-[11px] text-slate-700 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E2E8F0] rounded-xl shadow-md z-[100] py-1.5 text-[11px] text-[#0F172A] animate-in fade-in slide-in-from-top-2 duration-150">
               <button
                 onClick={() => {
                   setIsEditingEmployee(true);
                   setShowActionDropdown(false);
                 }}
-                className="w-full text-left px-4 py-2.5 hover:bg-slate-50 font-semibold flex items-center gap-2 cursor-pointer transition-colors"
+                className="w-full text-left px-4 py-2.5 hover:bg-[#F7F9FC] font-semibold flex items-center gap-2 cursor-pointer transition-colors"
               >
-                <Icon name="edit" size={16} className="text-slate-400" />
+                <Icon name="edit" size={16} className="text-[#94A3B8]" />
                 <span>{t("Edit Profile", "प्रोफाइल बदलें")}</span>
               </button>
 
@@ -1502,9 +1502,9 @@ export default function ProfileView({
                   setPrevRatesModal(true);
                   setShowActionDropdown(false);
                 }}
-                className="w-full text-left px-4 py-2.5 hover:bg-slate-50 font-semibold flex items-center gap-2 cursor-pointer transition-colors"
+                className="w-full text-left px-4 py-2.5 hover:bg-[#F7F9FC] font-semibold flex items-center gap-2 cursor-pointer transition-colors"
               >
-                <Icon name="history" size={16} className="text-slate-400" />
+                <Icon name="history" size={16} className="text-[#94A3B8]" />
                 <span>{t("Salary Rate History", "वेतन सेटिंग्स इतिहास")}</span>
               </button>
 
@@ -1518,7 +1518,7 @@ export default function ProfileView({
                   setLeftPin("");
                   setShowLeftConfirm(true);
                 }}
-                className="w-full text-left px-4 py-2.5 text-rose-600 hover:bg-rose-50 font-semibold flex items-center gap-2 border-t border-slate-100 cursor-pointer transition-colors"
+                className="w-full text-left px-4 py-2.5 text-rose-600 hover:bg-rose-50 font-semibold flex items-center gap-2 border-t border-[#E2E8F0] cursor-pointer transition-colors"
               >
                 <Icon name="exit_to_app" size={16} className="text-rose-500" />
                 <span>{t("Mark Job Left", "नौकरी छोड़ दी")}</span>
@@ -1530,7 +1530,7 @@ export default function ProfileView({
                   setDeletePin("");
                   setShowDeleteConfirm(true);
                 }}
-                className="w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 font-semibold flex items-center gap-2 border-t border-slate-100 cursor-pointer transition-colors"
+                className="w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 font-semibold flex items-center gap-2 border-t border-[#E2E8F0] cursor-pointer transition-colors"
               >
                 <Icon name="delete_forever" size={16} className="text-red-500" />
                 <span>{t("Delete Employee", "कर्मचारी हटाएं")}</span>
@@ -1542,28 +1542,28 @@ export default function ProfileView({
 
       {/* Dynamic Month Selector / Period Navigator */}
       {activeTab === "attendance" && (
-        <div className="flex items-center justify-between mb-4 bg-white border border-slate-100/80 p-3.5 rounded-2xl shadow-2xs">
+        <div className="flex items-center justify-between mb-4 bg-white border border-[#E2E8F0]/80 p-3.5 rounded-2xl shadow-2xs">
           <div>
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider leading-none">
+            <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider leading-none">
               {t("Salary Overview", "वेतन सारांश")}
             </h3>
-            <p className="text-[10px] text-slate-400 font-semibold mt-1.5 leading-none">
+            <p className="text-[10px] text-[#94A3B8] font-semibold mt-1.5 leading-none">
               {getSalaryPeriodRangeStr(navYear, navMonth, emp.join)}
             </p>
           </div>
           <div className="flex items-center gap-1 select-none">
             <button
               onClick={() => handleMonthShift(-1)}
-              className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-205 text-slate-600 flex items-center justify-center hover:bg-slate-100 transition-all font-bold active:scale-[0.95] cursor-pointer"
+              className="w-7 h-7 rounded-lg bg-[#F7F9FC] border border-slate-205 text-[#64748B] flex items-center justify-center hover:bg-slate-100 transition-all font-bold active:scale-[0.95] cursor-pointer"
             >
               &lt;
             </button>
-            <div className="px-3 h-7 flex items-center justify-center rounded-lg bg-slate-55 border border-slate-205 text-[10px] font-bold text-slate-800 uppercase min-w-[85px] text-center font-mono">
+            <div className="px-3 h-7 flex items-center justify-center rounded-lg bg-slate-55 border border-slate-205 text-[10px] font-bold text-[#0F172A] uppercase min-w-[85px] text-center font-mono">
               {MN[navMonth]} {navYear}
             </div>
             <button
               onClick={() => handleMonthShift(1)}
-              className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-205 text-slate-605 flex items-center justify-center hover:bg-slate-100 transition-all font-bold active:scale-[0.95] cursor-pointer"
+              className="w-7 h-7 rounded-lg bg-[#F7F9FC] border border-slate-205 text-slate-605 flex items-center justify-center hover:bg-slate-100 transition-all font-bold active:scale-[0.95] cursor-pointer"
             >
               &gt;
             </button>
@@ -1573,7 +1573,7 @@ export default function ProfileView({
 
       {/* Segmented Pill Tabs Selector Wrapper */}
       <div className="sticky top-0 bg-white/95 backdrop-blur-xs py-2.5 z-40 -mx-4 px-4 border-b border-slate-150 mb-4">
-        <div className="flex bg-slate-100/50 border border-slate-200 rounded-xl p-1 shadow-3xs">
+        <div className="flex bg-slate-100/50 border border-[#E2E8F0] rounded-xl p-1 shadow-3xs">
           {(["overview", "attendance", "transactions"] as const).map((tab) => {
             const isSel = activeTab === tab;
             const label =
@@ -1588,8 +1588,8 @@ export default function ProfileView({
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   isSel
-                    ? "bg-blue-600 text-white shadow-xs font-semibold"
-                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/40"
+                    ? "bg-[#2563EB] text-white shadow-xs font-semibold"
+                    : "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-200/40"
                 }`}
               >
                 {label}
@@ -1610,11 +1610,11 @@ export default function ProfileView({
                 <span className="text-[9px] uppercase font-bold text-slate-405 tracking-wider truncate">
                   {leftCardTitle}
                 </span>
-                <span className="text-sm font-bold text-blue-600 mt-1 font-mono truncate leading-none">
+                <span className="text-sm font-bold text-[#2563EB] mt-1 font-mono truncate leading-none">
                   {leftCardValue}
                 </span>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-blue-50/70 text-blue-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#EFF6FF]/70 text-[#2563EB] flex items-center justify-center">
                 <Icon name={emp.type === "Hourly" ? "schedule" : "calendar_today"} size={20} />
               </div>
             </div>
@@ -1752,7 +1752,7 @@ export default function ProfileView({
                     };
                   case "blue":
                     return {
-                      bg: "bg-blue-50/45 hover:bg-blue-50/80 border-blue-100",
+                      bg: "bg-[#EFF6FF]/45 hover:bg-[#EFF6FF]/80 border-blue-100",
                       text: "text-blue-700",
                       iconBg: "bg-blue-100/80 text-blue-700",
                     };
@@ -1779,7 +1779,7 @@ export default function ProfileView({
                       <Icon name={card.icon} size={12} />
                     </div>
                     <div className="flex flex-col min-w-0 mt-1">
-                      <span className="text-[9px] md:text-[9.5px] font-bold text-slate-500 uppercase tracking-tight leading-tight truncate">
+                      <span className="text-[9px] md:text-[9.5px] font-bold text-[#64748B] uppercase tracking-tight leading-tight truncate">
                         {card.label}
                       </span>
                       <LocalSalaryDisplay
@@ -1837,7 +1837,7 @@ export default function ProfileView({
           {/* Download Salary Slip PDF Button */}
           <button
             onClick={() => setShowPdfModal(true)}
-            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-3xs transition-all active:scale-[0.98] mb-4"
+            className="w-full h-11 bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-3xs transition-all active:scale-[0.98] mb-4"
           >
             <Icon name="download_for_offline" size={16} />
             <span>{t("Download Salary Slip (PDF)", "सैलरी स्लिप डाउनलोड करें (PDF)")}</span>
@@ -1848,7 +1848,7 @@ export default function ProfileView({
       {/* --- ATTENDANCE HISTORY EDIT LIST TAB --- */}
       {activeTab === "attendance" && (
         <div className="animate-in fade-in duration-200">
-          <div className="bg-slate-50 border border-slate-100 p-3 rounded-xl mb-3 flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-widest font-mono shadow-xs">
+          <div className="bg-[#F7F9FC] border border-[#E2E8F0] p-3 rounded-xl mb-3 flex items-center justify-between text-xs font-bold text-[#64748B] uppercase tracking-widest font-mono shadow-xs">
             <span>{t("Calendar Log", "दैनिक कैलेंडर रिकॉर्ड")}</span>
             <span>
               {metrics.attendanceCounts.present} Present /{" "}
@@ -1889,13 +1889,13 @@ export default function ProfileView({
                   return (
                     <div
                       key={day}
-                      className="bg-white border border-slate-100 rounded-2xl p-3.5 shadow-xs space-y-3 hover:border-slate-300 transition-all"
+                      className="bg-white border border-[#E2E8F0] rounded-2xl p-3.5 shadow-xs space-y-3 hover:border-slate-300 transition-all"
                     >
                       <div className="flex justify-between items-center">
-                        <div className="text-xs font-black text-slate-800 leading-tight">
+                        <div className="text-xs font-black text-[#0F172A] leading-tight">
                           {day} {monthName} {navYear}
                         </div>
-                        <div className="text-right text-[11px] font-black text-slate-500 font-mono">
+                        <div className="text-right text-[11px] font-black text-[#64748B] font-mono">
                           {(() => {
                             const otHrs = db.overtimeEntries.filter(o => o.employeeId === emp.id && o.date === dateStr).reduce((sum, o) => sum + o.hours, 0);
                             const fineHrs = db.lateFineEntries.filter(f => f.employeeId === emp.id && f.date === dateStr).reduce((sum, f) => sum + f.hours, 0);
@@ -1919,7 +1919,7 @@ export default function ProfileView({
                           className={`h-9 rounded-lg text-[11px] font-bold border flex-1 transition-all flex-row flex items-center justify-center gap-1 cursor-pointer ${
                             session_0.in
                               ? "bg-emerald-500 border-emerald-500 text-white font-black"
-                              : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                              : "bg-white border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F9FC]"
                           }`}
                         >
                           <span>
@@ -1934,7 +1934,7 @@ export default function ProfileView({
                           className={`h-9 rounded-lg text-[11px] font-bold border flex-1 transition-all flex-row flex items-center justify-center gap-1 cursor-pointer ${
                             session_0.out
                               ? "bg-slate-900 border-slate-900 text-white font-black"
-                              : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                              : "bg-white border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F9FC]"
                           }`}
                         >
                           <span>
@@ -1946,7 +1946,7 @@ export default function ProfileView({
 
                         <button
                           onClick={() => handleClearHistoryRecord(dateStr)}
-                          className="w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:bg-rose-50 hover:border-red-100 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
+                          className="w-9 h-9 rounded-lg border border-[#E2E8F0] bg-white text-[#94A3B8] hover:text-red-500 hover:bg-rose-50 hover:border-red-100 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
                           title={t("Clear Attendance Record", "उपस्थिति हटाएं")}
                         >
                           <Icon name="delete"  size={13}  />
@@ -1958,8 +1958,8 @@ export default function ProfileView({
                           }
                           className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 cursor-pointer transition-all active:scale-[0.95] ${
                             isExpanded
-                              ? "bg-blue-600 border-blue-600 text-white rotate-180"
-                              : "bg-blue-50 border-blue-200 text-blue-600"
+                              ? "bg-[#2563EB] border-[#2563EB] text-white rotate-180"
+                              : "bg-[#EFF6FF] border-blue-200 text-[#2563EB]"
                           }`}
                         >
                           <Icon name="keyboard_arrow_down"  size={13}  />
@@ -1968,10 +1968,10 @@ export default function ProfileView({
 
                       {/* Expanded Sub-drawer: Extra punch slots & OT/Fine Buttons */}
                       {isExpanded && (
-                        <div className="bg-slate-50/50 p-2.5 rounded-xl space-y-2.5 border border-slate-100 animate-in slide-in-from-top-1">
+                        <div className="bg-[#F7F9FC]/50 p-2.5 rounded-xl space-y-2.5 border border-[#E2E8F0] animate-in slide-in-from-top-1">
                           <button
                             onClick={() => addHistoryPunchSessionRow(dateStr)}
-                            className="w-full h-8 border border-blue-200 text-blue-600 bg-white hover:bg-blue-105/10 border-dashed rounded-lg flex items-center justify-center font-black text-[10px] cursor-pointer gap-1 transition-all"
+                            className="w-full h-8 border border-blue-200 text-[#2563EB] bg-white hover:bg-blue-105/10 border-dashed rounded-lg flex items-center justify-center font-black text-[10px] cursor-pointer gap-1 transition-all"
                           >
                             <Icon name="add"  size={11}  />
                             <span>
@@ -1981,7 +1981,7 @@ export default function ProfileView({
 
                           {/* Display subsequent shift slots */}
                           {sessions.length > 1 && (
-                            <div className="space-y-1.5 pt-1.5 border-t border-slate-200">
+                            <div className="space-y-1.5 pt-1.5 border-t border-[#E2E8F0]">
                               {sessions
                                 .slice(1)
                                 .map((s: any, rawIdx: number) => {
@@ -1989,9 +1989,9 @@ export default function ProfileView({
                                   return (
                                     <div
                                       key={sIdx}
-                                      className="flex items-center gap-1.5 bg-white p-1 border border-slate-200 rounded-lg"
+                                      className="flex items-center gap-1.5 bg-white p-1 border border-[#E2E8F0] rounded-lg"
                                     >
-                                      <div className="w-5 h-5 rounded bg-slate-100 text-slate-500 font-extrabold text-[9px] flex items-center justify-center">
+                                      <div className="w-5 h-5 rounded bg-slate-100 text-[#64748B] font-extrabold text-[9px] flex items-center justify-center">
                                         {sIdx + 1}
                                       </div>
                                       <button
@@ -2006,7 +2006,7 @@ export default function ProfileView({
                                         className={`flex-1 h-8 rounded-md text-[10px] font-black border transition-all ${
                                           s.in
                                             ? "bg-emerald-600 border-emerald-600 text-white"
-                                            : "bg-white border-slate-200 text-slate-600"
+                                            : "bg-white border-[#E2E8F0] text-[#64748B]"
                                         }`}
                                       >
                                         <span>
@@ -2027,7 +2027,7 @@ export default function ProfileView({
                                         className={`flex-1 h-8 rounded-md text-[10px] font-black border transition-all ${
                                           s.out
                                             ? "bg-slate-800 border-slate-800 text-white"
-                                            : "bg-white border-slate-200 text-slate-600"
+                                            : "bg-white border-[#E2E8F0] text-[#64748B]"
                                         }`}
                                       >
                                         <span>
@@ -2043,7 +2043,7 @@ export default function ProfileView({
                                             sIdx,
                                           )
                                         }
-                                        className="w-8 h-8 rounded-md border border-slate-200 bg-white text-slate-400 hover:text-red-500 flex items-center justify-center shrink-0"
+                                        className="w-8 h-8 rounded-md border border-[#E2E8F0] bg-white text-[#94A3B8] hover:text-red-500 flex items-center justify-center shrink-0"
                                       >
                                         <Icon name="delete" size={12} />
                                       </button>
@@ -2080,7 +2080,7 @@ export default function ProfileView({
                                     : "Overtime",
                                 });
                               }}
-                              className="flex-1 h-8 rounded-lg border border-blue-100 text-blue-605 bg-blue-50/45 hover:bg-blue-100/60 font-semibold text-[10px] flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
+                              className="flex-1 h-8 rounded-lg border border-blue-100 text-blue-605 bg-[#EFF6FF]/45 hover:bg-blue-100/60 font-semibold text-[10px] flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
                             >
                               <Icon name="schedule" size={12} />
                               <span>{t("+ Overtime", "+ overtime")}</span>
@@ -2121,7 +2121,7 @@ export default function ProfileView({
                     </div>
                   );
                 } else {
-                  let statusClass = "text-slate-400";
+                  let statusClass = "text-[#94A3B8]";
                   let displayStatus = t("Not Marked", "दर्ज नहीं");
                   if (rec.status === "Present") {
                     statusClass = "text-emerald-600";
@@ -2140,10 +2140,10 @@ export default function ProfileView({
                   return (
                     <div
                       key={day}
-                      className="bg-white border border-slate-100 rounded-2xl p-3.5 shadow-xs space-y-3 hover:border-slate-300 transition-all"
+                      className="bg-white border border-[#E2E8F0] rounded-2xl p-3.5 shadow-xs space-y-3 hover:border-slate-300 transition-all"
                     >
                       <div className="flex justify-between items-center">
-                        <div className="text-xs font-black text-slate-800 leading-tight">
+                        <div className="text-xs font-black text-[#0F172A] leading-tight">
                           {day} {monthName} {navYear}
                         </div>
                         <div className="text-right font-mono">
@@ -2178,7 +2178,7 @@ export default function ProfileView({
                                   : t("Absent", "अनुपस्थित");
 
                             let selectStyle =
-                              "bg-white border-slate-200 text-slate-600 hover:bg-slate-50";
+                              "bg-white border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F9FC]";
                             if (isSel) {
                               if (style === "Present")
                                 selectStyle =
@@ -2210,7 +2210,7 @@ export default function ProfileView({
 
                         <button
                           onClick={() => handleClearHistoryRecord(dateStr)}
-                          className="w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
+                          className="w-9 h-9 rounded-lg border border-[#E2E8F0] bg-white text-[#94A3B8] hover:text-red-500 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-all shrink-0 active:scale-[0.95]"
                           title={t("Clear Attendance Record", "उपस्थिति हटाएं")}
                         >
                           <Icon name="delete"  size={13}  />
@@ -2222,8 +2222,8 @@ export default function ProfileView({
                           }
                           className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 cursor-pointer transition-all active:scale-[0.95] ${
                             isExpanded
-                              ? "bg-blue-600 border-blue-600 text-white rotate-180"
-                              : "bg-blue-50 border-blue-200 text-blue-600"
+                              ? "bg-[#2563EB] border-[#2563EB] text-white rotate-180"
+                              : "bg-[#EFF6FF] border-blue-200 text-[#2563EB]"
                           }`}
                         >
                           <Icon name="keyboard_arrow_down"  size={13}  />
@@ -2232,7 +2232,7 @@ export default function ProfileView({
 
                       {/* Expanded drawer for Overtime & Late Fine */}
                       {isExpanded && (
-                        <div className="bg-slate-50/50 p-2 rounded-xl flex gap-2 border border-slate-100 animate-in slide-in-from-top-1">
+                        <div className="bg-[#F7F9FC]/50 p-2 rounded-xl flex gap-2 border border-[#E2E8F0] animate-in slide-in-from-top-1">
                           <button
                             onClick={() => {
                               const existing = db.overtimeEntries.find(
@@ -2257,7 +2257,7 @@ export default function ProfileView({
                                   : "Overtime",
                               });
                             }}
-                            className="flex-1 h-8 rounded-lg border border-blue-100 text-blue-600 bg-blue-50/45 hover:bg-blue-100/60 font-black text-[10px] flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
+                            className="flex-1 h-8 rounded-lg border border-blue-100 text-[#2563EB] bg-[#EFF6FF]/45 hover:bg-blue-100/60 font-black text-[10px] flex items-center justify-center gap-1 active:scale-[0.98] transition cursor-pointer"
                           >
                             <Icon name="schedule"  size={11}  />
                             <span>{t("+ Overtime", "+ overtime")}</span>
@@ -2352,7 +2352,7 @@ export default function ProfileView({
             <div className="animate-in fade-in duration-200 space-y-5">
               {/* Action Cards Segment Header */}
               <div>
-                <div className="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-2.5">
+                <div className="text-[10px] uppercase font-black tracking-widest text-[#94A3B8] mb-2.5">
                   {t(
                     "Record Financial Movements",
                     "लेन-देन के प्रविष्टि जोड़ें",
@@ -2376,7 +2376,7 @@ export default function ProfileView({
                         paidBy: pNames[0] || "",
                       });
                     }}
-                    className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-slate-200 hover:shadow-2xs active:scale-[0.97] transition-all"
+                    className="bg-white border border-[#E2E8F0] rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-[#E2E8F0] hover:shadow-2xs active:scale-[0.97] transition-all"
                   >
                     <div className="w-8.5 h-8.5 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                       <Icon name="payments"  size={16}  />
@@ -2385,7 +2385,7 @@ export default function ProfileView({
                       <span className="text-[9px] uppercase font-bold text-slate-300 tracking-wider h-3.5 block">
                         {t("Record", "दर्ज करें")}
                       </span>
-                      <span className="text-xs font-black text-slate-700 leading-none block">
+                      <span className="text-xs font-black text-[#0F172A] leading-none block">
                         {t("Payment", "भुगतान")}
                       </span>
                     </div>
@@ -2402,16 +2402,16 @@ export default function ProfileView({
                         time: getCurrentTimeFormatted(),
                       })
                     }
-                    className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-slate-200 hover:shadow-2xs active:scale-[0.97] transition-all"
+                    className="bg-white border border-[#E2E8F0] rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-[#E2E8F0] hover:shadow-2xs active:scale-[0.97] transition-all"
                   >
-                    <div className="w-8.5 h-8.5 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="w-8.5 h-8.5 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center shrink-0">
                       <Icon name="trending_up"  size={16}  />
                     </div>
                     <div className="flex flex-col justify-center select-none">
                       <span className="text-[9px] uppercase font-bold text-slate-300 tracking-wider h-3.5 block">
                         {t("Add", "जोड़ें")}
                       </span>
-                      <span className="text-xs font-black text-slate-700 leading-none block">
+                      <span className="text-xs font-black text-[#0F172A] leading-none block">
                         {t("Earning", "कमाई")}
                       </span>
                     </div>
@@ -2428,7 +2428,7 @@ export default function ProfileView({
                         time: getCurrentTimeFormatted(),
                       })
                     }
-                    className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-slate-200 hover:shadow-2xs active:scale-[0.97] transition-all"
+                    className="bg-white border border-[#E2E8F0] rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-[#E2E8F0] hover:shadow-2xs active:scale-[0.97] transition-all"
                   >
                     <div className="w-8.5 h-8.5 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                       <Icon name="trending_down"  size={16}  />
@@ -2437,7 +2437,7 @@ export default function ProfileView({
                       <span className="text-[9px] uppercase font-bold text-slate-300 tracking-wider h-3.5 block">
                         {t("Add", "जोड़ें")}
                       </span>
-                      <span className="text-xs font-black text-slate-700 leading-none block">
+                      <span className="text-xs font-black text-[#0F172A] leading-none block">
                         {t("Deduction", "कटौती")}
                       </span>
                     </div>
@@ -2456,7 +2456,7 @@ export default function ProfileView({
                         time: getCurrentTimeFormatted(),
                       })
                     }
-                    className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-slate-200 hover:shadow-2xs active:scale-[0.97] transition-all"
+                    className="bg-white border border-[#E2E8F0] rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-[#E2E8F0] hover:shadow-2xs active:scale-[0.97] transition-all"
                   >
                     <div className="w-8.5 h-8.5 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                       <Icon name="warning"  size={16}  />
@@ -2465,7 +2465,7 @@ export default function ProfileView({
                       <span className="text-[9px] uppercase font-bold text-slate-300 tracking-wider h-3.5 block">
                         {t("Add", "जोड़ें")}
                       </span>
-                      <span className="text-xs font-black text-slate-700 leading-none block">
+                      <span className="text-xs font-black text-[#0F172A] leading-none block">
                         {t("Fine", "जुर्माना")}
                       </span>
                     </div>
@@ -2484,16 +2484,16 @@ export default function ProfileView({
                         time: getCurrentTimeFormatted(),
                       })
                     }
-                    className="bg-white border border-slate-100 rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-slate-200 hover:shadow-2xs active:scale-[0.97] transition-all"
+                    className="bg-white border border-[#E2E8F0] rounded-xl p-3 flex items-center gap-2.5 shadow-3xs flex-shrink-0 w-[145px] sm:w-auto h-[58px] cursor-pointer hover:border-[#E2E8F0] hover:shadow-2xs active:scale-[0.97] transition-all"
                   >
                     <div className="w-8.5 h-8.5 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
                       <Icon name="schedule"  size={16}  />
                     </div>
                     <div className="flex flex-col justify-center select-none">
-                      <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider h-3.5 block">
+                      <span className="text-[9px] uppercase font-bold text-[#94A3B8] tracking-wider h-3.5 block">
                         {t("Add", "जोड़ें")}
                       </span>
-                      <span className="text-xs font-black text-slate-700 leading-none block">
+                      <span className="text-xs font-black text-[#0F172A] leading-none block">
                         {t("Overtime", "ओवरटाइम")}
                       </span>
                     </div>
@@ -2503,7 +2503,7 @@ export default function ProfileView({
 
               {/* Segment Subtabs and History Section */}
               <div>
-                <div className="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-2.5">
+                <div className="text-[10px] uppercase font-black tracking-widest text-[#94A3B8] mb-2.5">
                   {t("Transaction History Details", "मासिक लेन-देन इतिहास")}
                 </div>
 
@@ -2526,8 +2526,8 @@ export default function ProfileView({
                         onClick={() => setActiveSubTab(tab)}
                         className={`px-3 py-1.5 h-7 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer flex-1 text-center ${
                           isSel
-                            ? "bg-blue-600 text-white shadow-3xs"
-                            : "text-slate-500 hover:text-slate-800 hover:bg-slate-100/60"
+                            ? "bg-[#2563EB] text-white shadow-3xs"
+                            : "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100/60"
                         }`}
                       >
                         {t(tab, tab)}
@@ -2537,7 +2537,7 @@ export default function ProfileView({
                 </div>
 
                 {/* Information Banner */}
-                <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-3 flex items-center gap-2.5 mb-4 text-xs text-blue-800 select-none">
+                <div className="bg-[#EFF6FF]/60 border border-blue-100 rounded-xl p-3 flex items-center gap-2.5 mb-4 text-xs text-blue-800 select-none">
                   <Icon name="info"  size={14} className="text-blue-500 shrink-0"  />
                   <span className="font-semibold text-[11px] leading-tight text-blue-950">
                     {activeSubTab === "Payments" &&
@@ -2571,7 +2571,7 @@ export default function ProfileView({
                 {/* Standard List Display area */}
                 <div className="space-y-2">
                   {activeListSize > 0 ? (
-                    <div className="bg-white border border-slate-100 rounded-2xl divide-y divide-slate-50 overflow-hidden shadow-3xs">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl divide-y divide-slate-50 overflow-hidden shadow-3xs">
                       {activeSubTab === "Payments" &&
                         filteredPayments.map((p) => {
                           const modeLabel = p.mode ? ` (${p.mode})` : "";
@@ -2591,22 +2591,22 @@ export default function ProfileView({
                                   item: p,
                                 })
                               }
-                              className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/70 select-none transition-colors"
+                              className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-[#F7F9FC]/70 select-none transition-colors"
                             >
                               <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                                   <Icon name="payments"  size={16}  />
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="text-xs font-black text-slate-800 truncate block leading-tight">
+                                  <span className="text-xs font-black text-[#0F172A] truncate block leading-tight">
                                     {t(payTypeStr, payTypeStr)}
                                     {modeLabel}
                                   </span>
-                                  <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
+                                  <span className="text-[10px] text-[#94A3B8] font-bold block mt-0.5">
                                     {formatTxDateTime(p.date, p.time)}
                                   </span>
                                   {p.description && (
-                                    <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5 max-w-[220px]">
+                                    <span className="text-[10px] text-[#64748B] font-medium block truncate mt-0.5 max-w-[220px]">
                                       {p.description}
                                     </span>
                                   )}
@@ -2634,20 +2634,20 @@ export default function ProfileView({
                             onClick={() =>
                               setSelectedTxAction({ type: "Earnings", item: e })
                             }
-                            className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/70 select-none transition-colors"
+                            className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-[#F7F9FC]/70 select-none transition-colors"
                           >
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                              <div className="w-9 h-9 rounded-full bg-[#EFF6FF]0 text-white flex items-center justify-center shrink-0 shadow-xs">
                                 <Icon name="trending_up"  size={16}  />
                               </div>
                               <div className="min-w-0">
-                                <span className="text-xs font-black text-slate-800 truncate block leading-tight">
+                                <span className="text-xs font-black text-[#0F172A] truncate block leading-tight">
                                   {t("Extra Earning", "अतिरिक्त कमाई")}
                                 </span>
-                                <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
+                                <span className="text-[10px] text-[#94A3B8] font-bold block mt-0.5">
                                   {formatTxDateTime(e.date, e.time)}
                                 </span>
-                                <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5 max-w-[220px]">
+                                <span className="text-[10px] text-[#64748B] font-medium block truncate mt-0.5 max-w-[220px]">
                                   {e.description}
                                 </span>
                               </div>
@@ -2656,7 +2656,7 @@ export default function ProfileView({
                               <LocalSalaryDisplay
                                 value={e.amount}
                                 format={(val) => `+ ₹${val.toLocaleString("en-IN")}`}
-                                className="text-xs font-black text-blue-600 shrink-0 font-sans"
+                                className="text-xs font-black text-[#2563EB] shrink-0 font-sans"
                               />
                               <Icon name="chevron_right" 
                                 size={14}
@@ -2676,20 +2676,20 @@ export default function ProfileView({
                                 item: d,
                               })
                             }
-                            className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/70 select-none transition-colors"
+                            className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-[#F7F9FC]/70 select-none transition-colors"
                           >
                             <div className="flex items-center gap-3 min-w-0">
                               <div className="w-9 h-9 rounded-full bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                                 <Icon name="trending_down"  size={16}  />
                               </div>
                               <div className="min-w-0">
-                                <span className="text-xs font-black text-slate-800 truncate block leading-tight">
+                                <span className="text-xs font-black text-[#0F172A] truncate block leading-tight">
                                   {t("Deduction", "कटौती")}
                                 </span>
-                                <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
+                                <span className="text-[10px] text-[#94A3B8] font-bold block mt-0.5">
                                   {formatTxDateTime(d.date, d.time)}
                                 </span>
-                                <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5 max-w-[220px]">
+                                <span className="text-[10px] text-[#64748B] font-medium block truncate mt-0.5 max-w-[220px]">
                                   {d.description}
                                 </span>
                               </div>
@@ -2724,26 +2724,26 @@ export default function ProfileView({
                                   item: o,
                                 })
                               }
-                              className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/70 select-none transition-colors"
+                              className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-[#F7F9FC]/70 select-none transition-colors"
                             >
                               <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-9 h-9 rounded-full bg-purple-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                                   <Icon name="schedule"  size={16}  />
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="text-xs font-black text-slate-800 truncate block leading-tight">
+                                  <span className="text-xs font-black text-[#0F172A] truncate block leading-tight">
                                     {o.hours.toFixed(1)} Hrs Overtime
                                     {o.calcType === "HourlyRate" && (
-                                      <span className="text-[10px] font-bold text-slate-400 ml-1">
+                                      <span className="text-[10px] font-bold text-[#94A3B8] ml-1">
                                         ({t("Hourly Rate", "प्रति घंटा दर")})
                                       </span>
                                     )}
                                   </span>
-                                  <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
+                                  <span className="text-[10px] text-[#94A3B8] font-bold block mt-0.5">
                                     {formatTxDateTime(o.date, o.time)}
                                   </span>
                                   {o.description && (
-                                    <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5 max-w-[220px]">
+                                    <span className="text-[10px] text-[#64748B] font-medium block truncate mt-0.5 max-w-[220px]">
                                       {o.description}
                                     </span>
                                   )}
@@ -2777,21 +2777,21 @@ export default function ProfileView({
                               onClick={() =>
                                 setSelectedTxAction({ type: "Fines", item: f })
                               }
-                              className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/70 select-none transition-colors"
+                              className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-[#F7F9FC]/70 select-none transition-colors"
                             >
                               <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                                   <Icon name="warning"  size={16}  />
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="text-xs font-black text-slate-800 truncate block leading-tight">
+                                  <span className="text-xs font-black text-[#0F172A] truncate block leading-tight">
                                     Late Fine ({f.hours.toFixed(1)} Hrs)
                                   </span>
-                                  <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
+                                  <span className="text-[10px] text-[#94A3B8] font-bold block mt-0.5">
                                     {formatTxDateTime(f.date, f.time)}
                                   </span>
                                   {f.description && (
-                                    <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5 max-w-[220px]">
+                                    <span className="text-[10px] text-[#64748B] font-medium block truncate mt-0.5 max-w-[220px]">
                                       {f.description}
                                     </span>
                                   )}
@@ -2814,11 +2814,11 @@ export default function ProfileView({
                     </div>
                   ) : (
                     /* No records found graphic states */
-                    <div className="bg-white border border-slate-100 rounded-2xl p-8 text-center flex flex-col items-center justify-center shadow-3xs py-12 select-none">
-                      <div className="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mb-3 border border-slate-100">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 text-center flex flex-col items-center justify-center shadow-3xs py-12 select-none">
+                      <div className="w-14 h-14 rounded-full bg-[#F7F9FC] flex items-center justify-center text-[#94A3B8] mb-3 border border-[#E2E8F0]">
                         <Icon name="payments"  size={24}  />
                       </div>
-                      <p className="text-xs font-black text-slate-700 uppercase tracking-widest leading-loose">
+                      <p className="text-xs font-black text-[#0F172A] uppercase tracking-widest leading-loose">
                         {activeSubTab === "Payments" &&
                           t(
                             "No payment history found",
@@ -2845,7 +2845,7 @@ export default function ProfileView({
                             "कोई लेट फाइन इतिहास नहीं मिला",
                           )}
                       </p>
-                      <p className="text-[10px] text-slate-400 font-semibold mt-1 max-w-xs leading-normal">
+                      <p className="text-[10px] text-[#94A3B8] font-semibold mt-1 max-w-xs leading-normal">
                         {t(
                           "Add transactions easily using the action cards above or start recording details below.",
                           "ऊपर दिए गए एक्शन कार्ड का उपयोग करके लेनदेन आसानी से जोड़ें।",
@@ -2904,7 +2904,7 @@ export default function ProfileView({
                             });
                           }
                         }}
-                        className="mt-4 px-4 h-8.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-black rounded-xl text-[10px] uppercase shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                        className="mt-4 px-4 h-8.5 bg-[#2563EB] hover:bg-blue-700 active:scale-[0.98] text-white font-black rounded-xl text-[10px] uppercase shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
                         <Icon name="add"  size={12}  />
                         <span>
@@ -2933,18 +2933,18 @@ export default function ProfileView({
         <div className="fixed inset-0 bg-slate-900/60 flex items-end sm:items-center justify-center z-150 p-4 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl pb-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
             <div className="m-hnd mt-3 mb-1 sm:hidden" />
-            <div className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+            <div className="border-b border-[#E2E8F0] px-6 py-4 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-black text-slate-900 font-sans tracking-wide uppercase">
+                <h3 className="text-sm font-black text-[#0F172A] font-sans tracking-wide uppercase">
                   {breakdownModal.title}
                 </h3>
-                <p className="text-[10px] text-slate-400 font-bold font-sans uppercase mt-0.5">
+                <p className="text-[10px] text-[#94A3B8] font-bold font-sans uppercase mt-0.5">
                   {MN[navMonth]} {navYear}
                 </p>
               </div>
               <button
                 onClick={() => setBreakdownModal(null)}
-                className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F9FC] hover:bg-slate-100 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
               >
                 <Icon name="close" size={18} />
               </button>
@@ -2954,14 +2954,14 @@ export default function ProfileView({
             <div className="p-6 overflow-y-auto space-y-3 hide-scrollbar flex-1">
               {/* Previous Month Carry Over Breakdown listings */}
               {breakdownModal.type === "prevDue" && (
-                <div className="text-xs font-semibold text-slate-600 pr-1 select-none">
+                <div className="text-xs font-semibold text-[#64748B] pr-1 select-none">
                   <div className="bg-amber-50 text-amber-805 border border-amber-200 rounded-xl p-3 mb-4 leading-relaxed font-sans font-medium text-xs">
                     {t(
                       "Previous month carry forward is dynamically calculated sequentially month-by-month starting from joining date.",
                       "पिछले महीनों का बकाया ज्वाइनिंग तिथि से लेकर लगातार क्रमिक रूप से संचित किया जाता है।",
                     )}
                   </div>
-                  <div className="flex justify-between font-extrabold text-sm border-b border-slate-100 pb-2 mb-2 text-slate-800 select-all">
+                  <div className="flex justify-between font-extrabold text-sm border-b border-[#E2E8F0] pb-2 mb-2 text-[#0F172A] select-all">
                     <span>
                       {t("Calculated Accrued Dues", "प्राप्त बकाया राशि")}
                     </span>
@@ -2981,10 +2981,10 @@ export default function ProfileView({
                     metrics.details.earningsRows.map((row, idx) => (
                       <div
                         key={idx}
-                        className="border border-slate-50 rounded-xl p-3 bg-slate-50/50 flex justify-between gap-3 shadow-xs"
+                        className="border border-slate-50 rounded-xl p-3 bg-[#F7F9FC]/50 flex justify-between gap-3 shadow-xs"
                       >
                         <div>
-                          <span className="text-xs font-extrabold text-slate-800 font-mono block">
+                          <span className="text-xs font-extrabold text-[#0F172A] font-mono block">
                             {row.date}
                           </span>
                           <span className="text-[11px] text-slate-405 font-semibold">
@@ -2994,12 +2994,12 @@ export default function ProfileView({
                         <LocalSalaryDisplay
                           value={row.value}
                           format={(val) => `₹${Math.round(val).toLocaleString("en-IN")}`}
-                          className="text-xs font-black text-slate-800 font-mono"
+                          className="text-xs font-black text-[#0F172A] font-mono"
                         />
                       </div>
                     ))
                   ) : (
-                    <p className="text-center text-xs text-slate-400 py-6">
+                    <p className="text-center text-xs text-[#94A3B8] py-6">
                       {t(
                         "No attendance wage earned.",
                         "कोई उपस्थिति/हाजिरी मजदूरी अर्जित नहीं की गई।",
@@ -3016,10 +3016,10 @@ export default function ProfileView({
                     metrics.details.overtimeRows.map((row, idx) => (
                       <div
                         key={idx}
-                        className="border border-slate-50 rounded-xl p-3 bg-blue-50/20 flex justify-between gap-3"
+                        className="border border-slate-50 rounded-xl p-3 bg-[#EFF6FF]/20 flex justify-between gap-3"
                       >
                         <div>
-                          <span className="text-xs font-extrabold text-slate-800 font-mono block">
+                          <span className="text-xs font-extrabold text-[#0F172A] font-mono block">
                             {row.date}
                           </span>
                           <span className="text-[11px] text-slate-405 font-semibold leading-tight">
@@ -3029,7 +3029,7 @@ export default function ProfileView({
                         <LocalSalaryDisplay
                           value={row.amount}
                           format={(val) => `+₹${Math.round(val).toLocaleString("en-IN")}`}
-                          className="text-xs font-black text-blue-600 font-mono"
+                          className="text-xs font-black text-[#2563EB] font-mono"
                         />
                       </div>
                     ))
@@ -3054,7 +3054,7 @@ export default function ProfileView({
                         className="border border-slate-50 rounded-xl p-3 bg-emerald-50/20 flex justify-between gap-3"
                       >
                         <div>
-                          <span className="text-xs font-extrabold text-slate-800 font-mono block">
+                          <span className="text-xs font-extrabold text-[#0F172A] font-mono block">
                             {row.date}
                           </span>
                           <span className="text-[11px] text-slate-405 font-semibold leading-tight">
@@ -3121,7 +3121,7 @@ export default function ProfileView({
                     metrics.details.paymentsRows.map((row, idx) => (
                       <div
                         key={idx}
-                        className="border border-slate-50 rounded-xl p-3 bg-slate-50 flex justify-between gap-3"
+                        className="border border-slate-50 rounded-xl p-3 bg-[#F7F9FC] flex justify-between gap-3"
                       >
                         <div>
                           <span className="text-xs font-extrabold text-slate-805 font-mono block">
@@ -3158,23 +3158,23 @@ export default function ProfileView({
         <div className="fixed inset-0 bg-slate-900/60 flex items-end sm:items-center justify-center z-150 p-4 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl pb-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
             <div className="m-hnd mt-3 mb-1 sm:hidden" />
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-extrabold text-slate-800 font-sans tracking-wide uppercase">
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-[#0F172A] font-sans tracking-wide uppercase">
                 {paymentForm.id
                   ? t("Edit Recorded Payment", "भुगतान प्रविष्टि संपादन")
                   : t("Record Fresh Payment", "नया भुगतान दर्ज करें")}
               </h3>
               <button
                 onClick={() => setPaymentForm(null)}
-                className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F9FC] hover:bg-slate-100 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
               >
                 <Icon name="close" size={18} />
               </button>
             </div>
 
             <div className="px-6 pt-4 space-y-4">
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs">
-                <div className="font-extrabold text-slate-900">{emp.name}</div>
+              <div className="bg-[#EFF6FF] border border-blue-100 rounded-xl p-3 text-xs">
+                <div className="font-extrabold text-[#0F172A]">{emp.name}</div>
                 <div className="text-slate-655 font-semibold mt-1">
                   {t("Accrued master balance:", "कुल बकाया देय शेष:")}{" "}
                   <LocalSalaryDisplay
@@ -3187,7 +3187,7 @@ export default function ProfileView({
 
               {/* Amount - Default to empty! (Requirement 8) */}
               <div className="fld">
-                <label className="text-xs font-bold text-slate-600 block mb-1">
+                <label className="text-xs font-bold text-[#64748B] block mb-1">
                   {t("Payment Amount (₹)", "भुगतान राशि")}{" "}
                   <span className="text-red-500">*</span>
                 </label>
@@ -3208,7 +3208,7 @@ export default function ProfileView({
 
               {/* Date */}
               <div className="fld">
-                <label className="text-xs font-bold text-slate-600 block mb-1">
+                <label className="text-xs font-bold text-[#64748B] block mb-1">
                   {t("Payment Date", "भुगतान प्राप्त तारीख")}{" "}
                   <span className="text-red-500">*</span>
                 </label>
@@ -3224,7 +3224,7 @@ export default function ProfileView({
 
               {/* Time */}
               <div className="fld">
-                <label className="text-xs font-bold text-slate-600 block mb-1">
+                <label className="text-xs font-bold text-[#64748B] block mb-1">
                   {t("Payment Time", "समय")}{" "}
                   <span className="text-red-500">*</span>
                 </label>
@@ -3241,7 +3241,7 @@ export default function ProfileView({
 
               {/* Payment Mode options (Cash, UPI, Bank Transfer, Cheque) */}
               <div className="fld">
-                <label className="text-xs font-bold text-slate-600 block mb-1.5">
+                <label className="text-xs font-bold text-[#64748B] block mb-1.5">
                   {t("Payment Mode", "भुगतान माध्यम")}{" "}
                   <span className="text-red-500">*</span>
                 </label>
@@ -3264,7 +3264,7 @@ export default function ProfileView({
 
               {/* Paid By Selection */}
               <div className="fld">
-                <label className="text-xs font-bold text-slate-600 block mb-1">
+                <label className="text-xs font-bold text-[#64748B] block mb-1">
                   {t("Paid By", "भुगतानकर्ता (Paid By)")} <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -3284,7 +3284,7 @@ export default function ProfileView({
 
               {/* Notes - blank initially */}
               <div className="fld">
-                <label className="text-xs font-bold text-slate-600 block mb-1">
+                <label className="text-xs font-bold text-[#64748B] block mb-1">
                   {t("Notes (optional)", "टिप्पणी / विवरण")}
                 </label>
                 <input
@@ -3328,15 +3328,15 @@ export default function ProfileView({
         <div className="fixed inset-0 bg-slate-900/60 flex items-end sm:items-center justify-center z-150 p-4 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl pb-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
             <div className="m-hnd mt-3 mb-1 sm:hidden" />
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-extrabold text-slate-800 font-sans tracking-wide uppercase">
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-[#0F172A] font-sans tracking-wide uppercase">
                 {earningForm.id
                   ? t("Edit Extra Earning", "अतिरिक्त कमाई संपादित करें")
                   : t("Add Extra Earning", "अतिरिक्त कमाई दर्ज करें")}
               </h3>
               <button
                 onClick={() => setEarningForm(null)}
-                className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F9FC] hover:bg-slate-100 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
               >
                 <Icon name="close" size={18} />
               </button>
@@ -3424,15 +3424,15 @@ export default function ProfileView({
         <div className="fixed inset-0 bg-slate-900/60 flex items-end sm:items-center justify-center z-150 p-4 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl pb-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
             <div className="m-hnd mt-3 mb-1 sm:hidden" />
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-extrabold text-slate-800 font-sans tracking-wide uppercase">
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-[#0F172A] font-sans tracking-wide uppercase">
                 {deductionForm.id
                   ? t("Edit Deduction Entry", "कटौती प्रविष्टि संपादित करें")
                   : t("Add Deduction Entry", "कटौती दर्ज करें")}
               </h3>
               <button
                 onClick={() => setDeductionForm(null)}
-                className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F9FC] hover:bg-slate-100 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
               >
                 <Icon name="close" size={18} />
               </button>
@@ -3535,13 +3535,13 @@ export default function ProfileView({
             <div className="fixed inset-0 bg-slate-900/60 flex items-end sm:items-center justify-center z-150 p-4 backdrop-blur-xs animate-in fade-in duration-200">
               <div className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl pb-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="m-hnd mt-3 mb-1 sm:hidden animate-in" />
-                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-sm font-extrabold text-slate-800 font-sans tracking-wide uppercase">
+                <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+                  <h3 className="text-sm font-extrabold text-[#0F172A] font-sans tracking-wide uppercase">
                     {t("Overtime (OT) Record", "अतिरिक्त समय (OT) प्रविष्टि")}
                   </h3>
                   <button
                     onClick={() => setOvertimeForm(null)}
-                    className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-[#F7F9FC] hover:bg-slate-100 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
                   >
                     <Icon name="close" size={18} />
                   </button>
@@ -3613,7 +3613,7 @@ export default function ProfileView({
                             calcType: "HourlyRate",
                           })
                         }
-                        className="h-10 rounded-xl text-xs font-extrabold transition-all border bg-blue-600 text-white border-blue-600 shadow-xs"
+                        className="h-10 rounded-xl text-xs font-extrabold transition-all border bg-[#2563EB] text-white border-[#2563EB] shadow-xs"
                       >
                         {t("Hourly Rate", "घंटे की दर")}
                       </button>
@@ -3625,7 +3625,7 @@ export default function ProfileView({
                             calcType: "CustomAmount",
                           })
                         }
-                        className="h-10 rounded-xl text-xs font-extrabold transition-all border bg-white border-slate-200 text-slate-600"
+                        className="h-10 rounded-xl text-xs font-extrabold transition-all border bg-white border-[#E2E8F0] text-[#64748B]"
                       >
                         {t("Custom Cash", "कस्टम राशि")}
                       </button>
@@ -3673,14 +3673,14 @@ export default function ProfileView({
                   </div>
 
                   {/* Live Preview Card */}
-                  <div className="bg-blue-50/50 border border-blue-100/60 rounded-2xl p-4 space-y-2 my-2">
+                  <div className="bg-[#EFF6FF]/50 border border-blue-100/60 rounded-2xl p-4 space-y-2 my-2">
                     <div className="flex justify-between items-center text-[10px] font-extrabold text-blue-800 tracking-wider">
                       <span>{t("LIVE PREVIEW", "लाइव पूर्वावलोकन")}</span>
                       <span className="font-mono font-bold">₹{otHourlyRate.toFixed(2)}/hr</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs text-slate-600">
+                    <div className="flex justify-between items-center text-xs text-[#64748B]">
                       <span>{t("Duration:", "अवधि:")}</span>
-                      <span className="font-bold text-slate-800 font-mono">
+                      <span className="font-bold text-[#0F172A] font-mono">
                         {otH}h {otM}m
                       </span>
                     </div>
@@ -3732,13 +3732,13 @@ export default function ProfileView({
             <div className="fixed inset-0 bg-slate-900/60 flex items-end sm:items-center justify-center z-150 p-4 backdrop-blur-xs animate-in fade-in duration-200">
               <div className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl pb-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="m-hnd mt-3 mb-1 sm:hidden animate-in" />
-                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-sm font-extrabold text-slate-800 font-sans tracking-wide uppercase">
+                <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+                  <h3 className="text-sm font-extrabold text-[#0F172A] font-sans tracking-wide uppercase">
                     {t("Late Fine Record", "विलंब जुर्माना (Fine) प्रविष्टि")}
                   </h3>
                   <button
                     onClick={() => setLateFineForm(null)}
-                    className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-[#F7F9FC] hover:bg-slate-100 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
                   >
                     <Icon name="close" size={18} />
                   </button>
@@ -3822,7 +3822,7 @@ export default function ProfileView({
                             calcType: "CustomAmount",
                           })
                         }
-                        className="h-10 rounded-xl text-xs font-extrabold transition-all border bg-white border-slate-200 text-slate-605"
+                        className="h-10 rounded-xl text-xs font-extrabold transition-all border bg-white border-[#E2E8F0] text-slate-605"
                       >
                         {t("Custom Cash", "कस्टम राशि")}
                       </button>
@@ -3877,7 +3877,7 @@ export default function ProfileView({
                     </div>
                     <div className="flex justify-between items-center text-xs text-slate-650">
                       <span>{t("Late Duration:", "विलंब अवधि:")}</span>
-                      <span className="font-bold text-slate-800 font-mono">
+                      <span className="font-bold text-[#0F172A] font-mono">
                         {lfH}h {lfM}m
                       </span>
                     </div>
@@ -3917,8 +3917,8 @@ export default function ProfileView({
         <div className="fixed inset-0 bg-slate-900/60 flex items-end sm:items-center justify-center z-150 p-4 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl pb-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
             <div className="m-hnd mt-3 mb-1 sm:hidden animate-in" />
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-extrabold text-slate-800 font-sans tracking-wide uppercase">
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-[#0F172A] font-sans tracking-wide uppercase">
                 {t(
                   "Salary Rates Configurations",
                   "वेतन दरों का सुधारात्मक ढाँचा",
@@ -3926,7 +3926,7 @@ export default function ProfileView({
               </h3>
               <button
                 onClick={() => setPrevRatesModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7F9FC] hover:bg-slate-100 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
               >
                 <Icon name="close" size={18} />
               </button>
@@ -3934,7 +3934,7 @@ export default function ProfileView({
             <div className="p-6 space-y-4">
               {/* Option toggle choices */}
               <div className="fld">
-                <label className="text-xs font-bold text-slate-500 block mb-1.5">
+                <label className="text-xs font-bold text-[#64748B] block mb-1.5">
                   {t("Rates Scops Selection", "दर परिवर्तन का क्षेत्र")}
                 </label>
                 <div className="flex gap-2">
@@ -3957,7 +3957,7 @@ export default function ProfileView({
 
               {rateOption === "history" && (
                 <div className="fld animate-in">
-                  <label className="text-xs font-bold block text-slate-600 mb-1">
+                  <label className="text-xs font-bold block text-[#64748B] mb-1">
                     {t("Select Month YYYY-MM", "महीना चुनें और वर्ष")}
                   </label>
                   <input
@@ -3988,7 +3988,7 @@ export default function ProfileView({
               </div>
 
               {/* Dynamic calculations notice */}
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs leading-relaxed text-blue-855 font-sans font-medium">
+              <div className="bg-[#EFF6FF] border border-blue-100 rounded-xl p-3 text-xs leading-relaxed text-blue-855 font-sans font-medium">
                 {t(
                   "Option B (Historical Rates) modifies ONLY the targeted month sequentially, instantly updating all carrying balance carry forward computations sequentially across next months.",
                   "विकल्प B के तहत किसी भी पिछले महीने की दर बदलने पर उससे जुड़े हुए आगे के सभी महीनों के संचित बकाया तथा शेष का पुनर्गणना स्वतः सुधर जाती है।",
@@ -4017,14 +4017,14 @@ export default function ProfileView({
       {/* 1. Custom Delete Confirm Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-200 animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-150">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mb-4 mx-auto animate-in zoom-in duration-300">
               <Icon name="warning" size={24} className="text-rose-600" />
             </div>
-            <h3 className="text-sm font-black text-slate-900 text-center uppercase tracking-tight">
+            <h3 className="text-sm font-black text-[#0F172A] text-center uppercase tracking-tight">
               {t("PERMANENT DELETE WARNING", "कर्मचारी को पूरी तरह डिलीट करें")}
             </h3>
-            <p className="text-xs text-slate-500 font-sans font-medium text-center leading-relaxed mt-2">
+            <p className="text-xs text-[#64748B] font-sans font-medium text-center leading-relaxed mt-2">
               {t(
                 "This will permanently purge this employee plus ALL their transaction logs, attendance entries, and historical balances. This action is IRREVERSIBLE. Proceed?",
                 "इससे यह कर्मचारी और उनका सारा पुराना रिकॉर्ड (हाजिरी, भुगतान, आदि) हमेशा के लिए डिलीट हो जाएगा। क्या आप डिलीट करना चाहते हैं?",
@@ -4032,7 +4032,7 @@ export default function ProfileView({
             </p>
             {/* PIN Input Field */}
             <div className="mt-4 space-y-1">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
+              <label className="text-[9px] font-black text-[#94A3B8] uppercase tracking-wider block">
                 {t("Enter 4-Digit Admin PIN", "४-अंकों का एडमिन पिन डालें")}
               </label>
               <input
@@ -4041,7 +4041,7 @@ export default function ProfileView({
                 value={deletePin}
                 onChange={(e) => setDeletePin(e.target.value.replace(/\D/g, ""))}
                 placeholder="••••"
-                className="w-full h-10 border border-slate-200 rounded-xl text-center font-mono font-black text-lg tracking-widest bg-slate-50 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                className="w-full h-10 border border-[#E2E8F0] rounded-xl text-center font-mono font-black text-lg tracking-widest bg-[#F7F9FC] outline-none focus:border-blue-500 focus:bg-white transition-all"
               />
             </div>
             <div className="flex gap-3 mt-6 text-xs font-bold font-sans">
@@ -4112,14 +4112,14 @@ export default function ProfileView({
       {/* 2. Custom Mark Job Left Modal */}
       {showLeftConfirm && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-200 animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-150">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-4 mx-auto animate-in zoom-in duration-300">
               <Icon name="logout" size={24} className="text-amber-600" />
             </div>
-            <h3 className="text-sm font-black text-slate-900 text-center uppercase tracking-tight">
+            <h3 className="text-sm font-black text-[#0F172A] text-center uppercase tracking-tight">
               {t("MARK JOB LEFT", "नौकरी छोड़ दी चिह्नित करें")}
             </h3>
-            <p className="text-xs text-slate-500 font-sans font-medium text-center leading-relaxed mt-2">
+            <p className="text-xs text-[#64748B] font-sans font-medium text-center leading-relaxed mt-2">
               {t(
                 "Mark this employee status as LEFT JOB? This terminates active rosters.",
                 "क्या आप दर्ज करना चाहते हैं कि इस कर्मचारी ने नौकरी छोड़ दी है? इससे ये लिस्ट में निष्क्रिय (Inactive) हो जाएंगे।",
@@ -4127,7 +4127,7 @@ export default function ProfileView({
             </p>
             {/* PIN Input Field */}
             <div className="mt-4 space-y-1">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
+              <label className="text-[9px] font-black text-[#94A3B8] uppercase tracking-wider block">
                 {t("Enter 4-Digit Admin PIN", "४-अंकों का एडमिन पिन डालें")}
               </label>
               <input
@@ -4136,7 +4136,7 @@ export default function ProfileView({
                 value={leftPin}
                 onChange={(e) => setLeftPin(e.target.value.replace(/\D/g, ""))}
                 placeholder="••••"
-                className="w-full h-10 border border-slate-200 rounded-xl text-center font-mono font-black text-lg tracking-widest bg-slate-50 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                className="w-full h-10 border border-[#E2E8F0] rounded-xl text-center font-mono font-black text-lg tracking-widest bg-[#F7F9FC] outline-none focus:border-blue-500 focus:bg-white transition-all"
               />
             </div>
             <div className="flex gap-3 mt-6 text-xs font-bold font-sans">
@@ -4174,15 +4174,15 @@ export default function ProfileView({
       {/* 2.5 Custom Employee Attendance Fine Settings Modal */}
       {showFineSettingsModal && fineSettingsState && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-200 animate-in fade-in duration-200 overflow-y-auto">
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-150 my-8">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                <Icon name="gavel" size={20} className="text-blue-600" />
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-150 my-8">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3 mb-4">
+              <h3 className="text-sm font-black text-[#0F172A] uppercase tracking-tight flex items-center gap-2">
+                <Icon name="gavel" size={20} className="text-[#2563EB]" />
                 <span>{t("Fine Settings Override", "जुर्माना सेटिंग्स नियम")}</span>
               </h3>
               <button
                 onClick={() => setShowFineSettingsModal(false)}
-                className="w-7 h-7 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-100 cursor-pointer"
+                className="w-7 h-7 rounded-full bg-[#F7F9FC] border border-[#E2E8F0] flex items-center justify-center text-[#94A3B8] hover:bg-slate-100 cursor-pointer"
               >
                 <Icon name="close" size={16} />
               </button>
@@ -4190,16 +4190,16 @@ export default function ProfileView({
 
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-800 block leading-tight">{t('Attendance Fine', 'उपस्थिति जुर्माना')}</span>
-                    <span className="text-[8px] text-slate-400 uppercase tracking-wider">{t('Fine Active', 'जुर्माना सक्रिय')}</span>
+                    <span className="text-[10px] font-bold text-[#0F172A] block leading-tight">{t('Attendance Fine', 'उपस्थिति जुर्माना')}</span>
+                    <span className="text-[8px] text-[#94A3B8] uppercase tracking-wider">{t('Fine Active', 'जुर्माना सक्रिय')}</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={fineSettingsState.fineEnabled}
                     onChange={(e) => setFineSettingsState({ ...fineSettingsState, fineEnabled: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                    className="w-4 h-4 text-[#2563EB] border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
                   />
                 </div>
 
@@ -4207,21 +4207,21 @@ export default function ProfileView({
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-800 block leading-tight">{t('50% Safe Rule', '50% सुरक्षित नियम')}</span>
-                    <span className="text-[8px] text-slate-400 uppercase tracking-wider">{t('No fine if >=50% work', '>=50% कार्य पर छूट')}</span>
+                    <span className="text-[10px] font-bold text-[#0F172A] block leading-tight">{t('50% Safe Rule', '50% सुरक्षित नियम')}</span>
+                    <span className="text-[8px] text-[#94A3B8] uppercase tracking-wider">{t('No fine if >=50% work', '>=50% कार्य पर छूट')}</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={fineSettingsState.fiftyPercentRuleEnabled}
                     onChange={(e) => setFineSettingsState({ ...fineSettingsState, fiftyPercentRuleEnabled: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                    className="w-4 h-4 text-[#2563EB] border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
                   />
                 </div>
 
                 <div className="fld mb-0">
-                  <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">{t('Grace Period (Days)', 'अनुग्रह अवधि (दिन)')}</label>
+                  <label className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">{t('Grace Period (Days)', 'अनुग्रह अवधि (दिन)')}</label>
                   <select
                     value={fineSettingsState.gracePeriodDays}
                     onChange={(e) => setFineSettingsState({ ...fineSettingsState, gracePeriodDays: parseInt(e.target.value, 10) })}
@@ -4236,20 +4236,20 @@ export default function ProfileView({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="fld mb-0">
-                  <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">{t('Standard Hours', 'मानक कार्य घंटे')}</label>
+                  <label className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">{t('Standard Hours', 'मानक कार्य घंटे')}</label>
                   <input
                     type="number"
-                    className="fi font-sans font-semibold text-slate-800"
+                    className="fi font-sans font-semibold text-[#0F172A]"
                     value={fineSettingsState.standardHours}
                     onChange={(e) => setFineSettingsState({ ...fineSettingsState, standardHours: parseInt(e.target.value, 10) || 8 })}
                   />
                 </div>
 
                 <div className="fld mb-0">
-                  <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">{t('Max Fine Amount (₹)', 'अधिकतम जुर्माना राशि (₹)')}</label>
+                  <label className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">{t('Max Fine Amount (₹)', 'अधिकतम जुर्माना राशि (₹)')}</label>
                   <input
                     type="number"
-                    className="fi font-sans font-semibold text-slate-800"
+                    className="fi font-sans font-semibold text-[#0F172A]"
                     value={fineSettingsState.maxFineAmount}
                     onChange={(e) => setFineSettingsState({ ...fineSettingsState, maxFineAmount: parseFloat(e.target.value) || 0 })}
                   />
@@ -4257,17 +4257,17 @@ export default function ProfileView({
               </div>
 
               {/* Editable Fine Table mapping */}
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5 space-y-2.5">
-                <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider block">{t('Employee Fine Table (Missing Hours → ₹)', 'कर्मचारी जुर्माना तालिका (कम घंटे → ₹)')}</span>
+              <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-3.5 space-y-2.5">
+                <span className="text-[9px] font-black uppercase text-[#64748B] tracking-wider block">{t('Employee Fine Table (Missing Hours → ₹)', 'कर्मचारी जुर्माना तालिका (कम घंटे → ₹)')}</span>
                 <div className="grid grid-cols-3 gap-2">
                   {Array.from({ length: fineSettingsState.standardHours }).map((_, idx) => {
                     const hrs = idx + 1;
                     return (
-                      <div key={hrs} className="bg-white border border-slate-100 rounded-lg p-2 flex items-center justify-between gap-1.5 shadow-3xs">
-                        <span className="text-[10px] font-extrabold text-slate-600 shrink-0">{hrs} {t('hrs', 'घंटे')}</span>
+                      <div key={hrs} className="bg-white border border-[#E2E8F0] rounded-lg p-2 flex items-center justify-between gap-1.5 shadow-3xs">
+                        <span className="text-[10px] font-extrabold text-[#64748B] shrink-0">{hrs} {t('hrs', 'घंटे')}</span>
                         <input
                           type="number"
-                          className="w-12 h-6 border-b border-slate-200 text-right font-sans font-bold text-[10px] text-blue-600 focus:outline-none focus:border-blue-500"
+                          className="w-12 h-6 border-b border-[#E2E8F0] text-right font-sans font-bold text-[10px] text-[#2563EB] focus:outline-none focus:border-blue-500"
                           value={fineSettingsState.fineTable[hrs] ?? ''}
                           placeholder={`${Math.round((hrs / fineSettingsState.standardHours) * fineSettingsState.maxFineAmount)}`}
                           onChange={(e) => {
@@ -4288,7 +4288,7 @@ export default function ProfileView({
             <div className="flex flex-col sm:flex-row gap-2 mt-6 text-xs font-bold font-sans">
               <button
                 onClick={handleResetFineSettingsToDefault}
-                className="btn bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold order-2 sm:order-1"
+                className="btn bg-slate-100 hover:bg-slate-200 text-[#0F172A] font-bold order-2 sm:order-1"
               >
                 {t("Reset to Company Default", "कंपनी डिफ़ॉल्ट पर रीसेट")}
               </button>
@@ -4301,7 +4301,7 @@ export default function ProfileView({
                 </button>
                 <button
                   onClick={handleSaveFineSettings}
-                  className="flex-1 btn bbl font-bold text-white bg-blue-600 hover:bg-blue-700"
+                  className="flex-1 btn bbl font-bold text-white bg-[#2563EB] hover:bg-blue-700"
                 >
                   {t("Save Override", "नियम सहेजें")}
                 </button>
@@ -4314,14 +4314,14 @@ export default function ProfileView({
       {/* Custom Transaction Delete Confirm Modal */}
       {txToDelete && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-250 animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-150">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mb-4 mx-auto animate-in zoom-in duration-300">
               <Icon name="delete_forever" size={24} className="text-rose-600 animate-pulse" />
             </div>
-            <h3 className="text-sm font-black text-slate-900 text-center uppercase tracking-tight">
+            <h3 className="text-sm font-black text-[#0F172A] text-center uppercase tracking-tight">
               {t("DELETE TRANSACTION", "लेन-देने मिटाएं")}
             </h3>
-            <p className="text-xs text-slate-500 font-sans font-medium text-center leading-relaxed mt-2">
+            <p className="text-xs text-[#64748B] font-sans font-medium text-center leading-relaxed mt-2">
               {t(
                 "Are you sure you want to permanently delete this transaction record? This action cannot be undone.",
                 "क्या आप वास्तव में इस लेन-देन को स्थायी रूप से हटाना चाहते हैं? यह कार्रवाई वापस नहीं ली जा सकती।",
@@ -4436,44 +4436,44 @@ export default function ProfileView({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">
+                    <h4 className="text-[9px] uppercase font-bold text-[#94A3B8] tracking-wider">
                       {t("Transaction Details", "लेन-देन का विवरण")}
                     </h4>
-                    <h3 className="text-sm font-black text-slate-900 mt-0.5">
+                    <h3 className="text-sm font-black text-[#0F172A] mt-0.5">
                       {title}
                     </h3>
                   </div>
                   <button
                     onClick={() => setSelectedTxAction(null)}
-                    className="w-8 h-8 rounded-full bg-slate-55 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-slate-55 hover:bg-slate-100 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
                   >
                     <Icon name="close" size={18} />
                   </button>
                 </div>
 
                 {/* Detail Content Row */}
-                <div className="bg-slate-50 rounded-xl p-3.5 flex justify-between items-center border border-slate-100/60 font-sans">
+                <div className="bg-[#F7F9FC] rounded-xl p-3.5 flex justify-between items-center border border-[#E2E8F0]/60 font-sans">
                   <div className="min-w-0">
-                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                    <div className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">
                       {t("Date & Time", "दिनांक और समय")}
                     </div>
-                    <div className="text-xs font-bold text-slate-700 mt-1">
+                    <div className="text-xs font-bold text-[#0F172A] mt-1">
                       {dateStr}
                     </div>
 
                     {descStr && (
                       <div className="mt-2.5">
-                        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                        <div className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">
                           {t("Description / Note", "टिप्पणी / विवरण")}
                         </div>
-                        <div className="text-xs font-semibold text-slate-600 mt-0.5 truncate max-w-[200px]">
+                        <div className="text-xs font-semibold text-[#64748B] mt-0.5 truncate max-w-[200px]">
                           {descStr}
                         </div>
                       </div>
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                    <div className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">
                       {t("Flow Amount", "लेन-देन राशि")}
                     </div>
                     <span className={`text-base font-black font-sans mt-0.5 ${
@@ -4496,7 +4496,7 @@ export default function ProfileView({
                           waiveDeduction(item.id, reason);
                           setSelectedTxAction(null);
                         }}
-                        className="btn bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold border border-blue-100/50 cursor-pointer text-[10px] py-2 flex items-center justify-center gap-1"
+                        className="btn bg-[#EFF6FF] hover:bg-blue-100 text-[#2563EB] font-bold border border-blue-100/50 cursor-pointer text-[10px] py-2 flex items-center justify-center gap-1"
                       >
                         <Icon name="gavel" size={13} />
                         <span>{t("Waive Fine", "माफ करें")}</span>
@@ -4642,10 +4642,10 @@ export default function ProfileView({
           <div className="bg-white rounded-3xl w-full max-w-3xl h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             
             {/* Modal Header */}
-            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+            <div className="bg-[#F7F9FC] px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2">
                 <Icon name="picture_as_pdf" className="text-red-500" size={20} />
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+                <h3 className="text-sm font-black text-[#0F172A] uppercase tracking-wider">
                   {t("Print Salary Slip", "सैलरी स्लिप प्रिंट करें")}
                 </h3>
               </div>
@@ -4658,15 +4658,15 @@ export default function ProfileView({
             </div>
 
             {/* Select month & year parameters panel */}
-            <div className="bg-white px-6 py-3 border-b border-slate-100 flex gap-4 flex-shrink-0">
+            <div className="bg-white px-6 py-3 border-b border-[#E2E8F0] flex gap-4 flex-shrink-0">
               <div className="flex-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">
+                <label className="text-[9px] font-black text-[#94A3B8] uppercase tracking-wider block mb-1">
                   {t("Select Month", "महीना चुनें")}
                 </label>
                 <select
                   value={pdfMonth}
                   onChange={(e) => setPdfMonth(parseInt(e.target.value))}
-                  className="fi bg-white h-9 border border-slate-200 rounded-lg px-2 text-xs w-full"
+                  className="fi bg-white h-9 border border-[#E2E8F0] rounded-lg px-2 text-xs w-full"
                 >
                   {MN.map((m, idx) => {
                     const today = new Date();
@@ -4677,7 +4677,7 @@ export default function ProfileView({
               </div>
 
               <div className="flex-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">
+                <label className="text-[9px] font-black text-[#94A3B8] uppercase tracking-wider block mb-1">
                   {t("Select Year", "वर्ष चुनें")}
                 </label>
                 <select
@@ -4690,7 +4690,7 @@ export default function ProfileView({
                       setPdfMonth(today.getMonth());
                     }
                   }}
-                  className="fi bg-white h-9 border border-slate-200 rounded-lg px-2 text-xs w-full"
+                  className="fi bg-white h-9 border border-[#E2E8F0] rounded-lg px-2 text-xs w-full"
                 >
                   {Array.from({ length: new Date().getFullYear() - 2024 + 1 }, (_, i) => 2024 + i).map((yr) => (
                     <option key={yr} value={yr}>{yr}</option>
@@ -4700,7 +4700,7 @@ export default function ProfileView({
             </div>
 
             {/* PDF Slip container for rendering and printing */}
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50" id="salary-slip-print-box">
+            <div className="flex-1 overflow-y-auto p-6 bg-[#F7F9FC]/50" id="salary-slip-print-box">
               <SalarySlipPDF
                 employee={emp}
                 year={pdfYear}
@@ -4711,7 +4711,7 @@ export default function ProfileView({
             </div>
 
             {/* Modal Footer with Download and Close Triggers */}
-            <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-4 flex-shrink-0">
+            <div className="bg-[#F7F9FC] px-6 py-4 border-t border-[#E2E8F0] flex gap-4 flex-shrink-0">
               <button
                 onClick={async () => {
                   const monthsEn = [

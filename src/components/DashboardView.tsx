@@ -64,190 +64,169 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
   const pendingRequests = (db.approvalRequests || []).filter(r => r.status === 'Pending');
 
   return (
-    <div className="w-full select-none space-y-6 animate-in fade-in duration-200">
+    <div className="w-full select-none space-y-6 animate-in fade-in duration-200 p-4 md:p-6 pb-28 md:pb-8">
       
-      {/* Real-time Pending Approvals Alert Banner */}
+      {/* Real-time Pending Approvals Alert */}
       {pendingRequests.length > 0 && (
-        <div 
-          onClick={() => onNavigate('approvals')}
-          className="bg-amber-50 border border-amber-250 rounded-2xl p-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-amber-100/50 transition-colors shadow-3xs animate-pulse"
-        >
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => onNavigate('approvals')}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-amber-500 text-white rounded-xl flex items-center justify-center shrink-0 shadow-xs">
-              <Icon name="verified_user" size={20} />
+            <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+              <Icon name="assignment_late" size={20} />
             </div>
             <div>
-              <h4 className="text-xs font-black text-amber-900 uppercase tracking-wide">
-                {t('Pending Approvals Alert', 'मंजूरी पेंडिंग अलर्ट')}
-              </h4>
-              <p className="text-[10px] text-amber-700 font-semibold mt-0.5">
-                {t(`You have ${pendingRequests.length} pending correction requests from employees.`, `आपके पास कर्मचारियों की ${pendingRequests.length} पेंडिंग रिक्वेस्ट बाकी हैं।`)}
-              </p>
+              <h3 className="text-sm font-bold text-amber-900 leading-tight">
+                {t(`${pendingRequests.length} Pending Approval${pendingRequests.length > 1 ? 's' : ''}`, `${pendingRequests.length} पेंडिंग अप्रूवल`)}
+              </h3>
+              <p className="text-xs text-amber-700 font-medium mt-0.5">{t('Needs your attention', 'आपकी मंजूरी का इंतजार')}</p>
             </div>
           </div>
-          <Icon name="chevron_right" className="text-amber-600" size={20} />
+          <Icon name="chevron_right" size={20} className="text-amber-500" />
         </div>
       )}
 
-      <div>
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">{t("Quick Actions", "शॉर्टकट काम")}</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {/* Staff List Link */}
-          <div 
-            onClick={() => onNavigate('pv-staff')}
-            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-blue-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
-          >
-            <div className="bg-blue-50/70 text-blue-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
-              <Icon name="badge" size={22} className="text-blue-650" />
+      {/* Quick Actions Grid */}
+      <section>
+        <h2 className="text-sm font-bold text-[#64748B] uppercase tracking-wider mb-3 px-1">{t('Quick Actions', 'त्वरित कार्य')}</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <button onClick={() => onNavigate('pv-staff')} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 flex flex-col items-start gap-3 shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center">
+              <Icon name="people" size={20} />
             </div>
-            <div className="min-w-0">
-              <div className="font-semibold text-xs text-slate-900 truncate">{t('Staff Registry', 'कर्मचारी सूची')}</div>
-              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Manage profile & wages', 'कर्मचारी प्रबन्ध')}</div>
+            <div className="text-left">
+              <span className="block text-sm font-bold text-[#0F172A] leading-tight">{t('Staff Registry', 'स्टाफ सूची')}</span>
+              <span className="block text-xs text-[#64748B] mt-0.5">{t('Manage profile', 'प्रोफाइल प्रबंधित करें')}</span>
             </div>
-          </div>
-
-          {/* Mark Attendance Link */}
-          <div 
-            onClick={() => onNavigate('pv-att')}
-            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-emerald-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
-          >
-            <div className="bg-emerald-50/70 text-emerald-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-              <Icon name="edit_calendar" size={22} className="text-emerald-650" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-semibold text-xs text-slate-900 truncate">{t('Attendance', 'उपस्थिति')}</div>
-              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Mark daily status', 'हाजिरी भरें')}</div>
-            </div>
-          </div>
-
-          {/* Add New Staff Link */}
-          <div 
-            onClick={() => onNavigate('pv-add')}
-            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-purple-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
-          >
-            <div className="bg-purple-50/70 text-purple-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-purple-100 transition-colors">
-              <Icon name="person_add" size={22} className="text-purple-655" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-semibold text-xs text-slate-900 truncate">{t('Add Staff', 'नया कर्मचारी')}</div>
-              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Onboard employee', 'खाता जोड़ें')}</div>
-            </div>
-          </div>
-
-          {/* Approval Desk Link */}
-          <div 
-            onClick={() => onNavigate('approvals')}
-            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-amber-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
-          >
-            <div className="bg-amber-50/70 text-amber-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
-              <Icon name="verified_user" size={22} className="text-amber-655" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-semibold text-xs text-slate-900 truncate">{t('Approval Desk', 'मंजूरी डेस्क')}</div>
-              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Review pending requests', 'रिक्वेस्ट अप्रूव करें')}</div>
-            </div>
-          </div>
-
-          {/* GeoFence Center Link */}
-          <div 
-            onClick={() => onNavigate('geofences')}
-            className="bg-white border border-slate-100 p-4 rounded-2xl cursor-pointer hover:border-blue-300 hover:shadow-xs transition-all active:scale-[0.98] flex items-center gap-3.5 shadow-2xs group"
-          >
-            <div className="bg-blue-50/70 text-blue-600 w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
-              <Icon name="radar" size={22} className="text-blue-650" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-semibold text-xs text-slate-900 truncate">{t('GeoFence Center', 'जियोफेंस सेंटर')}</div>
-              <div className="text-[9px] text-slate-400 mt-0.5 truncate">{t('Manage work regions', 'जियोफेंस सीमाएं बदलें')}</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Consolidated Today's Status Header */}
-      <div>
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">{t("Today's Overview Status", "आज की स्थिति का सारांश")}</h3>
-        
-        {/* 2-Column Mobile Friendly Metrics Cards, expanding to 3 columns on larger devices */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          </button>
           
-          {/* Present Card */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
-            <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Present Staff', 'हाजिर स्टाफ')}</span>
-              <Icon name="check_circle" size={18} className="text-emerald-500" fill={true} />
+          <button onClick={() => onNavigate('pv-att')} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 flex flex-col items-start gap-3 shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <Icon name="event_available" size={20} />
             </div>
-            <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-2xl font-black text-emerald-600 font-mono">{presentCount}</span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">{t('Active', 'एक्टिव')}</span>
+            <div className="text-left">
+              <span className="block text-sm font-bold text-[#0F172A] leading-tight">{t('Attendance', 'हाजिरी')}</span>
+              <span className="block text-xs text-[#64748B] mt-0.5">{t('Mark daily status', 'दैनिक स्थिति')}</span>
             </div>
-          </div>
+          </button>
 
-          {/* Absent Card */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
-            <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Absent Staff', 'गैरहाजिर स्टाफ')}</span>
-              <Icon name="cancel" size={18} className="text-red-500" fill={true} />
+          <button onClick={() => onNavigate('add-staff')} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 flex flex-col items-start gap-3 shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+              <Icon name="person_add" size={20} />
             </div>
-            <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-2xl font-black text-red-500 font-mono">{absentCount}</span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">{t('Absent', 'गैरहाजिर')}</span>
+            <div className="text-left">
+              <span className="block text-sm font-bold text-[#0F172A] leading-tight">{t('Add Staff', 'नया स्टाफ')}</span>
+              <span className="block text-xs text-[#64748B] mt-0.5">{t('Onboard employee', 'नया कर्मचारी जोड़े')}</span>
             </div>
-          </div>
+          </button>
 
-          {/* Pending Payment Card */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
-            <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Pending Payment', 'बाकी वेतन')}</span>
-              <Icon name="payments" size={18} className="text-amber-500" fill={true} />
+          <button onClick={() => onNavigate('approvals')} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 flex flex-col items-start gap-3 shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Icon name="fact_check" size={20} />
             </div>
-            <div className="mt-2 font-mono">
-              <span className="text-xl font-black text-amber-600">
-                ₹{Math.round(totalPendingDue).toLocaleString('en-IN')}
-              </span>
+            <div className="text-left">
+              <span className="block text-sm font-bold text-[#0F172A] leading-tight">{t('Approval Desk', 'अनुमोदन कक्ष')}</span>
+              <span className="block text-xs text-[#64748B] mt-0.5">{t('Review requests', 'अनुरोध जांचे')}</span>
             </div>
-          </div>
+          </button>
 
-          {/* Paid This Month Card */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
-            <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Paid This Month', 'इस महीने भुगतान')}</span>
-              <Icon name="account_balance_wallet" size={18} className="text-blue-500" fill={true} />
+          <button onClick={() => onNavigate('geofences')} className="hidden lg:flex bg-white border border-[#E2E8F0] rounded-2xl p-4 flex-col items-start gap-3 shadow-sm hover:border-[#2563EB] hover:shadow-md transition-all active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <Icon name="location_on" size={20} />
             </div>
-            <div className="mt-2 font-mono">
-              <span className="text-xl font-black text-blue-600">
-                ₹{Math.round(totalPaidThisMonth).toLocaleString('en-IN')}
-              </span>
+            <div className="text-left">
+              <span className="block text-sm font-bold text-[#0F172A] leading-tight">{t('GeoFence', 'जियो-फेंस')}</span>
+              <span className="block text-xs text-[#64748B] mt-0.5">{t('Manage regions', 'कार्य क्षेत्र')}</span>
             </div>
-          </div>
-
-          {/* Attendance Summary */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
-            <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Attendance Marked', 'हाजिरी दर्ज')}</span>
-              <Icon name="assignment_turned_in" size={18} className="text-slate-500" fill={true} />
-            </div>
-            <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-lg font-black text-slate-800 font-mono">{markedCount} <span className="text-slate-350 font-normal">/</span> {activeEmployees.length}</span>
-              <span className="text-[9px] text-slate-400 font-bold">{t('Marked', 'दर्ज')}</span>
-            </div>
-          </div>
-
-          {/* Total Registered Active Staff */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-2xs relative overflow-hidden flex flex-col justify-between h-28">
-            <div className="flex justify-between items-start">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t('Total Staff Count', 'कुल एक्टिव स्टाफ')}</span>
-              <Icon name="group" size={18} className="text-indigo-500" fill={true} />
-            </div>
-            <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-lg font-black text-indigo-600 font-mono">{activeEmployees.length}</span>
-              <span className="text-[9px] text-slate-400 font-bold">{t('Staffs', 'कुल')}</span>
-            </div>
-          </div>
-
+          </button>
         </div>
-      </div>
+      </section>
+
+      {/* Today's Overview KPI Cards */}
+      <section>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-sm font-bold text-[#64748B] uppercase tracking-wider">{t("Today's Overview", 'आज का अवलोकन')}</h2>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Present */}
+          <div className="bg-white border border-emerald-100 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-3 opacity-20 text-emerald-500">
+              <Icon name="check_circle" size={40} />
+            </div>
+            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">{t('Present', 'उपस्थित')}</p>
+            <p className="text-3xl font-black text-[#0F172A] mt-1">{presentCount}</p>
+            <p className="text-[10px] font-bold text-[#64748B] mt-1 uppercase tracking-wide">{t('Active today', 'आज कार्य पर')}</p>
+          </div>
+
+          {/* Absent */}
+          <div className="bg-white border border-rose-100 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-3 opacity-20 text-rose-500">
+              <Icon name="cancel" size={40} />
+            </div>
+            <p className="text-xs font-bold text-rose-700 uppercase tracking-wider">{t('Absent', 'अनुपस्थित')}</p>
+            <p className="text-3xl font-black text-[#0F172A] mt-1">{absentCount}</p>
+            <p className="text-[10px] font-bold text-[#64748B] mt-1 uppercase tracking-wide">{t('On leave / absent', 'छुट्टी / गैरहाजिर')}</p>
+          </div>
+
+          {/* Pending Payment */}
+          <div className="bg-white border border-amber-100 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-3 opacity-20 text-amber-500">
+              <Icon name="account_balance_wallet" size={40} />
+            </div>
+            <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">{t('Pending Payment', 'बकाया भुगतान')}</p>
+            <p className="text-3xl font-black text-[#0F172A] mt-1">₹{totalPendingDue.toLocaleString('en-IN')}</p>
+            <p className="text-[10px] font-bold text-[#64748B] mt-1 uppercase tracking-wide">{t('Total Pending', 'कुल बकाया')}</p>
+          </div>
+
+          {/* Paid This Month */}
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-3 opacity-20 text-[#2563EB]">
+              <Icon name="payments" size={40} />
+            </div>
+            <p className="text-xs font-bold text-[#2563EB] uppercase tracking-wider">{t('Paid This Month', 'इस महीने भुगतान')}</p>
+            <p className="text-3xl font-black text-[#0F172A] mt-1">₹{totalPaidThisMonth.toLocaleString('en-IN')}</p>
+            <p className="text-[10px] font-bold text-[#64748B] mt-1 uppercase tracking-wide">{t('Total Paid', 'कुल जमा')}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Attendance & Staff Snapshot Row */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* Attendance Summary Panel */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+             <h2 className="text-sm font-bold text-[#64748B] uppercase tracking-wider">{t('Attendance Marked', 'हाजिरी विवरण')}</h2>
+             <span className="text-xs font-bold text-[#0F172A] bg-slate-100 px-2 py-1 rounded-md">
+               {markedCount} / {activeEmployees.length}
+             </span>
+          </div>
+          
+          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex mb-3">
+             <div style={{width: `${activeEmployees.length > 0 ? (presentCount / activeEmployees.length) * 100 : 0}%`}} className="bg-[#10B981] h-full" />
+             <div style={{width: `${activeEmployees.length > 0 ? (absentCount / activeEmployees.length) * 100 : 0}%`}} className="bg-[#EF4444] h-full border-l border-white/30" />
+          </div>
+          
+          <div className="flex items-center justify-between text-xs font-bold text-[#64748B]">
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#10B981]"></span> Present ({presentCount})</div>
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#EF4444]"></span> Absent ({absentCount})</div>
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-300"></span> Unmarked ({activeEmployees.length - markedCount})</div>
+          </div>
+        </div>
+
+        {/* Total Staff Panel */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm flex items-center justify-between cursor-pointer hover:border-[#2563EB] transition-colors" onClick={() => onNavigate('pv-staff')}>
+          <div>
+             <h2 className="text-sm font-bold text-[#64748B] uppercase tracking-wider mb-2">{t('Total Staff', 'कुल स्टाफ')}</h2>
+             <div className="flex items-baseline gap-2">
+               <span className="text-4xl font-black text-[#0F172A]">{activeEmployees.length}</span>
+               <span className="text-xs font-bold text-[#64748B]">{t('Active Employees', 'सक्रिय कर्मचारी')}</span>
+             </div>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
+             <Icon name="groups" size={28} />
+          </div>
+        </div>
+      </section>
 
     </div>
   );
