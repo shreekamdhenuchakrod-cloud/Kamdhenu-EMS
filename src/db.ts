@@ -88,7 +88,40 @@ export function loadDatabase(): AppDatabase {
 
 export function saveDatabase(db: AppDatabase) {
   try {
-    localStorage.setItem('skbg_database_v3', JSON.stringify(db));
+    const clone = JSON.parse(JSON.stringify(db)) as AppDatabase;
+    
+    // Strip heavy base64 strings to prevent QuotaExceededError
+    if (clone.employees) {
+      clone.employees.forEach(e => {
+        if (e.pic && e.pic.length > 500) e.pic = '';
+      });
+    }
+    
+    if (clone.approvalRequests) {
+      clone.approvalRequests.forEach(req => {
+        if (req.employeePic && req.employeePic.length > 500) req.employeePic = '';
+      });
+    }
+
+    if (clone.attendance) {
+      Object.keys(clone.attendance).forEach(k => {
+        const rec = clone.attendance[k] as any;
+        if (rec.selfieUrl && rec.selfieUrl.length > 500) rec.selfieUrl = '';
+        if (rec.selfie && rec.selfie.length > 500) rec.selfie = '';
+      });
+    }
+
+    // Keep only last 50 audit logs to save space
+    if (clone.auditLogs && clone.auditLogs.length > 50) {
+      clone.auditLogs = clone.auditLogs.slice(0, 50);
+    }
+    
+    // Keep only last 50 recycle bin items
+    if (clone.recycleBin && clone.recycleBin.length > 50) {
+      clone.recycleBin = clone.recycleBin.slice(0, 50);
+    }
+
+    localStorage.setItem('skbg_database_v3', JSON.stringify(clone));
   } catch (e) {
     console.error('Failed to save to localStorage', e);
   }
