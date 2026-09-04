@@ -138,31 +138,43 @@ export class LocationManager {
       }
     }
 
+    // Emit helper to update UI
+    const emitLocation = (address: string) => {
+      const loc: LiveLocation = {
+        employeeId,
+        lat,
+        lng,
+        battery: this.batteryLevel,
+        speed,
+        accuracy,
+        timestamp,
+        isMock: this.isMockLocationDetected,
+        network: this.isOnline ? 'online' : 'offline',
+        address: address || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`
+      };
+
+      if (this.onLocationTickCallback) {
+        this.onLocationTickCallback(loc);
+      }
+    };
+
+    // 1. Immediately emit location with raw coordinates or last known address to unblock UI
+    emitLocation(this.lastResolvedAddress);
+
+    // 2. Perform slow reverse geocoding in the background without blocking
     if (needsGeocode) {
       try {
         const { reverseGeocodeOSM } = await import('../utils/geocoding');
-        this.lastResolvedAddress = await reverseGeocodeOSM(lat, lng);
-        this.lastGeocodedPosition = { lat, lng };
+        reverseGeocodeOSM(lat, lng).then(address => {
+          this.lastResolvedAddress = address;
+          this.lastGeocodedPosition = { lat, lng };
+          emitLocation(address);
+        }).catch(err => {
+          console.error('Failed to call reverseGeocodeOSM:', err);
+        });
       } catch (err) {
-        console.error('Failed to import or call reverseGeocodeOSM:', err);
+        console.error('Failed to import geocoding module:', err);
       }
-    }
-
-    const loc: LiveLocation = {
-      employeeId,
-      lat,
-      lng,
-      battery: this.batteryLevel,
-      speed,
-      accuracy,
-      timestamp,
-      isMock: this.isMockLocationDetected,
-      network: this.isOnline ? 'online' : 'offline',
-      address: this.lastResolvedAddress || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`
-    };
-
-    if (this.onLocationTickCallback) {
-      this.onLocationTickCallback(loc);
     }
 
     // Removed live sync logic (Location is now only used for Geofence tracking locally)
