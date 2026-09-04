@@ -28,7 +28,15 @@ export default function StaffListView({ db, onNavigate, lang }: StaffListViewPro
     return matchesSearch && matchesType;
   });
 
-  const renderStaffCard = (emp: Employee) => {
+  
+  const sortedStaff = [...filteredStaff].sort((a,b) => {
+    const order = { 'Hourly': 1, 'Monthly': 2, 'Daily': 3 };
+    const aOrder = order[a.type] || 4;
+    const bOrder = order[b.type] || 4;
+    return aOrder - bOrder;
+  });
+
+const renderStaffCard = (emp: Employee) => {
     const initials = emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || emp.name.slice(0, 2).toUpperCase();
 
     // Today's attendance status
@@ -188,7 +196,7 @@ export default function StaffListView({ db, onNavigate, lang }: StaffListViewPro
       <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-28 md:pb-8">
         {filteredStaff.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {filteredStaff.map(renderStaffCard)}
+            {sortedStaff.map(renderStaffCard)}
           </div>
         ) : (
           <div className="w-full flex flex-col items-center justify-center py-20 text-center px-4">

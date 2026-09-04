@@ -133,6 +133,7 @@ export default function ApprovalPanel({
   const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string>('');
   const [selectedRequestDetails, setSelectedRequestDetails] = useState<ApprovalRequest | null>(null);
+  const [showActionModal, setShowActionModal] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   // Load existing punches when target date, requestType or correctionMode changes in new request mode
