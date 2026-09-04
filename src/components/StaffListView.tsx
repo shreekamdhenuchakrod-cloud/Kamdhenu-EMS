@@ -97,7 +97,7 @@ export default function StaffListView({ db, onNavigate, lang }: StaffListViewPro
           )}
           
           <div>
-            <h3 className="font-bold text-[#0F172A] text-sm md:text-base leading-tight flex items-center gap-2">
+            <h3 className="font-bold text-[#0F172A] text-sm leading-tight flex flex-wrap items-center gap-1.5 line-clamp-2">
               {emp.name}
               <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 text-[#64748B] px-1.5 py-0.5 rounded-md">
                 {t(emp.type, emp.type === 'Hourly' ? 'घंटेवार' : emp.type === 'Daily' ? 'दिहाड़ी' : 'मासिक')}
@@ -120,9 +120,11 @@ export default function StaffListView({ db, onNavigate, lang }: StaffListViewPro
         </div>
 
         <div className="text-right flex flex-col items-end justify-center h-full gap-1">
-          <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">{t('Amount Due', 'बकाया राशि')}</p>
-          <p className={`text-lg font-black \${totalDue > 0 ? 'text-[#0F172A]' : 'text-[#64748B]'}`}>
-            ₹{totalDue.toLocaleString('en-IN')}
+          <p className={`text-[9px] font-bold uppercase tracking-wider ${totalDue > 0 ? 'text-emerald-600' : totalDue < 0 ? 'text-rose-600' : 'text-[#64748B]'}`}>
+            {totalDue > 0 ? t('Amount Due', 'बकाया राशि') : totalDue < 0 ? t('Advance Paid', 'अग्रिम भुगतान') : t('Settled', 'चुकाया गया')}
+          </p>
+          <p className={`text-base font-black ${totalDue > 0 ? 'text-emerald-600' : totalDue < 0 ? 'text-rose-600' : 'text-[#64748B]'}`}>
+            ₹{Math.round(Math.abs(totalDue)).toLocaleString('en-IN')}
           </p>
         </div>
       </div>

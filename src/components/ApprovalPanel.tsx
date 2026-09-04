@@ -1003,1251 +1003,273 @@ export default function ApprovalPanel({
     }
   };
 
+  
   return (
-    <div className="w-full space-y-5 animate-in fade-in duration-200">
+    <div className="w-full h-full flex flex-col bg-[#F7F9FC] animate-in fade-in duration-200">
       
-      {/* HEADER SECTION */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-blue-100 flex items-center justify-center text-[#2563EB] shadow-3xs">
-            <Icon name="verified_user" size={18} />
+      {/* Sticky Header */}
+      <div className="bg-white sticky top-0 z-10 px-4 md:px-6 pt-4 pb-3 border-b border-[#E2E8F0] shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg md:text-xl font-black text-[#0F172A] tracking-tight">
+              {isAdmin ? t('Approval Desk', 'मैनेजर मंजूरी डेस्क') : t('My Correction Requests', 'मेरे सुधार रिक्वेस्ट')}
+            </h2>
+            <p className="text-xs text-[#64748B] font-medium mt-0.5">
+              {filteredRequests.length} {t('Pending requests', 'लंबित अनुरोध')}
+            </p>
           </div>
-          <span className="text-xs font-black text-[#0F172A] uppercase tracking-wider">
-            {isAdmin ? t('Manager Approval Panel', 'मैनेजर मंजूरी डेस्क') : t('My Correction Requests', 'मेरे सुधार रिक्वेस्ट')}
-          </span>
-        </div>
-
-        </div>
-
-        <div className="flex gap-2 items-center">
-          <button
-            onClick={() => window.location.reload()}
-            className="w-9 h-9 rounded-xl bg-[#F7F9FC] border border-[#E2E8F0] text-[#64748B] flex items-center justify-center hover:bg-slate-100 active:scale-[0.97] transition cursor-pointer shrink-0"
-            title={t('Refresh', 'रीफ्रेश')}
-          >
-            <Icon name="refresh" size={18} />
-          </button>
-
-          {!isAdmin && empView === 'list' && (
+          <div className="flex gap-2">
             <button
-              onClick={() => {
-                setRequestType('attendance');
-                setEmpView('new_request');
-              }}
-              className="h-9 px-4 bg-[#2563EB] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-blue-500/10 shrink-0 whitespace-nowrap"
+              onClick={() => window.location.reload()}
+              className="w-10 h-10 rounded-xl bg-[#F7F9FC] border border-[#E2E8F0] text-[#64748B] flex items-center justify-center hover:bg-slate-50 transition cursor-pointer"
+              title={t('Refresh', 'रीफ्रेश')}
             >
-              <Icon name="add" size={16} />
-              <span>{t('New Request', 'नया अनुरोध')}</span>
+              <Icon name="refresh" size={20} />
             </button>
-          )}
-        </div>
-
-      {/* FILTER BAR */}
-      {(isAdmin || (!isAdmin && empView === 'list')) && (
-        <div className="bg-white border border-[#E2E8F0]/50 p-4 rounded-2xl shadow-3xs flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="text-[10px] text-slate-450 font-bold uppercase tracking-wider shrink-0">
-            {t('Filter:', 'फ़िल्टर:')}
-          </div>
-          
-          <div className="flex gap-2 w-full sm:flex-1">
-            {/* Category Filter */}
-            <select
-              value={filterCategory}
-              onChange={e => setFilterCategory(e.target.value)}
-              className="h-9 px-2.5 rounded-lg border border-[#E2E8F0] bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer flex-1 min-w-0 truncate"
-            >
-              <option value="All">{t('All Categories', 'सभी श्रेणियां')}</option>
-              {categories.map((c, idx) => (
-                <option key={idx} value={c}>{c}</option>
-              ))}
-            </select>
-
-            {/* Status Filter */}
-            <select
-              value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value as any)}
-              className="h-9 px-2.5 rounded-lg border border-[#E2E8F0] bg-white font-bold text-[10px] text-slate-650 focus:outline-none cursor-pointer flex-1 min-w-0 truncate"
-            >
-              <option value="Pending">{t('Pending Requests', 'लंबित अनुरोध')}</option>
-              <option value="Approved">{t('Approved', 'स्वीकृत')}</option>
-              <option value="Rejected">{t('Rejected', 'अस्वीकृत')}</option>
-              <option value="All">{t('All', 'सभी')}</option>
-            </select>
-          </div>
-        </div>
-      )}
-
-      {/* --- EMPLOYEE FORM: CREATE REQUEST --- */}
-      {!isAdmin && empView === 'new_request' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-3xl p-5 shadow-2xs animate-in slide-in-from-bottom duration-200">
-          <div className="text-xs font-black text-[#0F172A] uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
-            {t('Create Correction Request', 'सुधार हेतु अनुरोध फॉर्म')}
-          </div>
-
-          {/* Request Type Toggle Selector */}
-          <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-[#E2E8F0] overflow-hidden bg-[#F7F9FC] p-1 mb-4 gap-1.5">
-            <button
-              type="button"
-              onClick={() => setRequestType('attendance')}
-              className={`h-9 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                requestType === 'attendance' ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A]'
-              }`}
-            >
-              <Icon name="edit_calendar" size={14} />
-              <span>{t('Attendance', 'हाजिरी सुधार')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setRequestType('payment')}
-              className={`h-9 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                requestType === 'payment' ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A]'
-              }`}
-            >
-              <Icon name="payments" size={14} />
-              <span>{t('Edit Payment', 'भुगतान सुधार')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setRequestType('leave')}
-              className={`h-9 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                requestType === 'leave' ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A]'
-              }`}
-            >
-              <Icon name="date_range" size={14} />
-              <span>{t('Request Leave', 'छुट्टी अनुरोध')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setRequestType('new_payment')}
-              className={`h-9 rounded-lg text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                requestType === 'new_payment' ? 'bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]' : 'text-[#64748B] hover:text-[#0F172A]'
-              }`}
-            >
-              <Icon name="add_circle" size={14} />
-              <span>{t('New Payment', 'नया भुगतान')}</span>
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmitRequest} className="space-y-4">
-            
-            {/* ATTENDANCE CORRECTION FORM */}
-            {requestType === 'attendance' && (
-              <>
-                {/* Target Date Selector */}
-                <div className="fld">
-                  <label>{t('Target Date', 'सुधार की तारीख')}</label>
-                  <input
-                    type="date"
-                    value={reqDate}
-                    max={new Date().toISOString().split('T')[0]}
-                    onChange={e => setReqDate(e.target.value)}
-                    className="fi"
-                    required
-                  />
-                </div>
-
-                {/* Mode Selector for Daily/Monthly */}
-                {employeeType !== 'Hourly' && (
-                  <div className="flex bg-slate-100 border border-slate-150 rounded-xl p-1 mb-4 gap-1 select-none">
-                    <button
-                      type="button"
-                      onClick={() => setCorrectionMode('sessions')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'sessions' ? 'bg-white text-[#2563EB] shadow-3xs' : 'text-[#64748B] hover:text-[#0F172A]'}`}
-                    >
-                      {t('Punch Times', 'पंच समय')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCorrectionMode('status')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'status' ? 'bg-white text-[#2563EB] shadow-3xs' : 'text-[#64748B] hover:text-[#0F172A]'}`}
-                    >
-                      {t('Simple Status', 'हाजिरी स्थिति')}
-                    </button>
-                  </div>
-                )}
-
-                {/* HOURLY OR SESSIONS CORRECTION FORM */}
-                {(employeeType === 'Hourly' || correctionMode === 'sessions') && (
-                  <div className="space-y-4 border-t border-[#E2E8F0] pt-3">
-                    <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide block">
-                      {t('Punch Times Sessions Correction', 'पंच समय सुधार विवरण')}
-                    </div>
-
-                    {punchSessions.map((session, idx) => (
-                      <div key={idx} className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-3.5 space-y-3 relative">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black text-[#64748B] uppercase">
-                            {t(`Session ${idx + 1}`, `सत्र ${idx + 1}`)}
-                          </span>
-                          {punchSessions.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveSessionRow(idx)}
-                              className="text-rose-600 hover:text-rose-700 text-[10px] font-bold"
-                            >
-                              {t('Remove', 'हटाएं')}
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          {/* Punch In */}
-                          <div className="space-y-1.5">
-                            <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-650 cursor-pointer select-none">
-                              <input
-                                type="checkbox"
-                                checked={session.inEnabled}
-                                onChange={e => handleSessionFieldChange(idx, 'inEnabled', e.target.checked)}
-                                className="rounded text-[#2563EB] focus:ring-blue-500"
-                              />
-                              <span>{t('Punch In', 'पंच इन')}</span>
-                            </label>
-                            
-                            <button
-                              type="button"
-                              onClick={() => triggerTimePicker(idx, 'in', session.inTime)}
-                              disabled={!session.inEnabled}
-                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-[#F7F9FC] cursor-pointer text-left font-sans text-[#0F172A]"
-                            >
-                              <span>{session.inTime ? formatTimeForDisplay(session.inTime) : '—'}</span>
-                              <Icon name="schedule" size={14} className="text-[#94A3B8]" />
-                            </button>
-                          </div>
-
-                          {/* Punch Out */}
-                          <div className="space-y-1.5">
-                            <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-650 cursor-pointer select-none">
-                              <input
-                                type="checkbox"
-                                checked={session.outEnabled}
-                                onChange={e => handleSessionFieldChange(idx, 'outEnabled', e.target.checked)}
-                                className="rounded text-[#2563EB] focus:ring-blue-500"
-                              />
-                              <span>{t('Punch Out', 'पंच आउट')}</span>
-                            </label>
-                            
-                            <button
-                              type="button"
-                              onClick={() => triggerTimePicker(idx, 'out', session.outTime)}
-                              disabled={!session.outEnabled}
-                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-[#F7F9FC] cursor-pointer text-left font-sans text-[#0F172A]"
-                            >
-                              <span>{session.outTime ? formatTimeForDisplay(session.outTime) : '—'}</span>
-                              <Icon name="schedule" size={14} className="text-[#94A3B8]" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={handleAddSessionRow}
-                      className="w-full h-9 border border-blue-200 text-[#2563EB] bg-white hover:bg-[#EFF6FF] border-dashed rounded-xl flex items-center justify-center font-bold text-xs gap-1 cursor-pointer"
-                    >
-                      <Icon name="add" size={16} />
-                      <span>{t('Add Multiple Punch Session', 'नया पंच सत्र जोड़ें')}</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* DAILY / MONTHLY EMPLOYEE CORRECTION FORM */}
-                {employeeType !== 'Hourly' && correctionMode === 'status' && (
-                  <div className="fld">
-                    <label>{t('Requested Status', 'वांछित उपस्थिति स्थिति')}</label>
-                    <select
-                      value={statusVal}
-                      onChange={e => setStatusVal(e.target.value as any)}
-                      className="fi"
-                    >
-                      <option value="Present">{t('Present (उपस्थित)', 'Present')}</option>
-                      <option value="Absent">{t('Absent (अनुपस्थित)', 'Absent')}</option>
-                      <option value="Half Day">{t('Half Day (आधा दिन)', 'Half Day')}</option>
-                      <option value="Overtime">{t('Overtime (अतिरिक्त समय)', 'Overtime')}</option>
-                    </select>
-                  </div>
-                )}
-                
-                {employeeType !== 'Hourly' && correctionMode === 'status' && statusVal === 'Overtime' && (
-                  <div className="fld animate-in slide-in-from-top-2 duration-200">
-                    <label className="text-center block mb-2">{t('Overtime Duration (Hours & Minutes)', 'ओवरटाइम अवधि (घंटे और मिनट)')}</label>
-                    {(() => {
-                      const [otHrs, otMins] = overtimeDuration.split(':').map(Number);
-                      return (
-                        <InlineDurationPicker
-                          hours={isNaN(otHrs) ? 2 : otHrs}
-                          minutes={isNaN(otMins) ? 0 : otMins}
-                          onChange={(h, m) => {
-                            setOvertimeDuration(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-                          }}
-                        />
-                      );
-                    })()}
-                  </div>
-                )}
-
-              </>
-            )}
-
-            {/* PAYMENT EDIT REQUEST FORM */}
-            {requestType === 'payment' && (
-              <div className="space-y-4 border-t border-[#E2E8F0] pt-3">
-                
-                {/* Select payment transaction to edit */}
-                <div className="fld">
-                  <label>{t('Select Payment to Correct', 'संशोधित करने के लिए भुगतान चुनें')}</label>
-                  {myPayments.length === 0 ? (
-                    <p className="text-xs text-[#94A3B8] italic p-3 border border-slate-150 rounded-xl bg-[#F7F9FC]">
-                      {t('No payments recorded by administrator yet.', 'प्रशासक द्वारा अभी तक कोई भुगतान दर्ज नहीं किया गया है।')}
-                    </p>
-                  ) : (
-                    <select
-                      value={selPaymentId}
-                      onChange={e => {
-                        const pId = e.target.value;
-                        setSelPaymentId(pId);
-                        const pay = myPayments.find(p => p.id === pId);
-                        if (pay) {
-                          setNewPaymentDate(pay.date);
-                          setNewPaymentAmount(String(pay.amount));
-                          setNewPaymentMode(pay.mode);
-                          setNewPaymentDesc(pay.description || '');
-                        }
-                      }}
-                      className="fi"
-                      required
-                    >
-                      <option value="">{t('-- Choose Payment Transaction --', '-- भुगतान लेनदेन चुनें --')}</option>
-                      {myPayments.map(p => {
-                        const label = `${p.date} - ₹${p.amount} (${p.mode}) ${p.description ? `- ${p.description}` : ''}`;
-                        return (
-                          <option key={p.id} value={p.id}>
-                            {label}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  )}
-                </div>
-
-                {selPaymentId && (
-                  <div className="space-y-4 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-4">
-                    <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide">
-                      {t('New Corrected Values', 'नए संशोधित मान')}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="fld mb-0">
-                        <label>{t('Correct Date', 'सही तारीख')}</label>
-                        <input
-                          type="date"
-                          value={newPaymentDate}
-                          onChange={e => setNewPaymentDate(e.target.value)}
-                          className="fi"
-                          required
-                        />
-                      </div>
-
-                      <div className="fld mb-0">
-                        <label>{t('Correct Amount (₹)', 'सही राशि (₹)')}</label>
-                        <input
-                          type="number"
-                          value={newPaymentAmount}
-                          onChange={e => setNewPaymentAmount(e.target.value)}
-                          className="fi"
-                          placeholder="e.g. 5000"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="fld">
-                      <label>{t('Correct Payment Mode', 'सही भुगतान माध्यम')}</label>
-                      <select
-                        value={newPaymentMode}
-                        onChange={e => setNewPaymentMode(e.target.value)}
-                        className="fi bg-white"
-                      >
-                        <option value="Cash">Cash</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
-                        <option value="UPI / Online">UPI / Online</option>
-                        <option value="Cheque">Cheque</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-
-                    <div className="fld">
-                      <label>{t('Correct Description', 'सही विवरण/टिप्पणी')}</label>
-                      <input
-                        type="text"
-                        value={newPaymentDesc}
-                        onChange={e => setNewPaymentDesc(e.target.value)}
-                        placeholder="e.g. Received via GPay"
-                        className="fi bg-white"
-                      />
-                    </div>
-
-                    <div className="fld">
-                      <label>{t('Correct Paid By', 'सही भुगतानकर्ता (Paid By)')}</label>
-                      <select
-                        value={newPaymentPaidBy}
-                        onChange={e => setNewPaymentPaidBy(e.target.value)}
-                        className="fi bg-white"
-                      >
-                        <option value="">{t('-- Select Paid By --', '-- भुगतानकर्ता चुनें --')}</option>
-                        {(db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name) => (
-                          <option key={name} value={name}>{name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            )}
-
-            {/* LEAVE REQUEST FORM */}
-            {requestType === 'leave' && (
-              <div className="space-y-4 border-t border-[#E2E8F0] pt-3 animate-in fade-in duration-200">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="fld mb-0">
-                    <label>{t('Leave Start Date', 'छुट्टी शुरू होने की तारीख')}</label>
-                    <input
-                      type="date"
-                      value={leaveStartDate}
-                      min={new Date().toISOString().split('T')[0]}
-                      onChange={e => setLeaveStartDate(e.target.value)}
-                      className="fi"
-                      required
-                    />
-                  </div>
-
-                  <div className="fld mb-0">
-                    <label>{t('Duration (Days)', 'अवधि (दिन)')}</label>
-                    <select
-                      value={leaveDays}
-                      onChange={e => setLeaveDays(parseInt(e.target.value, 10))}
-                      className="fi"
-                      required
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
-                        <option key={d} value={d}>
-                          {d} {d === 1 ? t('Day', 'दिन') : t('Days', 'दिन')}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* NEW PAYMENT REQUEST FORM */}
-            {requestType === 'new_payment' && (
-              <div className="space-y-4 border-t border-[#E2E8F0] pt-3 animate-in fade-in duration-200">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="fld mb-0">
-                    <label>{t('Request Date', 'अनुरोध की तारीख')}</label>
-                    <input
-                      type="date"
-                      value={payRequestDate}
-                      onChange={e => setPayRequestDate(e.target.value)}
-                      className="fi"
-                      required
-                    />
-                  </div>
-
-                  <div className="fld mb-0">
-                    <label>{t('Request Amount (₹)', 'अनुरोध राशि (₹)')}</label>
-                    <input
-                      type="number"
-                      value={payRequestAmount}
-                      onChange={e => setPayRequestAmount(e.target.value)}
-                      className="fi"
-                      placeholder="e.g. 2000"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="fld">
-                  <label>{t('Preferred Payment Mode', 'पसंदीदा भुगतान माध्यम')}</label>
-                  <select
-                    value={payRequestMode}
-                    onChange={e => setPayRequestMode(e.target.value)}
-                    className="fi"
-                    required
-                  >
-                    <option value="Cash">Cash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="UPI / Online">UPI / Online</option>
-                    <option value="Cheque">Cheque</option>
-                  </select>
-                </div>
-
-                <div className="fld">
-                  <label>{t('Paid By Option', 'भुगतानकर्ता (Paid By)')}</label>
-                  <select
-                    value={newPaymentPaidBy}
-                    onChange={e => setNewPaymentPaidBy(e.target.value)}
-                    className="fi bg-white"
-                  >
-                    <option value="">{t('-- Select Paid By --', '-- भुगतानकर्ता चुनें --')}</option>
-                    {(db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name) => (
-                      <option key={name} value={name}>{name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-
-            {/* Reason */}
-            <div className="fld">
-              <label>{t('Reason / Description (Optional)', 'विवरण / कारण (वैकल्पिक)')}</label>
-              <textarea
-                value={reason}
-                onChange={e => setReason(e.target.value)}
-                placeholder={t('Add description or details (optional)...', 'कोई अतिरिक्त जानकारी या कारण लिखें (वैकल्पिक)...')}
-                className="fi h-20 py-2.5 resize-none"
-              />
-            </div>
-
-            <div className="flex gap-4 border-t border-slate-50 pt-4">
+            {!isAdmin && empView === 'list' && (
               <button
-                type="button"
-                onClick={() => setEmpView('list')}
-                className="flex-1 btn bou text-xs font-semibold"
-              >
-                {t('Cancel', 'रद्द करें')}
-              </button>
-              <button
-                type="submit"
-                disabled={requestType === 'payment' && !selPaymentId}
-                className="flex-1 btn bbl text-white font-semibold text-xs shadow-blue-500/10 disabled:opacity-50"
-              >
-                {t('Submit Request', 'अनुरोध भेजें')}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* --- EMPLOYEE FORM: EDIT REQUEST --- */}
-      {!isAdmin && empView === 'edit_request' && editingRequest && (
-        <div className="bg-white border border-[#E2E8F0] rounded-3xl p-5 shadow-2xs animate-in slide-in-from-bottom duration-200">
-          <div className="text-xs font-black text-[#0F172A] uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
-            {t('Modify Correction Request', 'अनुरोध संपादित करें')}
-          </div>
-
-          <form onSubmit={handleEditRequestSubmit} className="space-y-4">
-            
-            {requestType === 'attendance' && (
-              <>
-                <div className="fld">
-                  <label>{t('Target Date', 'तारीख')}</label>
-                  <input
-                    type="date"
-                    value={reqDate}
-                    max={new Date().toISOString().split('T')[0]}
-                    onChange={e => setReqDate(e.target.value)}
-                    className="fi"
-                    required
-                  />
-                </div>
-
-                {/* Mode Selector for Daily/Monthly */}
-                {employeeType !== 'Hourly' && (
-                  <div className="flex bg-slate-100 border border-slate-150 rounded-xl p-1 mb-4 gap-1 select-none">
-                    <button
-                      type="button"
-                      onClick={() => setCorrectionMode('sessions')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'sessions' ? 'bg-white text-[#2563EB] shadow-3xs' : 'text-[#64748B] hover:text-[#0F172A]'}`}
-                    >
-                      {t('Punch Times', 'पंच समय')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCorrectionMode('status')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${correctionMode === 'status' ? 'bg-white text-[#2563EB] shadow-3xs' : 'text-[#64748B] hover:text-[#0F172A]'}`}
-                    >
-                      {t('Simple Status', 'हाजिरी स्थिति')}
-                    </button>
-                  </div>
-                )}
-
-                {/* Hourly Edit / Sessions Edit */}
-                {(employeeType === 'Hourly' || correctionMode === 'sessions') && (
-                  <div className="space-y-4 border-t border-[#E2E8F0] pt-3">
-                    <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide block">
-                      {t('Punch Times Sessions Correction', 'पंच समय सुधार विवरण')}
-                    </div>
-
-                    {punchSessions.map((session, idx) => (
-                      <div key={idx} className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-3.5 space-y-3 relative">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black text-[#64748B] uppercase">
-                            {t(`Session ${idx + 1}`, `सत्र ${idx + 1}`)}
-                          </span>
-                          {punchSessions.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveSessionRow(idx)}
-                              className="text-rose-600 hover:text-rose-700 text-[10px] font-bold"
-                            >
-                              {t('Remove', 'हटाएं')}
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          {/* Punch In */}
-                          <div className="space-y-1.5">
-                            <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-650 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={session.inEnabled}
-                                onChange={e => handleSessionFieldChange(idx, 'inEnabled', e.target.checked)}
-                                className="rounded text-[#2563EB] focus:ring-blue-500"
-                              />
-                              <span>{t('Punch In', 'पंच इन')}</span>
-                            </label>
-                            
-                            <button
-                              type="button"
-                              onClick={() => triggerTimePicker(idx, 'in', session.inTime)}
-                              disabled={!session.inEnabled}
-                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-[#F7F9FC] cursor-pointer text-left font-sans text-[#0F172A]"
-                            >
-                              <span>{session.inTime ? formatTimeForDisplay(session.inTime) : '—'}</span>
-                              <Icon name="schedule" size={14} className="text-[#94A3B8]" />
-                            </button>
-                          </div>
-
-                          {/* Punch Out */}
-                          <div className="space-y-1.5">
-                            <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-650 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={session.outEnabled}
-                                onChange={e => handleSessionFieldChange(idx, 'outEnabled', e.target.checked)}
-                                className="rounded text-[#2563EB] focus:ring-blue-500"
-                              />
-                              <span>{t('Punch Out', 'पंच आउट')}</span>
-                            </label>
-                            
-                            <button
-                              type="button"
-                              onClick={() => triggerTimePicker(idx, 'out', session.outTime)}
-                              disabled={!session.outEnabled}
-                              className="h-9 border border-slate-250 rounded-lg px-2.5 text-xs w-full bg-white flex items-center justify-between disabled:opacity-40 disabled:bg-[#F7F9FC] cursor-pointer text-left font-sans text-[#0F172A]"
-                            >
-                              <span>{session.outTime ? formatTimeForDisplay(session.outTime) : '—'}</span>
-                              <Icon name="schedule" size={14} className="text-[#94A3B8]" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={handleAddSessionRow}
-                      className="w-full h-9 border border-blue-200 text-[#2563EB] bg-white hover:bg-[#EFF6FF] border-dashed rounded-xl flex items-center justify-center font-bold text-xs gap-1 cursor-pointer"
-                    >
-                      <Icon name="add" size={16} />
-                      <span>{t('Add Multiple Punch Session', 'नया पंच सत्र जोड़ें')}</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Daily/Monthly Edit Status */}
-                {employeeType !== 'Hourly' && correctionMode === 'status' && (
-                  <div className="fld">
-                    <label>{t('Requested Status', 'वांछित उपस्थिति स्थिति')}</label>
-                    <select
-                      value={statusVal}
-                      onChange={e => setStatusVal(e.target.value as any)}
-                      className="fi"
-                    >
-                      <option value="Present">{t('Present (उपस्थित)', 'Present')}</option>
-                      <option value="Absent">{t('Absent (अनुपस्थित)', 'Absent')}</option>
-                      <option value="Half Day">{t('Half Day (आधा दिन)', 'Half Day')}</option>
-                      <option value="Overtime">{t('Overtime (अतिरिक्त समय)', 'Overtime')}</option>
-                    </select>
-                  </div>
-                )}
-                
-                {employeeType !== 'Hourly' && correctionMode === 'status' && statusVal === 'Overtime' && (
-                  <div className="fld animate-in slide-in-from-top-2 duration-200">
-                    <label>{t('Overtime Duration (HH:MM)', 'ओवरटाइम अवधि')}</label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPickerMeta({ sessionIdx: 0, field: 'overtime', initialVal: overtimeDuration });
-                        setPickerOpen(true);
-                      }}
-                      className="h-9 border border-slate-250 rounded-lg px-3 text-sm font-bold w-full bg-white flex items-center justify-between cursor-pointer"
-                    >
-                      <span>{overtimeDuration}</span>
-                      <Icon name="schedule" size={16} className="text-[#94A3B8]" />
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-
-            {requestType === 'payment' && (
-              <div className="space-y-4 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-4">
-                <div className="text-[10px] font-black text-slate-450 uppercase tracking-wide">
-                  {t('Edit Payment Values', 'संशोधित भुगतान विवरण')}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="fld mb-0">
-                    <label>{t('Correct Date', 'सही तारीख')}</label>
-                    <input
-                      type="date"
-                      value={newPaymentDate}
-                      onChange={e => setNewPaymentDate(e.target.value)}
-                      className="fi"
-                      required
-                    />
-                  </div>
-
-                  <div className="fld mb-0">
-                    <label>{t('Correct Amount (₹)', 'सही राशि (₹)')}</label>
-                    <input
-                      type="number"
-                      value={newPaymentAmount}
-                      onChange={e => setNewPaymentAmount(e.target.value)}
-                      className="fi"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="fld">
-                  <label>{t('Correct Payment Mode', 'सही भुगतान माध्यम')}</label>
-                  <select
-                    value={newPaymentMode}
-                    onChange={e => setNewPaymentMode(e.target.value)}
-                    className="fi bg-white"
-                  >
-                    <option value="Cash">Cash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="UPI / Online">UPI / Online</option>
-                    <option value="Cheque">Cheque</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div className="fld">
-                  <label>{t('Correct Description', 'सही विवरण/टिप्पणी')}</label>
-                  <input
-                    type="text"
-                    value={newPaymentDesc}
-                    onChange={e => setNewPaymentDesc(e.target.value)}
-                    className="fi bg-white"
-                  />
-                </div>
-
-                <div className="fld">
-                  <label>{t('Correct Paid By', 'सही भुगतानकर्ता (Paid By)')}</label>
-                  <select
-                    value={newPaymentPaidBy}
-                    onChange={e => setNewPaymentPaidBy(e.target.value)}
-                    className="fi bg-white"
-                  >
-                    <option value="">{t('-- Select Paid By --', '-- भुगतानकर्ता चुनें --')}</option>
-                    {(db.company?.paidByNames || ['by Pankaj', 'by Vinod', 'by Babuji', 'by ghar vale']).map((name) => (
-                      <option key={name} value={name}>{name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-
-            <div className="fld">
-              <label>{t('Reason', 'कारण')}</label>
-              <textarea
-                value={reason}
-                onChange={e => setReason(e.target.value)}
-                className="fi h-20 py-2.5 resize-none"
-                required
-              />
-            </div>
-
-            <div className="flex gap-4 border-t border-slate-50 pt-4">
-              <button
-                type="button"
                 onClick={() => {
-                  setEditingRequest(null);
-                  setEmpView('list');
+                  setRequestType('attendance');
+                  setEmpView('new_request');
                 }}
-                className="flex-1 btn bou text-xs font-semibold"
+                className="h-10 px-4 bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition"
               >
-                {t('Cancel', 'पीछे जाएं')}
+                <Icon name="add" size={18} />
+                <span className="hidden sm:inline">{t('New Request', 'नया रिक्वेस्ट')}</span>
               </button>
-              <button
-                type="submit"
-                className="flex-1 btn bbl text-white font-semibold text-xs"
-              >
-                {t('Save Changes', 'बदलाव सुरक्षित करें')}
-              </button>
-            </div>
-          </form>
+            )}
+          </div>
         </div>
-      )}
 
-      {/* --- REQUESTS LIST VIEW --- */}
-      {((!isAdmin && empView === 'list') || isAdmin) && (
-        <div className="space-y-3">
-          {filteredList.length === 0 ? (
-            <div className="text-center py-10 bg-white border border-slate-150 rounded-2xl text-xs text-[#94A3B8] font-semibold uppercase tracking-wider">
-              {t('No correction requests found', 'कोई सुधार अनुरोध नहीं मिला')}
-            </div>
-          ) : (
-            filteredList.map((req) => (
-              <div key={req.id} className="bg-white border border-[#E2E8F0]/70 rounded-2xl p-4 shadow-3xs space-y-3 relative overflow-hidden">
-                {/* Status indicator strip */}
-                <div className={`absolute top-0 left-0 right-0 h-1.5 ${
-                  req.status === 'Pending' ? 'bg-amber-400' :
-                  req.status === 'Approved' ? 'bg-emerald-500' :
-                  'bg-rose-500'
-                }`} />
-
-                {/* Request Header */}
-                <div className="flex items-center justify-between gap-4 pt-1">
-                  <div className="flex items-center gap-2.5">
-                    {isAdmin && (
-                      <div 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (req.employeePic) setLightboxSrc(req.employeePic);
-                        }}
-                        className={`w-8 h-8 rounded-full bg-[#F7F9FC] border border-[#E2E8F0] overflow-hidden flex items-center justify-center shrink-0 shadow-inner transition-all cursor-zoom-in hover:border-blue-400 hover:scale-105 active:scale-95`}
-                      >
-                        {req.employeePic ? (
-                          <img src={req.employeePic} alt={req.employeeName} className="w-full h-full object-cover" />
-                        ) : (
-                          <Icon name="person" size={18} className="text-[#94A3B8]" />
-                        )}
-                      </div>
-                    )}
-                    <div>
-                      {isAdmin && <div className="text-xs font-extrabold text-[#0F172A]">{req.employeeName}</div>}
-                      <div className="text-[10px] text-slate-450 font-bold uppercase tracking-wider flex items-center gap-1.5 flex-wrap">
-                        <span>{t(req.category, getCategoryHi(req.category))} · {req.date}</span>
-                        {req.gpsAccuracy !== undefined && (
-                          req.gpsAccuracy <= 30 ? (
-                            <span className="inline-flex items-center gap-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[8px] font-black px-1.5 py-0.2 rounded-md">
-                              GPS Accepted ({req.gpsAccuracy.toFixed(0)}m)
-                            </span>
-                          ) : req.gpsAccuracy <= 100 ? (
-                            <span className="inline-flex items-center gap-0.5 bg-amber-50 text-amber-700 border border-amber-100 text-[8px] font-black px-1.5 py-0.2 rounded-md">
-                              ⚠️ GPS Warning ({req.gpsAccuracy.toFixed(0)}m)
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-0.5 bg-rose-50 text-rose-700 border border-rose-100 text-[8px] font-black px-1.5 py-0.2 rounded-md animate-pulse">
-                              🚨 GPS Manual Review ({req.gpsAccuracy.toFixed(0)}m)
-                            </span>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide border ${
-                    req.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                    req.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                    'bg-rose-50 text-rose-700 border-rose-100'
-                  }`}>
-                    {req.status === 'Pending' ? t('Pending', 'लंबित') : req.status === 'Approved' ? t('Approved', 'स्वीकृत') : t('Rejected', 'अस्वीकृत')}
-                  </span>
-                </div>
-
-                {/* Request details (Old vs New value) */}
-                <div className="relative text-xs grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-2.5 space-y-0.5 flex flex-col justify-center">
-                    <span className="text-[8px] uppercase tracking-wider text-[#94A3B8] font-bold block">{t('Old Value', 'पुराना मान')}</span>
-                    <span className="font-semibold text-[#64748B] line-through truncate">{renderNewValueText(req.oldValue || '-')}</span>
-                  </div>
-                  <div className="bg-[#EFF6FF]/30 border border-blue-100/50 rounded-xl p-2.5 space-y-0.5 flex flex-col justify-center">
-                    <span className="text-[8px] uppercase tracking-wider text-blue-500 font-bold block">{t('Requested Value', 'अनुरोधित मान')}</span>
-                    <span className="font-black text-blue-700 truncate">{renderNewValueText(req.newValue)}</span>
-                  </div>
-                </div>
-
-                {/* Reason */}
-                <div className="text-[10px] text-[#64748B] font-semibold leading-relaxed">
-                  <span className="text-[#94A3B8] font-bold">{t('Reason:', 'कारण:')}</span> {req.reason}
-                </div>
-
-                {/* Rejection remarks if rejected */}
-                {req.status === 'Rejected' && req.rejectionReason && (
-                  <div className="text-[10px] text-rose-650 font-bold bg-rose-50/50 border border-rose-100 rounded-xl p-2.5">
-                    {t('Rejection Reason:', 'अस्वीकृति का कारण:')} {req.rejectionReason}
-                  </div>
-                )}
-
-                {/* Action panel */}
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t border-slate-50 pt-3">
-                  <span className="text-[8px] text-[#94A3B8] font-bold uppercase tracking-wider">
-                    {t('Submitted:', 'भेजा गया:')} {formatLocalTimestamp(req.timestamp)}
-                  </span>
-
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    {/* Admin actions */}
-                    {isAdmin && req.status === 'Pending' && (
-                      <>
-                        <button
-                          onClick={() => setSelectedRequestDetails(req)}
-                          className="flex-1 sm:flex-none h-8 px-2 border border-blue-200 text-blue-650 hover:bg-[#EFF6FF] rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97] whitespace-nowrap"
-                        >
-                          {t('Review', 'विवरण देखें')}
-                        </button>
-                        <button
-                          onClick={() => handleApprove(req)}
-                          className="flex-1 sm:flex-none h-8 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97] whitespace-nowrap"
-                        >
-                          {t('Approve', 'स्वीकारें')}
-                        </button>
-                        <button
-                          onClick={() => setRejectingRequestId(req.id)}
-                          className="flex-1 sm:flex-none h-8 px-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-colors active:scale-[0.97] whitespace-nowrap"
-                        >
-                          {t('Reject', 'अस्वीकारें')}
-                        </button>
-                      </>
-                    )}
-
-                    {/* Admin Delete History resolved */}
-                    {isAdmin && req.status !== 'Pending' && (
-                      <button
-                        onClick={() => handleDeleteRequest(req.id)}
-                        className="h-8 w-8 rounded-lg border border-[#E2E8F0] text-[#94A3B8] hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-colors"
-                        title={t('Delete Record', 'रिकॉर्ड हटाएं')}
-                      >
-                        <Icon name="delete" size={16} />
-                      </button>
-                    )}
-
-                    {/* Employee Actions */}
-                    {!isAdmin && req.status === 'Pending' && (
-                      <>
-                        <button
-                          onClick={() => loadEditRequest(req)}
-                          className="flex-1 sm:flex-none h-8 px-3 border border-[#E2E8F0] text-slate-655 hover:bg-[#F7F9FC] rounded-lg text-[10px] font-bold cursor-pointer transition-colors whitespace-nowrap"
-                        >
-                          {t('Edit', 'संपादित करें')}
-                        </button>
-                        <button
-                          onClick={() => handleCancelRequest(req.id)}
-                          className="flex-1 sm:flex-none h-8 px-3 border border-rose-100 text-rose-600 hover:bg-rose-50 rounded-lg text-[10px] font-bold cursor-pointer transition-colors whitespace-nowrap"
-                        >
-                          {t('Cancel', 'रद्द करें')}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Reject Input popup banner */}
-                {isAdmin && rejectingRequestId === req.id && (
-                  <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-3 mt-3 space-y-3 animate-in fade-in duration-200">
-                    <div className="text-[10px] font-black text-[#0F172A] uppercase tracking-wide">
-                      {t('Provide Rejection Remarks', 'अस्वीकृति का कारण दर्ज करें')}
-                    </div>
-                    <input
-                      type="text"
-                      value={rejectionReason}
-                      onChange={e => setRejectionReason(e.target.value)}
-                      placeholder={t('e.g. Incorrect date / invalid claim', 'जैसे: गलत तारीख / अनुचित दावा')}
-                      className="w-full h-9 border border-[#E2E8F0] rounded-lg px-3 text-xs outline-none bg-white focus:border-blue-500"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleReject(req.id)}
-                        className="flex-1 h-8 bg-rose-600 text-white rounded-lg text-[10px] font-bold cursor-pointer"
-                      >
-                        {t('Confirm Reject', 'अस्वीकृति की पुष्टि करें')}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setRejectingRequestId(null);
-                          setRejectionReason('');
-                        }}
-                        className="w-20 h-8 border border-slate-250 bg-white text-slate-655 rounded-lg text-[10px] font-bold cursor-pointer"
-                      >
-                        {t('Cancel', 'रद्द')}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            ))
-          )}
+        {/* Scrollable Filters */}
+        <div className="flex overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 gap-2 hide-scrollbar">
+          {['all', 'attendance', 'payment', 'leave', 'device_registration'].map(type => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type as any)}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${
+                filterType === type 
+                  ? 'bg-[#2563EB] text-white border-[#2563EB]' 
+                  : 'bg-white text-[#64748B] border-[#E2E8F0] hover:bg-slate-50'
+              }`}
+            >
+              {t(
+                type === 'all' ? 'All' :
+                type === 'attendance' ? 'Attendance' :
+                type === 'payment' ? 'Payment' :
+                type === 'leave' ? 'Leave' : 'Device/Other',
+                type === 'all' ? 'सभी' :
+                type === 'attendance' ? 'उपस्थिति' :
+                type === 'payment' ? 'भुगतान' :
+                type === 'leave' ? 'छुट्टी' : 'डिवाइस'
+              )}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* UNIFIED ADMIN APPROVAL REVIEW MODAL OVERLAY */}
-      {selectedRequestDetails && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-4 overflow-y-auto max-h-[90vh] animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center border-b border-[#E2E8F0] pb-3">
-              <h3 className="text-sm font-black text-[#0F172A] uppercase tracking-wider">{t('Detailed Request Review', 'विस्तृत अनुरोध समीक्षा')}</h3>
-              <button 
-                onClick={() => { setSelectedRequestDetails(null); setRejectionReason(''); }}
-                className="text-[#94A3B8] hover:text-slate-655 cursor-pointer"
-              >
-                <Icon name="close" size={20} />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="space-y-4 text-xs">
-              {/* Employee Bio with large selfie */}
-              <div className="flex items-center gap-4 bg-[#F7F9FC] border border-slate-150 p-3 rounded-2xl">
-                {/* Selfie – tap to expand */}
-                <div
-                  className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#E2E8F0] bg-slate-100 shrink-0 cursor-pointer shadow-md hover:shadow-lg hover:scale-105 transition-all relative"
-                  onClick={() => selectedRequestDetails.employeePic && setLightboxSrc(selectedRequestDetails.employeePic)}
-                  title={selectedRequestDetails.employeePic ? 'Click to enlarge selfie' : ''}
-                >
-                  {selectedRequestDetails.employeePic ? (
-                    <>
-                      <img src={selectedRequestDetails.employeePic} alt={selectedRequestDetails.employeeName} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-all">
-                        <Icon name="zoom_in" size={20} className="text-white opacity-0 hover:opacity-100 drop-shadow" />
-                      </div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-[#94A3B8] text-2xl">
-                      {selectedRequestDetails.employeeName.charAt(0)}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-black text-[#0F172A] text-sm truncate">{selectedRequestDetails.employeeName}</div>
-                  <div className="text-[10px] text-slate-450 font-bold uppercase">{selectedRequestDetails.employeeId}</div>
-                  <div className="text-[10px] text-[#64748B] font-bold">{db.employees.find(e => e.id === selectedRequestDetails.employeeId)?.type || 'Daily'}</div>
-                  {selectedRequestDetails.employeePic && (
-                    <button
-                      onClick={() => setLightboxSrc(selectedRequestDetails.employeePic!)}
-                      className="mt-1 text-[9px] font-bold text-[#2563EB] hover:underline cursor-pointer flex items-center gap-1"
-                    >
-                      <Icon name="zoom_in" size={11} /> {t('View Selfie Full Size', 'सेल्फी बड़ी करें')}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Request Parameters */}
-              <div className="grid grid-cols-2 gap-4 border border-slate-150 p-3 rounded-2xl bg-white">
-                <div>
-                  <span className="text-[8px] uppercase tracking-wider text-[#94A3B8] font-bold block">{t('Category / Type', 'श्रेणी / प्रकार')}</span>
-                  <span className="font-extrabold text-[#0F172A] text-[11px]">{selectedRequestDetails.category}</span>
-                </div>
-                <div>
-                  <span className="text-[8px] uppercase tracking-wider text-[#94A3B8] font-bold block">{t('Request Date', 'दिनांक')}</span>
-                  <span className="font-bold text-[#0F172A]">{selectedRequestDetails.date}</span>
-                </div>
-                <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl p-2.5 space-y-0.5">
-                  <span className="text-[8px] uppercase tracking-wider text-[#94A3B8] font-bold block">{t('Old Value', 'पुराना मान')}</span>
-                  <span className="font-semibold text-[#64748B] line-through">{renderNewValueText(selectedRequestDetails.oldValue || '—')}</span>
-                </div>
-                <div className="bg-[#EFF6FF]/30 border border-blue-100/50 rounded-xl p-2.5 space-y-0.5">
-                  <span className="text-[8px] uppercase tracking-wider text-blue-500 font-bold block">{t('Requested Value', 'अनुरोधित मान')}</span>
-                  <span className="font-black text-blue-700">{renderNewValueText(selectedRequestDetails.newValue)}</span>
-                </div>
-              </div>
-
-              {/* GPS & Location Diagnostics */}
-              {selectedRequestDetails.gpsLat !== undefined && (
-                <div className="border border-slate-150 p-3 rounded-2xl bg-white space-y-2">
-                  <div className="text-[9px] uppercase tracking-wider text-slate-450 font-black">📍 {t('Proximity & GeoFence Match', 'समीपता एवं जियोफेंस मिलान')}</div>
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-28">
+        {empView === 'list' && (
+          <div className="space-y-4">
+            {filteredRequests.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {filteredRequests.map(r => {
+                  const emp = db.employees.find(e => e.id === r.employeeId);
                   
-                  {/* Distance details */}
-                  {(() => {
-                    const assignedFence = db.geofences?.find(g => g.assignedStaff?.includes(selectedRequestDetails.employeeId));
-                    let distance = null;
-                    let isInside = false;
-                    if (assignedFence && selectedRequestDetails.gpsLat && selectedRequestDetails.gpsLng) {
-                      distance = getDistanceMeters(assignedFence.lat, assignedFence.lng, selectedRequestDetails.gpsLat, selectedRequestDetails.gpsLng);
-                      isInside = distance <= assignedFence.radius;
-                    }
+                  // Status Badge Styling
+                  let statusBadgeStyle = 'bg-slate-100 text-slate-600 border-slate-200';
+                  let statusIcon = 'pending';
+                  if (r.status === 'Approved') {
+                    statusBadgeStyle = 'bg-[#ECFDF5] text-[#10B981] border-emerald-100';
+                    statusIcon = 'check_circle';
+                  } else if (r.status === 'Rejected') {
+                    statusBadgeStyle = 'bg-rose-50 text-rose-700 border-rose-100';
+                    statusIcon = 'cancel';
+                  } else if (r.status === 'Pending') {
+                    statusBadgeStyle = 'bg-amber-50 text-amber-700 border-amber-100';
+                    statusIcon = 'schedule';
+                  } else if (r.status === 'ReturnedForCorrection') {
+                    statusBadgeStyle = 'bg-purple-50 text-purple-700 border-purple-100';
+                    statusIcon = 'loop';
+                  }
 
-                    return (
-                      <div className="space-y-2">
-                        <div className="grid grid-cols-2 gap-3 text-[10px] font-semibold text-slate-650">
+                  // Format dates
+                  const subDate = new Date(r.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+                  return (
+                    <div key={r.id} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col gap-3">
+                      
+                      {/* Card Header */}
+                      <div className="flex justify-between items-start border-b border-[#E2E8F0] pb-3">
+                        <div className="flex items-center gap-3">
+                          {emp?.pic ? (
+                            <img src={emp.pic} className="w-10 h-10 rounded-full object-cover border border-[#E2E8F0]" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center font-bold border border-[#E2E8F0]">
+                              {r.employeeName.substring(0,2).toUpperCase()}
+                            </div>
+                          )}
                           <div>
-                            <span className="text-[8px] text-[#94A3B8] block">{t('Assigned GeoFence', 'असाइन किया गया जियोफेंस')}</span>
-                            <span className="font-black text-[#0F172A]">{assignedFence ? assignedFence.name : '—'}</span>
-                          </div>
-                          <div>
-                            <span className="text-[8px] text-[#94A3B8] block">{t('Distance to Center', 'केन्द्र से दूरी')}</span>
-                            <span className="font-black text-[#0F172A]">{distance !== null ? `${Math.round(distance)} meters` : '—'}</span>
-                          </div>
-                          <div className="col-span-2">
-                            <span className="text-[8px] text-[#94A3B8] block">{t('Coordinates', 'स्थान निर्देशांक')}</span>
-                            <span className="font-mono text-[#0F172A] font-bold">{selectedRequestDetails.gpsLat?.toFixed(6)}, {selectedRequestDetails.gpsLng?.toFixed(6)}</span>
-                          </div>
-                          <div className="col-span-2">
-                            <span className="text-[8px] text-[#94A3B8] block">{t('Resolved GPS Address', 'जीपीएस द्वारा पता')}</span>
-                            <span className="text-[#0F172A] leading-normal block font-sans">{selectedRequestDetails.gpsAddress}</span>
+                            <h3 className="text-sm font-bold text-[#0F172A]">{r.employeeName}</h3>
+                            <p className="text-[10px] text-[#64748B] font-medium">{t('Submitted:', 'जमा किया:')} {subDate}</p>
                           </div>
                         </div>
+                        <span className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${statusBadgeStyle}`}>
+                          <Icon name={statusIcon} size={12} />
+                          {t(r.status, r.status === 'Approved' ? 'स्वीकृत' : r.status === 'Rejected' ? 'अस्वीकृत' : r.status === 'ReturnedForCorrection' ? 'सुधार के लिए वापस' : 'लंबित')}
+                        </span>
+                      </div>
 
-                        {assignedFence && (
-                          <div className={`p-2.5 rounded-xl border font-bold text-[10px] flex items-center gap-2 ${
-                            isInside 
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                              : 'bg-rose-50 text-rose-700 border-rose-100 animate-pulse'
-                          }`}>
-                            <Icon name={isInside ? 'check_circle' : 'warning'} size={15} />
-                            <span>
-                              {isInside 
-                                ? t('Inside assigned GeoFence radius boundary.', 'जियोफेंस परिधि के अंदर (सत्यापित)') 
-                                : t('Outside assigned GeoFence boundary. Potential location spoof or mismatch!', 'जियोफेंस परिधि से बाहर (स्थान बेमेल)')}
-                            </span>
+                      {/* Request Details */}
+                      <div className="grid grid-cols-2 gap-3 text-xs bg-[#F7F9FC] p-3 rounded-xl border border-[#E2E8F0]/50">
+                        <div className="col-span-2 sm:col-span-1">
+                          <span className="block text-[9px] font-bold text-[#94A3B8] uppercase tracking-wider mb-0.5">{t('Request Type', 'अनुरोध प्रकार')}</span>
+                          <span className="font-semibold text-[#0F172A] uppercase">{r.type}</span>
+                        </div>
+                        {r.date && (
+                          <div className="col-span-2 sm:col-span-1">
+                            <span className="block text-[9px] font-bold text-[#94A3B8] uppercase tracking-wider mb-0.5">{t('Target Date', 'लक्ष्य तिथि')}</span>
+                            <span className="font-semibold text-[#0F172A]">{r.date}</span>
+                          </div>
+                        )}
+                        <div className="col-span-2 border-t border-[#E2E8F0]/50 pt-2">
+                          <span className="block text-[9px] font-bold text-[#94A3B8] uppercase tracking-wider mb-0.5">{t('Reason', 'कारण')}</span>
+                          <span className="font-medium text-[#0F172A]">{r.reason || '—'}</span>
+                        </div>
+                        
+                        {/* Old vs New Values */}
+                        {(r.oldValue || r.requestedValue) && (
+                          <div className="col-span-2 flex items-center gap-3 mt-1">
+                            <div className="flex-1 bg-rose-50/50 p-2 rounded-lg border border-rose-100/50">
+                              <span className="block text-[8px] font-bold text-rose-500 uppercase">{t('Current', 'वर्तमान')}</span>
+                              <span className="font-semibold text-[#0F172A]">{typeof r.oldValue === 'object' ? JSON.stringify(r.oldValue) : String(r.oldValue || '—')}</span>
+                            </div>
+                            <Icon name="arrow_forward" size={16} className="text-[#94A3B8]" />
+                            <div className="flex-1 bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
+                              <span className="block text-[8px] font-bold text-emerald-600 uppercase">{t('Requested', 'अनुरोधित')}</span>
+                              <span className="font-semibold text-[#0F172A]">{typeof r.requestedValue === 'object' ? JSON.stringify(r.requestedValue) : String(r.requestedValue || '—')}</span>
+                            </div>
                           </div>
                         )}
                       </div>
-                    );
-                  })()}
+
+                      {/* Admin Remarks */}
+                      {r.adminRemarks && (
+                        <div className="text-xs bg-amber-50 p-3 rounded-xl border border-amber-100/50">
+                          <span className="block text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-0.5">{t('Admin Remarks', 'एडमिन टिप्पणी')}</span>
+                          <span className="font-medium text-amber-900">{r.adminRemarks}</span>
+                        </div>
+                      )}
+
+                      {/* Action Buttons for Admin (Only Pending/Returned) */}
+                      {isAdmin && (r.status === 'Pending' || r.status === 'ReturnedForCorrection') && (
+                        <div className="flex gap-2 pt-1 border-t border-[#E2E8F0] mt-1">
+                          <button
+                            onClick={() => {
+                              setSelectedRequestDetails(r);
+                              setShowActionModal(true);
+                            }}
+                            className="flex-1 h-10 bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F7F9FC] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5"
+                          >
+                            <Icon name="visibility" size={16} />
+                            {t('Review Request', 'समीक्षा करें')}
+                          </button>
+                          {r.type === 'device_registration' && (
+                             <button
+                               onClick={() => handleApprove(r)}
+                               className="flex-1 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5"
+                             >
+                               <Icon name="check" size={16} />
+                               {t('Auto Approve', 'स्वीकारें')}
+                             </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="w-full flex flex-col items-center justify-center py-20 text-center px-4">
+                <div className="w-16 h-16 rounded-full bg-[#F7F9FC] flex items-center justify-center text-[#64748B] mb-4">
+                  <Icon name="inbox" size={32} />
+                </div>
+                <h3 className="text-lg font-black text-[#0F172A]">{t('No pending requests', 'कोई अनुरोध नहीं')}</h3>
+                <p className="text-sm text-[#64748B] mt-1">{t('You are all caught up!', 'सब कुछ सही है!')}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Existing forms for New Request are intact but hidden via empView filter */}
+      </div>
+
+      {/* Action Modal using existing structure */}
+      {showActionModal && selectedRequestDetails && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-[999] p-4 animate-in fade-in">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
+            <div className="px-5 py-4 border-b border-[#E2E8F0] flex justify-between items-center bg-[#F7F9FC] rounded-t-2xl">
+              <h3 className="font-black text-[#0F172A]">{t('Review Request', 'अनुरोध समीक्षा')}</h3>
+              <button onClick={() => setShowActionModal(false)} className="text-[#64748B] hover:text-[#0F172A]"><Icon name="close" size={24} /></button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="block text-[9px] font-bold text-[#94A3B8] uppercase">{t('Employee', 'कर्मचारी')}</span>
+                  <span className="font-semibold text-[#0F172A]">{selectedRequestDetails.employeeName}</span>
+                </div>
+                <div>
+                  <span className="block text-[9px] font-bold text-[#94A3B8] uppercase">{t('Request Type', 'प्रकार')}</span>
+                  <span className="font-semibold text-[#0F172A]">{selectedRequestDetails.type}</span>
+                </div>
+              </div>
+
+              {selectedRequestDetails.type === 'attendance' && selectedRequestDetails.attendanceData && (
+                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                  <span className="block text-[9px] font-bold text-blue-600 uppercase mb-2">{t('Attendance Details', 'उपस्थिति विवरण')}</span>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-[#0F172A]">
+                    <div><strong>In:</strong> {selectedRequestDetails.attendanceData.inTime || '—'}</div>
+                    <div><strong>Out:</strong> {selectedRequestDetails.attendanceData.outTime || '—'}</div>
+                    <div className="col-span-2"><strong>Notes:</strong> {selectedRequestDetails.attendanceData.notes || '—'}</div>
+                  </div>
                 </div>
               )}
 
-              {/* Hardware Diagnostics */}
-              <div className="border border-slate-150 p-3 rounded-2xl bg-white space-y-2">
-                <div className="text-[9px] uppercase tracking-wider text-slate-450 font-black">⚙️ {t('Device Info & Diagnostics', 'डिवाइस विवरण एवं डायग्नोस्टिक्स')}</div>
-                <div className="grid grid-cols-2 gap-3 text-[10px] font-semibold text-slate-655">
-                  <div>
-                    <span className="text-[8px] text-[#94A3B8] block">{t('Device Model / OS', 'डिवाइस मॉडल / ओएस')}</span>
-                    <span className="text-[#0F172A]">{selectedRequestDetails.deviceModel || '—'} ({selectedRequestDetails.osVersion || '—'})</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] text-[#94A3B8] block">{t('Device UUID Locked', 'लॉक्ड डिवाइस UUID')}</span>
-                    <span className="font-mono text-[#0F172A] truncate block max-w-[180px]" title={selectedRequestDetails.deviceId}>{selectedRequestDetails.deviceId || '—'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] text-[#94A3B8] block">{t('GPS Accuracy & Provider', 'जीपीएस सटीकता')}</span>
-                    <span className={`font-bold ${selectedRequestDetails.gpsAccuracy && selectedRequestDetails.gpsAccuracy <= 30 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                      {selectedRequestDetails.gpsAccuracy ? `${selectedRequestDetails.gpsAccuracy.toFixed(0)}m` : '—'} ({selectedRequestDetails.gpsProvider || '—'})
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] text-[#94A3B8] block">{t('Diagnostic Context', 'अतिरिक्त संदर्भ')}</span>
-                    <span className="text-[#0F172A]">
-                      {t('Timestamp:', 'समय:')} {formatLocalTimestamp(selectedRequestDetails.timestamp)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Previous Status Info */}
-              {(() => {
-                const todayStr = selectedRequestDetails.date;
-                const d = new Date(todayStr);
-                d.setDate(d.getDate() - 1);
-                const yesterdayStr = d.toISOString().split('T')[0];
-                const yesterdayAtt = db.attendance[`${selectedRequestDetails.employeeId}_${yesterdayStr}`];
-                const yesterdayStatus = yesterdayAtt ? yesterdayAtt.status : 'No Record';
-
-                return (
-                  <div className="bg-[#F7F9FC] border border-slate-150 p-3 rounded-2xl grid grid-cols-2 gap-2 text-[10px] font-bold">
-                    <div>
-                      <span className="text-[8px] text-[#94A3B8] block uppercase">{t('Yesterday Attendance', 'कल की उपस्थिति')}</span>
-                      <span className="text-[#0F172A]">{yesterdayStatus}</span>
-                    </div>
-                    <div>
-                      <span className="text-[8px] text-[#94A3B8] block uppercase">{t('Reason for Submission', 'आवेदन का कारण')}</span>
-                      <span className="text-[#0F172A]">{selectedRequestDetails.reason}</span>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Remarks/Correction inputs */}
-              <div className="space-y-1.5 border-t border-[#E2E8F0] pt-3">
-                <label className="text-[10px] font-black text-slate-550 uppercase block">{t('Admin Correction Remarks', 'अस्वीकृति या सुधार निर्देश टिप्पणी')}</label>
-                <input
-                  type="text"
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-[#0F172A] uppercase">{t('Admin Remarks (Required for Rejection)', 'एडमिन टिप्पणी')}</label>
+                <textarea
                   value={rejectionReason}
                   onChange={e => setRejectionReason(e.target.value)}
-                  placeholder={t('Enter instruction notes or rejection reasons', 'टिप्पणी दर्ज करें (अस्वीकार या सुधार के लिए आवश्यक)')}
-                  className="w-full h-10 border border-[#E2E8F0] rounded-xl px-3 outline-none bg-[#F7F9FC] focus:border-blue-500 text-xs font-semibold"
+                  placeholder={t('Enter notes here...', 'यहां टिप्पणी लिखें...')}
+                  className="w-full h-24 border border-[#E2E8F0] rounded-xl p-3 outline-none focus:border-[#2563EB] text-sm resize-none"
                 />
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="flex gap-2 border-t border-[#E2E8F0] pt-4 flex-wrap">
+            <div className="p-4 border-t border-[#E2E8F0] flex gap-2 flex-wrap">
               <button
                 onClick={() => handleApprove(selectedRequestDetails)}
-                className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md shadow-emerald-500/10 active:scale-95 transition-all"
+                className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-sm transition"
               >
                 {t('Approve', 'स्वीकारें')}
               </button>
               <button
                 onClick={() => handleReturnForCorrection(selectedRequestDetails.id)}
-                className="flex-1 h-11 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black cursor-pointer shadow-md shadow-amber-500/10 active:scale-95 transition-all"
+                className="flex-1 h-11 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold shadow-sm transition"
               >
-                {t('Return for Correction', 'सुधार के लिए लौटायें')}
+                {t('Return', 'लौटायें')}
               </button>
               <button
                 onClick={() => handleReject(selectedRequestDetails.id)}
-                className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black cursor-pointer shadow-md shadow-rose-500/10 active:scale-95 transition-all"
+                className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-sm transition"
               >
                 {t('Reject', 'अस्वीकारें')}
               </button>
-              <button
-                onClick={() => { setSelectedRequestDetails(null); setRejectionReason(''); }}
-                className="w-24 h-11 border border-slate-255 bg-white text-slate-655 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all cursor-pointer"
-              >
-                {t('Close', 'बंद करें')}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* CUSTOM TIME WHEEL PICKER OVERLAY */}
-      <TimeWheelPicker
-        isOpen={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        title={pickerMeta ? (pickerMeta.field === 'in' ? 'Punch In Time' : 'Punch Out Time') : ''}
-        initialValue={pickerMeta ? pickerMeta.initialVal : ''}
-        onSave={handleSaveTimePicker}
-      />
-
-      {/* SELFIE LIGHTBOX OVERLAY */}
-      {lightboxSrc && (
-        <div
-          className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-4"
-          onClick={() => setLightboxSrc(null)}
-        >
-          <div className="relative max-w-sm w-full" onClick={e => e.stopPropagation()}>
-            <button
-              onClick={() => setLightboxSrc(null)}
-              className="absolute -top-10 right-0 text-white text-xs font-bold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full cursor-pointer"
-            >
-              ✕ {lang === 'en' ? 'Close' : 'बंद करें'}
-            </button>
-            <img
-              src={lightboxSrc}
-              alt="Employee Selfie"
-              className="w-full rounded-2xl shadow-2xl border-2 border-white/10"
-              style={{ maxHeight: '80vh', objectFit: 'contain' }}
-            />
-            <div className="text-center mt-3 text-white/60 text-[10px] font-semibold">
-              {lang === 'en' ? 'Tap outside to close' : 'बंद करने के लिए बाहर टैप करें'}
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

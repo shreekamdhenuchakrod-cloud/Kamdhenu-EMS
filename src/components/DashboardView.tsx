@@ -153,7 +153,7 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
               <Icon name="check_circle" size={40} />
             </div>
             <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">{t('Present', 'उपस्थित')}</p>
-            <p className="text-3xl font-black text-[#0F172A] mt-1">{presentCount}</p>
+            <p className="text-2xl font-black text-[#0F172A] mt-1">{presentCount}</p>
             <p className="text-[10px] font-bold text-[#64748B] mt-1 uppercase tracking-wide">{t('Active today', 'आज कार्य पर')}</p>
           </div>
 
@@ -163,7 +163,7 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
               <Icon name="cancel" size={40} />
             </div>
             <p className="text-xs font-bold text-rose-700 uppercase tracking-wider">{t('Absent', 'अनुपस्थित')}</p>
-            <p className="text-3xl font-black text-[#0F172A] mt-1">{absentCount}</p>
+            <p className="text-2xl font-black text-[#0F172A] mt-1">{absentCount}</p>
             <p className="text-[10px] font-bold text-[#64748B] mt-1 uppercase tracking-wide">{t('On leave / absent', 'छुट्टी / गैरहाजिर')}</p>
           </div>
 
@@ -173,7 +173,7 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
               <Icon name="account_balance_wallet" size={40} />
             </div>
             <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">{t('Pending Payment', 'बकाया भुगतान')}</p>
-            <p className="text-3xl font-black text-[#0F172A] mt-1">₹{totalPendingDue.toLocaleString('en-IN')}</p>
+            <p className="text-2xl font-black text-[#0F172A] mt-1">₹{Math.round(totalPendingDue).toLocaleString('en-IN')}</p>
             <p className="text-[10px] font-bold text-[#64748B] mt-1 uppercase tracking-wide">{t('Total Pending', 'कुल बकाया')}</p>
           </div>
 
@@ -183,7 +183,7 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
               <Icon name="payments" size={40} />
             </div>
             <p className="text-xs font-bold text-[#2563EB] uppercase tracking-wider">{t('Paid This Month', 'इस महीने भुगतान')}</p>
-            <p className="text-3xl font-black text-[#0F172A] mt-1">₹{totalPaidThisMonth.toLocaleString('en-IN')}</p>
+            <p className="text-2xl font-black text-[#0F172A] mt-1">₹{Math.round(totalPaidThisMonth).toLocaleString('en-IN')}</p>
             <p className="text-[10px] font-bold text-[#64748B] mt-1 uppercase tracking-wide">{t('Total Paid', 'कुल जमा')}</p>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function DashboardView({ db, onNavigate, lang }: DashboardViewPro
           <div>
              <h2 className="text-sm font-bold text-[#64748B] uppercase tracking-wider mb-2">{t('Total Staff', 'कुल स्टाफ')}</h2>
              <div className="flex items-baseline gap-2">
-               <span className="text-4xl font-black text-[#0F172A]">{activeEmployees.length}</span>
+               <span className="text-3xl font-black text-[#0F172A]">{activeEmployees.length}</span>
                <span className="text-xs font-bold text-[#64748B]">{t('Active Employees', 'सक्रिय कर्मचारी')}</span>
              </div>
           </div>

@@ -985,7 +985,7 @@ export default function App() {
               db={db}
               lang={lang}
               onUpdateDb={setDb}
-              onBack={() => {
+              onGoBack={() => {
                 setCurrentView('pv-staff');
                 setSelectedEmployeeId(null);
               }}
@@ -999,6 +999,7 @@ export default function App() {
           {currentView === 'pv-att' && (
             <AttendanceView 
               db={db} 
+              onUpdateAttendance={(newAtt) => setDb({ ...db, attendance: newAtt })}
               onUpdateDb={setDb} 
               lang={lang} 
             />
@@ -1041,7 +1042,7 @@ export default function App() {
               db={db} 
               onUpdateDb={setDb} 
               lang={lang} 
-              onBack={() => setCurrentView('settings')} 
+              onGoBack={() => setCurrentView('settings')} 
             />
           )}
 
@@ -1050,7 +1051,7 @@ export default function App() {
             <AuditLogsView 
               db={db} 
               lang={lang} 
-              onBack={() => setCurrentView('settings')} 
+              onGoBack={() => setCurrentView('settings')} 
             />
           )}
           
