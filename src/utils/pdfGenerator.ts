@@ -120,6 +120,25 @@ export async function generateA4PDF(
       pdf.text('QR', qrX + 1, qrY + 3.5);
     }
 
+    const blob = pdf.output('blob');
+    
+    // Check if Web Share API is supported (mainly mobile)
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: filename
+          });
+          return true;
+        } catch (err) {
+          console.log('Share cancelled or failed', err);
+        }
+      }
+    }
+    
+    // Fallback to standard jsPDF save (download link)
     pdf.save(filename);
     return true;
   } catch (error) {

@@ -281,7 +281,7 @@ export default function EmployeeDashboard({
     }
   };
 
-  const handlePunchClick = () => {
+  const handlePunchClick = (currentPunchType: 'Punch In' | 'Punch Out') => {
     if (!gpsLoc) {
       alert(t('GPS coordinates not loaded yet. Please wait...', 'जीपीएस निर्देशांक लोड नहीं हुए। कृपया प्रतीक्षा करें...'));
       return;
@@ -293,7 +293,7 @@ export default function EmployeeDashboard({
     }
 
     const todayDateStr = new Date().toISOString().split('T')[0];
-    const check = validatePunchRequestRules(employee.id, punchType, todayDateStr, db);
+    const check = validatePunchRequestRules(employee.id, currentPunchType, todayDateStr, db);
     if (!check.valid) {
       alert(check.reason || 'Punch request invalid.');
       return;
@@ -584,7 +584,7 @@ export default function EmployeeDashboard({
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => { setPunchType('Punch In'); handlePunchClick(); }}
+                    onClick={() => { setPunchType('Punch In'); handlePunchClick('Punch In'); }}
                     disabled={!gpsLoc || !insideGeoFence}
                     className="flex-1 h-12 bg-[#2563EB] hover:bg-blue-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500 transition-all active:scale-[0.98]"
                   >
@@ -592,7 +592,7 @@ export default function EmployeeDashboard({
                     {t('Punch In', 'पंच इन')}
                   </button>
                   <button
-                    onClick={() => { setPunchType('Punch Out'); handlePunchClick(); }}
+                    onClick={() => { setPunchType('Punch Out'); handlePunchClick('Punch Out'); }}
                     disabled={!gpsLoc || !insideGeoFence}
                     className="flex-1 h-12 bg-white border-2 border-[#E2E8F0] text-[#0F172A] hover:bg-slate-50 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 transition-all active:scale-[0.98]"
                   >
@@ -1029,7 +1029,7 @@ export default function EmployeeDashboard({
                 <SalarySlipPDF employee={employee} db={db} month={selMonth} year={selYear} lang={lang} />
              </div>
              <div className="p-4 bg-white border-t border-slate-200">
-               <button onClick={() => downloadSalarySlipPDF(employee.id, selYear, selMonth, db)} className="w-full h-12 bg-blue-600 text-white rounded-xl font-bold flex justify-center items-center gap-2">
+               <button onClick={() => downloadSalarySlipPDF(employee.name, ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][selMonth] + '_' + selYear)} className="w-full h-12 bg-blue-600 text-white rounded-xl font-bold flex justify-center items-center gap-2">
                  <Icon name="download" size={20} /> {t('Download PDF', 'PDF डाउनलोड करें')}
                </button>
              </div>

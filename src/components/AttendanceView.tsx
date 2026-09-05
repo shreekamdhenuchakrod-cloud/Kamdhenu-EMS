@@ -579,7 +579,7 @@ export default function AttendanceView({
                                   {sIdx + 1}
                                 </div>
                                 <button
-                                  onClick={() => triggerTimePicker(emp.id, sIdx, 'in', s.in)}
+                                  onClick={(e) => { e.stopPropagation(); triggerTimePicker(emp.id, sIdx, 'out', s.out); }}
                                   className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
                                     s.in ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-[#E2E8F0] text-[#64748B]'
                                   }`}
@@ -587,7 +587,7 @@ export default function AttendanceView({
                                   <span>{s.in ? formatTimeForDisplay(s.in) : t('In Time', 'पंच इन')}</span>
                                 </button>
                                 <button
-                                  onClick={() => triggerTimePicker(emp.id, sIdx, 'out', s.out)}
+                                  onClick={(e) => { e.stopPropagation(); triggerTimePicker(emp.id, sIdx, 'out', s.out); }}
                                   className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
                                     s.out ? 'bg-slate-800 border-slate-800 text-white' : 'bg-white border-[#E2E8F0] text-slate-550'
                                   }`}
