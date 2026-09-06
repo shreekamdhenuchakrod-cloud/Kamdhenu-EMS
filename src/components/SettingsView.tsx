@@ -402,7 +402,7 @@ export default function SettingsView({
       </div>
 
       {/* PWA INSTALLATION PANEL */}
-      {deferredPrompt && (
+      
         <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs animate-in slide-in-from-top-2 duration-200">
           <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
             <Icon name="download" size={18} className="text-[#2563EB]" />
@@ -422,11 +422,10 @@ export default function SettingsView({
               className="h-10 btn bbl font-bold text-xs shrink-0 px-5 flex items-center gap-1.5"
             >
               <Icon name="download" size={14} />
-              <span>{t('Install App', 'ऐप डाउनलोड करें')}</span>
+              <span>{t('Download APK (Chrome App)', 'ऐप डाउनलोड करें (Chrome App)')}</span>
             </button>
           </div>
         </div>
-      )}
 
       {/* SECTION 2: COMPANY LOGO PANEL */}
       <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs">

@@ -233,10 +233,12 @@ export default function App() {
   }, []);
 
   const handleInstallApp = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      alert(lang === 'hi' ? 'ऐप पहले से इंस्टॉल है या आपका ब्राउज़र इसे सपोर्ट नहीं करता। कृपया ब्राउज़र मेनू से "Add to Home Screen" का उपयोग करें।' : 'App is already installed or your browser does not support this. Please use "Add to Home Screen" from your browser menu.');
+      return;
+    }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to install prompt: ${outcome}`);
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
     }

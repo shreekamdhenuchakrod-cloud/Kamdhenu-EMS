@@ -24,6 +24,7 @@ interface EmployeeDashboardProps {
   lang: 'en' | 'hi';
   onToggleLang: () => void;
   onLogout: () => void;
+  onInstallApp?: () => void;
   onUpdateDb?: (updatedDb: AppDatabase) => void;
 }
 
@@ -33,6 +34,7 @@ export default function EmployeeDashboard({
   lang,
   onToggleLang,
   onLogout,
+  onInstallApp,
   onUpdateDb
 }: EmployeeDashboardProps) {
   const t = (en: string, hi: string) => (lang === 'en' ? en : hi);
