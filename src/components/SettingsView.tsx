@@ -401,32 +401,6 @@ export default function SettingsView({
         </div>
       </div>
 
-      {/* PWA INSTALLATION PANEL */}
-      
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs animate-in slide-in-from-top-2 duration-200">
-          <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">
-            <Icon name="download" size={18} className="text-[#2563EB]" />
-            <span>{t('Desktop/Mobile Application', 'डेस्कटॉप/मोबाइल एप्लीकेशन')}</span>
-          </h3>
-          <div className="bg-[#EFF6FF]/50 rounded-xl p-4 border border-blue-100/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <span className="text-xs font-bold text-[#0F172A] block">
-                {t('Install Kamdhenu EMS', 'कामधेनु ईएमएस इनस्टॉल करें')}
-              </span>
-              <span className="text-[10px] text-[#94A3B8] mt-1 block leading-normal font-medium">
-                {t('Download the offline-first app onto your home screen for rapid access and native PWA window layout.', 'तेज़ पहुंच और स्थानीय विंडो लेआउट के लिए ऑफ़लाइन-फ़र्स्ट ऐप को अपनी होम स्क्रीन पर डाउनलोड करें।')}
-              </span>
-            </div>
-            <button
-              onClick={onInstallApp}
-              className="h-10 btn bbl font-bold text-xs shrink-0 px-5 flex items-center gap-1.5"
-            >
-              <Icon name="download" size={14} />
-              <span>{t('Download APK (Chrome App)', 'ऐप डाउनलोड करें (Chrome App)')}</span>
-            </button>
-          </div>
-        </div>
-
       {/* SECTION 2: COMPANY LOGO PANEL */}
       <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs">
         <h3 className="text-xs font-bold uppercase text-[#94A3B8] tracking-wider mb-4 flex items-center gap-2">

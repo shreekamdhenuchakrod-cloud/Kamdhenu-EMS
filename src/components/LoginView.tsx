@@ -13,6 +13,9 @@ interface LoginViewProps {
   adminPin?: string; // The PIN loaded from Firestore database
   employees: Employee[]; // Full employee roster to verify login
   
+  deferredPrompt?: any;
+  onInstallApp?: () => void;
+
   onVerifyPinSuccess: () => void;
   onSetPinSuccess: (newPin: string) => void;
   onLogoutGmail: () => void;
@@ -27,6 +30,8 @@ export default function LoginView({
   firebaseUser,
   adminPin,
   employees,
+  deferredPrompt,
+  onInstallApp,
   onVerifyPinSuccess,
   onSetPinSuccess,
   onLogoutGmail,
@@ -611,6 +616,26 @@ export default function LoginView({
             </button>
           </div>
         </div>
+        
+        {/* PWA INSTALLATION PANEL */}
+        {deferredPrompt && (
+          <div className="mt-6 border border-blue-100 bg-[#EFF6FF]/50 rounded-xl p-4 shadow-xs">
+            <h3 className="text-[10px] font-bold uppercase text-[#2563EB] tracking-wider mb-2 flex items-center justify-center gap-1.5">
+              <Icon name="download" size={14} />
+              <span>{t('Desktop/Mobile App', 'डेस्कटॉप/मोबाइल ऐप')}</span>
+            </h3>
+            <p className="text-[9px] text-[#64748B] text-center mb-3 leading-relaxed">
+              {t('Download the offline-first app onto your home screen for rapid access.', 'तेज़ पहुंच के लिए ऑफ़लाइन-फ़र्स्ट ऐप को अपनी होम स्क्रीन पर डाउनलोड करें।')}
+            </p>
+            <button
+              onClick={onInstallApp}
+              className="w-full h-9 bg-white border border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB] hover:text-white rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1.5"
+            >
+              <Icon name="download" size={14} />
+              <span>{t('Install Kamdhenu EMS', 'कामधेनु ईएमएस इनस्टॉल करें')}</span>
+            </button>
+          </div>
+        )}
 
       </div>
       <footer className="text-center text-[10px] text-slate-400 mt-6 tracking-wide font-medium">

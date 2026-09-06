@@ -584,7 +584,11 @@ export default function AttendanceView({
                                 <button
                                   onClick={(e) => { e.stopPropagation(); triggerTimePicker(emp.id, sIdx, 'in', s.in); }}
                                   className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
-                                    s.in ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-[#E2E8F0] text-[#64748B]'
+                                    s.in 
+                                      ? 'bg-emerald-600 border-emerald-600 text-white' 
+                                      : sessions[sIdx - 1].out 
+                                        ? 'bg-emerald-100 border-emerald-300 text-emerald-900 hover:bg-emerald-200 shadow-sm animate-pulse shadow-emerald-500/20' 
+                                        : 'bg-white border-[#E2E8F0] text-[#64748B]'
                                   }`}
                                 >
                                   <span>{s.in ? formatTimeForDisplay(s.in) : t('In Time', 'पंच इन')}</span>
@@ -1273,6 +1277,7 @@ export default function AttendanceView({
           isOpen={pickerOpen}
           onClose={() => setPickerOpen(false)}
           title={new Date(attDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          actionType={pickerMeta.field}
           initialValue={pickerMeta.initialVal}
           onSave={saveTimePickerValue}
         />

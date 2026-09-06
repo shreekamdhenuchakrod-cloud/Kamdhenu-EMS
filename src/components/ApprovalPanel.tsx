@@ -1069,7 +1069,17 @@ export default function ApprovalPanel({
   const [filterType, setFilterType] = useState('all');
   
   const displayList = isAdmin ? requestsList : requestsList.filter(r => r.employeeId === employeeId);
-  const filteredRequests = displayList.filter(r => filterType === 'all' || r.type === filterType).sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  
+  const matchesFilter = (category: string, filter: string) => {
+    if (filter === 'all') return true;
+    if (filter === 'attendance' && (category.includes('Punch') || category.includes('Attendance') || category === 'Late Entry' || category === 'Early Exit' || category === 'Overtime' || category === 'GeoFence Attendance' || category === 'Manual Attendance')) return true;
+    if (filter === 'payment' && (category === 'Payment' || category === 'New Payment')) return true;
+    if (filter === 'leave' && category === 'Leave') return true;
+    if (filter === 'device_registration' && category === 'Device Register') return true;
+    return false;
+  };
+
+  const filteredRequests = displayList.filter(r => matchesFilter(r.category, filterType)).sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
 return (
     <div className="w-full h-full flex flex-col bg-[#F7F9FC] animate-in fade-in duration-200">
@@ -1191,7 +1201,7 @@ return (
                       <div className="grid grid-cols-2 gap-3 text-xs bg-[#F7F9FC] p-3 rounded-xl border border-[#E2E8F0]/50">
                         <div className="col-span-2 sm:col-span-1">
                           <span className="block text-[9px] font-bold text-[#94A3B8] uppercase tracking-wider mb-0.5">{t('Request Type', 'अनुरोध प्रकार')}</span>
-                          <span className="font-semibold text-[#0F172A] uppercase">{r.type}</span>
+                          <span className="font-semibold text-[#0F172A] uppercase">{r.category}</span>
                         </div>
                         {r.date && (
                           <div className="col-span-2 sm:col-span-1">
@@ -1205,7 +1215,7 @@ return (
                         </div>
                         
                         {/* Old vs New Values */}
-                        {(r.oldValue || r.requestedValue) && (
+                        {(r.oldValue || r.newValue) && (
                           <div className="col-span-2 flex items-center gap-3 mt-1">
                             <div className="flex-1 bg-rose-50/50 p-2 rounded-lg border border-rose-100/50">
                               <span className="block text-[8px] font-bold text-rose-500 uppercase">{t('Current', 'वर्तमान')}</span>
@@ -1214,7 +1224,7 @@ return (
                             <Icon name="arrow_forward" size={16} className="text-[#94A3B8]" />
                             <div className="flex-1 bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
                               <span className="block text-[8px] font-bold text-emerald-600 uppercase">{t('Requested', 'अनुरोधित')}</span>
-                              <span className="font-semibold text-[#0F172A]">{typeof r.requestedValue === 'object' ? JSON.stringify(r.requestedValue) : String(r.requestedValue || '—')}</span>
+                              <span className="font-semibold text-[#0F172A]">{typeof r.newValue === 'object' ? JSON.stringify(r.newValue) : String(r.newValue || '—')}</span>
                             </div>
                           </div>
                         )}
@@ -1234,7 +1244,6 @@ return (
                           <button
                             onClick={() => {
                               setSelectedRequestDetails(r);
-                              setShowActionModal(true);
                             }}
                             className="flex-1 h-10 bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F7F9FC] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5"
                           >
@@ -2407,73 +2416,6 @@ return (
       {/* Existing forms for New Request are intact but hidden via empView filter */}
       </div>
 
-      {/* Action Modal using existing structure */}
-      {showActionModal && selectedRequestDetails && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-[999] p-4 animate-in fade-in">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
-            <div className="px-5 py-4 border-b border-[#E2E8F0] flex justify-between items-center bg-[#F7F9FC] rounded-t-2xl">
-              <h3 className="font-black text-[#0F172A]">{t('Review Request', 'अनुरोध समीक्षा')}</h3>
-              <button onClick={() => setShowActionModal(false)} className="text-[#64748B] hover:text-[#0F172A]"><Icon name="close" size={24} /></button>
-            </div>
-            
-            <div className="p-5 overflow-y-auto space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <span className="block text-[9px] font-bold text-[#94A3B8] uppercase">{t('Employee', 'कर्मचारी')}</span>
-                  <span className="font-semibold text-[#0F172A]">{selectedRequestDetails.employeeName}</span>
-                </div>
-                <div>
-                  <span className="block text-[9px] font-bold text-[#94A3B8] uppercase">{t('Request Type', 'प्रकार')}</span>
-                  <span className="font-semibold text-[#0F172A]">{selectedRequestDetails.type}</span>
-                </div>
-              </div>
-
-              {selectedRequestDetails.type === 'attendance' && selectedRequestDetails.attendanceData && (
-                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
-                  <span className="block text-[9px] font-bold text-blue-600 uppercase mb-2">{t('Attendance Details', 'उपस्थिति विवरण')}</span>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-[#0F172A]">
-                    <div><strong>In:</strong> {selectedRequestDetails.attendanceData.inTime || '—'}</div>
-                    <div><strong>Out:</strong> {selectedRequestDetails.attendanceData.outTime || '—'}</div>
-                    <div className="col-span-2"><strong>Notes:</strong> {selectedRequestDetails.attendanceData.notes || '—'}</div>
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-[#0F172A] uppercase">{t('Admin Remarks (Required for Rejection)', 'एडमिन टिप्पणी')}</label>
-                <textarea
-                  value={rejectionReason}
-                  onChange={e => setRejectionReason(e.target.value)}
-                  placeholder={t('Enter notes here...', 'यहां टिप्पणी लिखें...')}
-                  className="w-full h-24 border border-[#E2E8F0] rounded-xl p-3 outline-none focus:border-[#2563EB] text-sm resize-none"
-                />
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-[#E2E8F0] flex gap-2 flex-wrap">
-              <button
-                onClick={() => handleApprove(selectedRequestDetails)}
-                className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-sm transition"
-              >
-                {t('Approve', 'स्वीकारें')}
-              </button>
-              <button
-                onClick={() => handleReturnForCorrection(selectedRequestDetails.id)}
-                className="flex-1 h-11 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold shadow-sm transition"
-              >
-                {t('Return', 'लौटायें')}
-              </button>
-              <button
-                onClick={() => handleReject(selectedRequestDetails.id)}
-                className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-sm transition"
-              >
-                {t('Reject', 'अस्वीकारें')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    
       {pickerOpen && pickerMeta && (
         <TimeWheelPicker
           isOpen={pickerOpen}

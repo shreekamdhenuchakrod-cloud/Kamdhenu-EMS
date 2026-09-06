@@ -783,6 +783,8 @@ export default function App() {
         firebaseUser={firebaseUser}
         adminPin={db.company?.adminPin}
         employees={db.employees}
+        deferredPrompt={deferredPrompt}
+        onInstallApp={handleInstallApp}
         onVerifyPinSuccess={() => {
           setIsPinVerified(true);
           sessionStorage.setItem('gaushala_pin_verified', 'true');
