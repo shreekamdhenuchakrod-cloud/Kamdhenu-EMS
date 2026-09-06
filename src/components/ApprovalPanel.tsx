@@ -281,11 +281,48 @@ export default function ApprovalPanel({
     const resolvedReason = reason.trim() || t('Self requested via employee portal', 'स्टाफ पोर्टल द्वारा स्वयं अनुरोधित');
 
     if (requestType === 'attendance') {
-      if (employeeType === 'Hourly') {
+      const isSessions = employeeType === 'Hourly' || correctionMode === 'sessions';
+      if (isSessions) {
         const hasAnyCheck = punchSessions.some(s => s.inEnabled || s.outEnabled);
         if (!hasAnyCheck) {
           alert(t('Please select at least one Punch In or Punch Out time to request correction!', 'कृपया सुधार का अनुरोध करने के लिए कम से कम एक पंच इन या पंच आउट समय चुनें!'));
           return;
+        }
+
+        const toMins = (tStr: string) => {
+          if (!tStr) return 0;
+          const [h, m] = tStr.split(':').map(Number);
+          return h * 60 + m;
+        };
+
+        const enabledSessions = punchSessions.filter(s => s.inEnabled || s.outEnabled);
+        let prevOut = -1;
+        for (let i = 0; i < enabledSessions.length; i++) {
+          const s = enabledSessions[i];
+          if (s.inEnabled && s.outEnabled) {
+            if (toMins(s.outTime) <= toMins(s.inTime)) {
+              alert(t('Punch Out time must be later than Punch In time.', 'पंच आउट का समय पंच इन से बाद का होना चाहिए।'));
+              return;
+            }
+          }
+          if (s.inEnabled) {
+            const inM = toMins(s.inTime);
+            if (prevOut >= 0 && inM <= prevOut) {
+              let suffix = 'AM';
+              let prevH = Math.floor(prevOut / 60);
+              let prevM = prevOut % 60;
+              if (prevH >= 12) { suffix = 'PM'; if (prevH > 12) prevH -= 12; }
+              if (prevH === 0) prevH = 12;
+              const formattedTime = `${prevH < 10 ? '0'+prevH : prevH}:${prevM < 10 ? '0'+prevM : prevM} ${suffix}`;
+              alert(t(`Invalid attendance time. The new Punch In must be after the previous Punch Out time (${formattedTime}).`, `नया पंच इन पिछले पंच आउट (${formattedTime}) के बाद होना चाहिए।`));
+              return;
+            }
+          }
+          if (s.outEnabled) {
+            prevOut = toMins(s.outTime);
+          } else {
+            prevOut = 9999;
+          }
         }
       }
     } else if (requestType === 'payment') {
@@ -524,6 +561,29 @@ export default function ApprovalPanel({
                 out: s.out !== undefined && s.out !== '' ? s.out : (exist.out || '')
               };
             });
+
+            const toMinLocal = (tStr: string) => {
+              if (!tStr) return 0;
+              const [h, m] = tStr.split(':').map(Number);
+              return h * 60 + m;
+            };
+
+            for (let i = 0; i < sessions.length; i++) {
+              if (sessions[i].in && sessions[i].out) {
+                if (toMinLocal(sessions[i].out) <= toMinLocal(sessions[i].in)) {
+                  throw new Error('Punch Out time must be later than Punch In time.');
+                }
+              }
+              if (i > 0 && sessions[i].in && sessions[i - 1].out) {
+                if (toMinLocal(sessions[i].in) <= toMinLocal(sessions[i - 1].out)) {
+                  throw new Error('New Punch In must be after previous Punch Out.');
+                }
+              }
+              if (i > 0 && sessions[i].in && !sessions[i - 1].out) {
+                throw new Error('Previous session must have a Punch Out before starting a new session.');
+              }
+            }
+
             draft.attendance[key] = {
               ...existingRec,
               status: 'Present',
@@ -2412,6 +2472,16 @@ return (
             </div>
           </div>
         </div>
+      )}
+    
+      {pickerOpen && pickerMeta && (
+        <TimeWheelPicker
+          isOpen={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          title={t('Select Time', 'समय चुनें')}
+          initialValue={pickerMeta.initialVal}
+          onSave={handleSaveTimePicker}
+        />
       )}
     </div>
   );

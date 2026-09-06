@@ -40,7 +40,7 @@ export async function generateA4PDF(
 
       // ---- Capture page as high-res canvas ----
       const canvas = await html2canvas(pageElement, {
-        scale: 3,            // 3x = crisp on retina
+        scale: 1.5,            // Lower scale for smaller PDF size
         useCORS: true,
         allowTaint: false,
         backgroundColor: '#ffffff',
@@ -54,7 +54,7 @@ export async function generateA4PDF(
       pageElement.style.width = originalWidth;
       pageElement.style.maxWidth = originalMaxWidth;
 
-      const imgData = canvas.toDataURL('image/png');   // PNG – lossless, no JPEG blur
+      const imgData = canvas.toDataURL('image/jpeg', 0.6);   // JPEG compression for much smaller file size
 
       // ---- Scale image to fit content area without stretching ----
       const canvasAspect = canvas.height / canvas.width;   // h/w ratio
@@ -69,7 +69,7 @@ export async function generateA4PDF(
 
       // Center horizontally
       const xOffset = margin + (contentW - destW) / 2;
-      pdf.addImage(imgData, 'PNG', xOffset, contentY, destW, destH);
+      pdf.addImage(imgData, 'JPEG', xOffset, contentY, destW, destH);
 
       // ---- HEADER BAND ----
       pdf.setFillColor(245, 247, 250);

@@ -33,7 +33,7 @@ export default function StaffListView({ db, onNavigate, lang }: StaffListViewPro
     const order = { 'Hourly': 1, 'Monthly': 2, 'Daily': 3 };
     const aOrder = order[a.type] || 4;
     const bOrder = order[b.type] || 4;
-    return aOrder - bOrder;
+    if(aOrder !== bOrder) return aOrder - bOrder; return a.name.localeCompare(b.name);
   });
 
 const renderStaffCard = (emp: Employee) => {

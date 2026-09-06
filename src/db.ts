@@ -143,20 +143,56 @@ export function timeToHrs(inT: string, outT: string): number {
   return diff > 0 ? diff / 60 : 0;
 }
 
-export function isOverlap(newIn: string, newOut: string, existing: PunchSession[], currIdx: number): boolean {
-  const start = toMin(newIn);
-  const end = toMin(newOut);
+export function validateSessionChronology(newIn: string, newOut: string, existing: PunchSession[], currIdx: number): { valid: boolean; reason?: string } {
+  const pIn = toMin(newIn);
+  const pOut = newOut ? toMin(newOut) : null;
+
+  if (pOut !== null && pOut <= pIn) {
+    return { valid: false, reason: 'Punch Out time must be later than Punch In time.' };
+  }
+
   for (let i = 0; i < existing.length; i++) {
     if (i === currIdx) continue;
     const s = existing[i];
-    if (!s.in || !s.out) continue;
-    const sStart = toMin(s.in);
-    const sEnd = toMin(s.out);
-    if (start < sEnd && end > sStart) {
-      return true;
+    if (!s.in) continue;
+    
+    const sIn = toMin(s.in);
+    const sOut = s.out ? toMin(s.out) : null;
+
+    if (pOut !== null && sOut !== null) {
+      if (pIn < sOut && pOut > sIn) {
+        return { valid: false, reason: 'Sessions cannot overlap with existing attendance sessions.' };
+      }
+    } else if (pOut === null && sOut !== null) {
+      if (pIn >= sIn && pIn < sOut) {
+         return { valid: false, reason: 'Cannot start a session inside an existing session.' };
+      }
+    }
+
+    if (i < currIdx) {
+      if (sOut === null) {
+        return { valid: false, reason: `Previous session is missing a Punch Out time.` };
+      }
+      if (pIn <= sOut) {
+        let [hh, mm] = s.out.split(':');
+        let suffix = 'AM';
+        let h = parseInt(hh, 10);
+        if (h >= 12) { suffix = 'PM'; if (h > 12) h -= 12; }
+        if (h === 0) h = 12;
+        const formattedTime = `${h < 10 ? '0'+h : h}:${mm} ${suffix}`;
+        return { valid: false, reason: `Invalid attendance time. The new Punch In must be after the previous Punch Out time (${formattedTime}).` };
+      }
+    } else if (i > currIdx) {
+      if (pOut === null) {
+        return { valid: false, reason: `Must set Punch Out time before later sessions can exist.` };
+      }
+      if (pOut >= sIn) {
+        return { valid: false, reason: `Invalid attendance time. Punch Out must be before the next session's Punch In.` };
+      }
     }
   }
-  return false;
+
+  return { valid: true };
 }
 
 export function getRateForMonth(emp: Employee, year: number, month: number): number {

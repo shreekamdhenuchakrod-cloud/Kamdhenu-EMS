@@ -3,7 +3,7 @@ import Icon from './Icon';
 import TimeWheelPicker from './TimeWheelPicker';
 import InlineDurationPicker from './InlineDurationPicker';
 import { AppDatabase, OvertimeEntry, LateFineEntry, PunchSession } from '../types';
-import { getRateForMonth, getDaysInMonth, getHourlyRate, toMin, timeToHrs, isOverlap } from '../db';
+import { getRateForMonth, getDaysInMonth, getHourlyRate, toMin, timeToHrs, validateSessionChronology } from '../db';
 
 interface AttendanceViewProps {
   db: AppDatabase;
@@ -177,9 +177,12 @@ export default function AttendanceView({
         setPickerOpen(false);
         return;
       }
+    }
 
-      if (isOverlap(proposedIn, proposedOut, sessions, sessionIdx)) {
-        alert(t('Selected time range overlaps with existing attendance session.', 'चुना गया समय अंतराल अन्य सक्रिय पाली के साथ ओवरलैप करता है।'));
+    if (proposedIn || proposedOut) {
+      const check = validateSessionChronology(proposedIn, proposedOut, sessions, sessionIdx);
+      if (!check.valid) {
+        alert(check.reason);
         setPickerOpen(false);
         return;
       }
@@ -579,7 +582,7 @@ export default function AttendanceView({
                                   {sIdx + 1}
                                 </div>
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); triggerTimePicker(emp.id, sIdx, 'out', s.out); }}
+                                  onClick={(e) => { e.stopPropagation(); triggerTimePicker(emp.id, sIdx, 'in', s.in); }}
                                   className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
                                     s.in ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-[#E2E8F0] text-[#64748B]'
                                   }`}

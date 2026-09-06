@@ -1020,6 +1020,47 @@ export default function EmployeeDashboard({
           </button>
         </nav>
 
+        {/* PUNCH MODAL */}
+        {showPunchModal && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl flex flex-col items-center space-y-4 animate-in zoom-in-95 duration-200">
+              <h3 className="font-black text-[#0F172A] text-lg uppercase tracking-wider">{punchType}</h3>
+              
+              {!punchSelfie ? (
+                <label className="w-full h-48 border-2 border-dashed border-blue-200 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center text-[#64748B] hover:bg-blue-50 cursor-pointer transition-colors relative overflow-hidden">
+                  <Icon name="photo_camera" size={40} className="mb-2 text-[#2563EB]" />
+                  <span className="text-xs font-bold text-blue-700">{t('Tap to Take Selfie', 'सेल्फी लेने के लिए टैप करें')}</span>
+                  <input type="file" accept="image/*" capture="user" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleCameraCapture} />
+                </label>
+              ) : (
+                <div className="w-full relative">
+                  <img src={punchSelfie} alt="Selfie" className="w-full h-48 object-cover rounded-2xl border border-[#E2E8F0]" />
+                  <button onClick={() => setPunchSelfie(null)} className="absolute top-2 right-2 w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-md">
+                    <Icon name="close" size={18} />
+                  </button>
+                </div>
+              )}
+
+              <div className="w-full flex gap-3 pt-2">
+                <button
+                  onClick={() => { setShowPunchModal(false); setPunchSelfie(null); }}
+                  className="flex-1 h-12 bg-white border border-[#E2E8F0] text-[#64748B] hover:bg-slate-50 rounded-2xl font-bold uppercase tracking-wider text-xs transition-colors"
+                >
+                  {t('Cancel', 'रद्द करें')}
+                </button>
+                <button
+                  onClick={submitPunchRequest}
+                  disabled={!punchSelfie || isPunching}
+                  className="flex-1 h-12 bg-[#2563EB] text-white rounded-2xl font-black uppercase tracking-wider text-xs shadow-md disabled:opacity-50 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
+                >
+                  {isPunching ? <Icon name="sync" size={18} className="animate-spin" /> : <Icon name="check_circle" size={18} />}
+                  {t('Confirm', 'पुष्टि करें')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* PDF MODAL */}
         {isPdfReady && (
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex flex-col">
