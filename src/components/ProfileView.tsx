@@ -4362,6 +4362,7 @@ export default function ProfileView({
             "en-GB",
             { day: "numeric", month: "short", year: "numeric" },
           )}
+          actionType={pickerMeta.field}
           initialValue={pickerMeta.initialVal}
           onSave={saveHistoryTimePickerValue}
         />

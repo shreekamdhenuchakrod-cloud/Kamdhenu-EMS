@@ -583,20 +583,20 @@ export default function AttendanceView({
                                 </div>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); triggerTimePicker(emp.id, sIdx, 'in', s.in); }}
-                                  className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
+                                  className={`flex-1 h-9 rounded-lg text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.97] ${
                                     s.in 
-                                      ? 'bg-emerald-600 border-emerald-600 text-white' 
-                                      : sessions[sIdx - 1].out 
-                                        ? 'bg-emerald-100 border-emerald-300 text-emerald-900 hover:bg-emerald-200 shadow-sm animate-pulse shadow-emerald-500/20' 
-                                        : 'bg-white border-[#E2E8F0] text-[#64748B]'
+                                      ? 'bg-emerald-600 border-emerald-600 text-white font-semibold shadow-3xs'
+                                      : 'bg-white border-[#E2E8F0] text-slate-650 hover:bg-[#F7F9FC] hover:border-slate-350'
                                   }`}
                                 >
                                   <span>{s.in ? formatTimeForDisplay(s.in) : t('In Time', 'पंच इन')}</span>
                                 </button>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); triggerTimePicker(emp.id, sIdx, 'out', s.out); }}
-                                  className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
-                                    s.out ? 'bg-slate-800 border-slate-800 text-white' : 'bg-white border-[#E2E8F0] text-slate-550'
+                                  className={`flex-1 h-9 rounded-lg text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.97] ${
+                                    s.out 
+                                      ? 'bg-slate-800 border-slate-800 text-white font-semibold shadow-3xs'
+                                      : 'bg-white border-[#E2E8F0] text-slate-650 hover:bg-[#F7F9FC] hover:border-slate-350'
                                   }`}
                                 >
                                   <span>{s.out ? formatTimeForDisplay(s.out) : t('Out Time', 'पंच आउट')}</span>

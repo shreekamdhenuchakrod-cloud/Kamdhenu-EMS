@@ -4,6 +4,7 @@ interface TimeWheelPickerProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  actionType?: 'in' | 'out';
   initialValue: string; // "HH:mm"
   onSave: (finalTime: string) => void;
 }
@@ -321,6 +322,7 @@ export default function TimeWheelPicker({
   isOpen,
   onClose,
   title,
+  actionType,
   initialValue,
   onSave
 }: TimeWheelPickerProps) {
@@ -379,7 +381,9 @@ export default function TimeWheelPicker({
   }
 
   // Format header display label based on "in" or "out"
-  const headerLabel = title.toLowerCase().includes('in') ? 'Punch In Time' : 'Punch Out Time';
+  const headerLabel = actionType 
+    ? (actionType === 'in' ? 'Punch In Time' : 'Punch Out Time') 
+    : (title.toLowerCase().includes('in') ? 'Punch In Time' : 'Punch Out Time');
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center z-[250] p-4 transition-opacity duration-200">
